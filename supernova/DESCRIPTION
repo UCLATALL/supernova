@@ -8,9 +8,5 @@ LazyData: yes
 Maintainer: Who to complain to <yourfault@somewhere.net>
 Description: Provides a different method for displaying linear model results and several datasets.
 License: GPL-3
-Suggests: ggformula, mosaic, Lock5Data, Lock5withR, okcupiddata,
-        fivethirtyeight
+Suggests: ggformula, mosaic, Lock5Data, Lock5withR, okcupiddata, fivethirtyeight
 RoxygenNote: 6.0.1
-NeedsCompilation: no
-Packaged: 2018-02-11 00:17:33 UTC; jchrszcz
-Author: Jeffrey Chrabaszcz [aut, cre]

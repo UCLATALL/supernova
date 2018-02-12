@@ -187,7 +187,7 @@ print.supernova <- function(x, pcut = 4, ...) {
   y <- x$f
   y[3:(ncol(y) - 1)] <- apply(y[3:(ncol(y) - 1)], 2, printHelp)
   y[x$f == "---"] <- "---"
-  y$p <- ifelse(y$p %in% c("", "---"), y$p, ifelse(as.numeric(y$p) < as.numeric(paste0(".", strrep("0", pcut - 1), "1")), paste0(".", strrep(0, pcut)), substring(round(as.numeric(y$p), pcut), 2)))
+  y$p <- ifelse(y$p %in% c("", "---"), y$p, ifelse(as.numeric(y$p) < as.numeric(paste0(".", strrep("0", pcut - 1), "1")), paste0(".", strrep(0, pcut)), substring(format(round(as.numeric(y$p), pcut), scientific = FALSE), 2)))
   nc <- abs(nchar(y$v2) - max(nchar(y$v2)))
   y$v2 <- mapply(barHelp, y$v2, strrep(" ", nc), USE.NAMES = FALSE)
   names(y)[1:2] <- c("", "")
