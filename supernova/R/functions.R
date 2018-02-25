@@ -6,8 +6,17 @@
 #' 
 #' @return An object of the class \code{\link{supernova}}, a named list with the munged data.frame and the original \code{\link{lm}} object.
 #' 
+#' @details 
+#' An alternative set of summary statistics for ANOVA. Sums of squares, degrees of freedom, mean squares, and F value are all equivalent to \code{\link{anova.lm}}. This package adds proportional reduction in error, an explicit summary of the whole model, and separate formatting of p values and is intended to match the output used in Judd, McClelland, and Ryan (2017).
+#' 
+#' @examples
+#' supernova(lm(Thumb ~ Weight, data = Fingers))
+#' 
+#' 
 #' @importFrom stats anova model.matrix update pf
 #' @importFrom utils head tail
+#' 
+#' @references Judd, C. M., McClelland, G. H., & Ryan, C. S. (2017). Data Analysis: A Model Comparison Approach to Regression, ANOVA, and Beyond (3rd edition). New York: Routledge. ISBN:879-1138819832
 #' 
 #' @export
 supernova <- function(fit) {
@@ -47,6 +56,9 @@ supernova <- function(fit) {
 #' @param x A \code{\link{lm}} object.
 #' 
 #' @return A \code{\link{supernova}} object.
+#' 
+#' @examples
+#' superanova(lm(Thumb ~ Weight, data = Fingers))
 #' 
 #' @export
 superanova <- function(x) {
@@ -90,8 +102,6 @@ frameSetup <- function(anm, x = 0) {
 #' @param ... Additional arguments.
 #' 
 #' @return A character with correct numeric formatting.
-#' 
-#' 
 #' 
 #' @export
 printHelp <- function (x, digits = max(3L, getOption("digits") - 2L), dig.tst = max(1L, min(5L, digits - 1L)), cs.ind = 1:k, tst.ind = k + 1, na.print = "", ...) {

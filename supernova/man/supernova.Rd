@@ -15,3 +15,14 @@ An object of the class \code{\link{supernova}}, a named list with the munged dat
 \description{
 Creates a \code{supernova} object
 }
+\details{
+An alternative set of summary statistics for ANOVA. Sums of squares, degrees of freedom, mean squares, and F value are all equivalent to \code{\link{anova.lm}}. This package adds proportional reduction in error, an explicit summary of the whole model, and separate formatting of p values and is intended to match the output used in Judd, McClelland, and Ryan (2017).
+}
+\examples{
+supernova(lm(Thumb ~ Weight, data = Fingers))
+
+
+}
+\references{
+Judd, C. M., McClelland, G. H., & Ryan, C. S. (2017). Data Analysis: A Model Comparison Approach to Regression, ANOVA, and Beyond (3rd edition). New York: Routledge. ISBN:879-1138819832
+}

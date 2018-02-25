@@ -15,3 +15,7 @@ A \code{\link{supernova}} object.
 \description{
 Alias for supernova
 }
+\examples{
+superanova(lm(Thumb ~ Weight, data = Fingers))
+
+}
