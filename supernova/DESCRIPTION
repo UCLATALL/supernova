@@ -1,8 +1,8 @@
 Package: supernova
 Type: Package
 Title: Judd & McClelland Formatting for ANOVA Output
-Version: 1.0
-Date: 2018-02-09
+Version: 1.1
+Date: 2018-04-06
 Authors@R: c(person("Jim", "Stigler", email = "jstigler@gmail.com", role = c("cre", "aut")),
              person("Jeff", "Chrabaszcz", role = "aut"))
 LazyData: yes
