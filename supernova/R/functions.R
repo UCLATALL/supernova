@@ -1,23 +1,23 @@
 #' supernova
-#' 
+#'
 #' Creates a \code{supernova} object
-#' 
+#'
 #' @param fit \code{\link{lm}} object
-#' 
+#'
 #' @return An object of the class \code{\link{supernova}}, a named list with the munged data.frame and the original \code{\link{lm}} object.
-#' 
-#' @details 
+#'
+#' @details
 #' An alternative set of summary statistics for ANOVA. Sums of squares, degrees of freedom, mean squares, and F value are all equivalent to \code{\link{anova.lm}}. This package adds proportional reduction in error, an explicit summary of the whole model, and separate formatting of p values and is intended to match the output used in Judd, McClelland, and Ryan (2017).
-#' 
+#'
 #' @examples
 #' supernova(lm(Thumb ~ Weight, data = Fingers))
-#' 
-#' 
+#'
+#'
 #' @importFrom stats anova model.matrix update pf
 #' @importFrom utils head tail
-#' 
+#'
 #' @references Judd, C. M., McClelland, G. H., & Ryan, C. S. (2017). Data Analysis: A Model Comparison Approach to Regression, ANOVA, and Beyond (3rd edition). New York: Routledge. ISBN:879-1138819832
-#' 
+#'
 #' @export
 supernova <- function(fit) {
   if (all(colnames(model.matrix(fit)) == "(Intercept)")) {
@@ -50,31 +50,29 @@ supernova <- function(fit) {
 }
 
 #' superanova
-#' 
+#'
 #' Alias for supernova
-#' 
+#'
 #' @param x A \code{\link{lm}} object.
-#' 
+#'
 #' @return A \code{\link{supernova}} object.
-#' 
+#'
 #' @examples
 #' superanova(lm(Thumb ~ Weight, data = Fingers))
-#' 
+#'
 #' @export
 superanova <- function(x) {
   supernova(x)
 }
 
 #' frameSetup
-#' 
+#'
 #' Sets up a null supernova data.frame
-#' 
+#'
 #' @param anm \code{\link{anova}} object with no predictors.
 #' @param x Number of predictiors to be included in the model.
-#' 
+#'
 #' @return y An empty data.frame for use by \code{\link{supernova}}.
-#' 
-#' @export
 frameSetup <- function(anm, x = 0) {
   f <- "---"
   y <- data.frame(v1 = c("Model", rep("", x), "Error", "Total"),
@@ -90,9 +88,9 @@ frameSetup <- function(anm, x = 0) {
 }
 
 #' printHelp
-#' 
+#'
 #' A function to help with formatting in \code{\link{print.supernova}}
-#' 
+#'
 #' @param x An atomic character.
 #' @param digits From \code{\link{options}} by default.
 #' @param dig.tst As in printCoefMat.
@@ -100,17 +98,15 @@ frameSetup <- function(anm, x = 0) {
 #' @param tst.ind As in printCoefMat.
 #' @param na.print Alternate string to print for NA values.
 #' @param ... Additional arguments.
-#' 
+#'
 #' @return A character with correct numeric formatting.
-#' 
-#' @export
 printHelp <- function (x, digits = max(3L, getOption("digits") - 2L), dig.tst = max(1L, min(5L, digits - 1L)), cs.ind = 1:k, tst.ind = k + 1, na.print = "", ...) {
   x <- suppressWarnings(as.matrix(ifelse(x %in% c("", "---"), NA, as.numeric(x))))
-  if (is.null(d <- dim(x)) || length(d) != 2L) 
+  if (is.null(d <- dim(x)) || length(d) != 2L)
     stop("'x' must be coefficient matrix/data frame")
   nc <- d[2L]
   xm <- data.matrix(x)
-  k <- nc - (if (missing(tst.ind)) 
+  k <- nc - (if (missing(tst.ind))
     1
     else length(tst.ind))
   Cf <- array("", dim = d, dimnames = dimnames(xm))
@@ -118,17 +114,17 @@ printHelp <- function (x, digits = max(3L, getOption("digits") - 2L), dig.tst = 
   if (length(cs.ind)) {
     acs <- abs(coef.se <- xm[, cs.ind, drop = FALSE])
     if (any(ia <- is.finite(acs))) {
-      digmin <- 1 + if (length(acs <- acs[ia & acs != 0])) 
+      digmin <- 1 + if (length(acs <- acs[ia & acs != 0]))
         floor(log10(range(acs[acs != 0], finite = TRUE)))
       else 0
-      Cf[, cs.ind] <- format(round(coef.se, max(1L, digits - 
+      Cf[, cs.ind] <- format(round(coef.se, max(1L, digits -
                                                   digmin)), digits = digits)
     }
   }
-  if (length(tst.ind)) 
-    Cf[, tst.ind] <- format(round(xm[, tst.ind], digits = dig.tst), 
+  if (length(tst.ind))
+    Cf[, tst.ind] <- format(round(xm[, tst.ind], digits = dig.tst),
                             digits = digits)
-  if (any(r.ind <- !((1L:nc) %in% c(cs.ind, tst.ind)))) 
+  if (any(r.ind <- !((1L:nc) %in% c(cs.ind, tst.ind))))
     for (i in which(r.ind)) Cf[, i] <- format(xm[, i], digits = digits)
   ok[, tst.ind] <- FALSE
   okP <- ok
@@ -138,36 +134,32 @@ printHelp <- function (x, digits = max(3L, getOption("digits") - 2L), dig.tst = 
   if (length(not.both.0 <- which(x0 & !is.na(x0)))) {
     Cf[okP][not.both.0] <- format(xm[okP][not.both.0], digits = max(1L, digits - 1L))
   }
-  if (any(ina)) 
+  if (any(ina))
     Cf[ina] <- na.print
   as.vector(Cf)
 }
 
 #' barHelp
-#' 
+#'
 #' A function to produce vertical bar separators.
-#' 
+#'
 #' @param x Original name for row.
 #' @param y Number of spaces to add.
-#' 
+#'
 #' @return The original row name with a number of spaces and vertical bar added.
-#' 
-#' @export
 barHelp <- function(x, y) {
   paste0(x, y, " |")
 }
 
 #' insertRow
-#' 
+#'
 #' Function to insert formatting rows in the output data.frame.
-#' 
+#'
 #' @param d Original data.frame
 #' @param nr Contents of the new row.
 #' @param rn The row in which to insert the new contents (remaining rows will be pushed down).
-#' 
+#'
 #' @return d The original data.frame with the new row inserted.
-#' 
-#' @export
 insertRow <- function(d, nr, rn = NULL) {
   if (!is.null(rn)) {
     d[seq(rn + 1,nrow(d) + 1), ] <- d[seq(rn, nrow(d)), ]
@@ -180,17 +172,17 @@ insertRow <- function(d, nr, rn = NULL) {
 }
 
 #' print.supernova
-#' 
+#'
 #' A print method for the supernova class
-#' 
+#'
 #' @param x A \code{\link{supernova}} object.
 #' @param pcut The integer number of decimal places of p-values to show.
 #' @param ... Additional display arguments.
-#' 
+#'
 #' @return NULL
-#' 
+#'
 #' @importFrom stats model.frame
-#'    
+#'
 #' @export
 print.supernova <- function(x, pcut = 4, ...) {
   # setup
@@ -201,11 +193,11 @@ print.supernova <- function(x, pcut = 4, ...) {
   nc <- abs(nchar(y$v2) - max(nchar(y$v2)))
   y$v2 <- mapply(barHelp, y$v2, strrep(" ", nc), USE.NAMES = FALSE)
   names(y)[1:2] <- c("", "")
-  
+
   sep <- strrep("-", sapply(y, function(x) max(nchar(x))))
   y <- insertRow(y, sep, 1)
   y <- insertRow(y, sep, nrow(y))
-  
+
   # printing
   cat("Analysis of Variance Table\nOutcome variable:", colnames(model.frame(x$fit))[1], "\nModel: ")
   print(x$fit$call)
@@ -214,20 +206,20 @@ print.supernova <- function(x, pcut = 4, ...) {
 }
 
 #' PRE
-#' 
+#'
 #' A function to extract PRE values
-#' 
+#'
 #' @param fit A \code{\link{lm}} object.
 #' @param formula A \code{\link{formula}}.
 #' @param data A \code{\link{data.frame}}.
 #' @param ... Passthrough arguments.
-#' 
+#'
 #' @return The PRE value of the relevant model.
-#' 
+#'
 #' @importFrom stats lm
-#' 
+#'
 #' @rdname PRE
-#' 
+#'
 #' @export
 PRE <- function(fit, ...) {
   UseMethod("PRE")
@@ -250,20 +242,20 @@ PRE.formula <- function(formula, data = list(), ...) {
 }
 
 #' fVal
-#' 
+#'
 #' A function to extract F value
-#' 
+#'
 #' @param fit A \code{\link{lm}} object.
 #' @param formula A \code{\link{formula}}.
 #' @param data A \code{\link{data.frame}}.
 #' @param ... Passthrough arguments.
-#' 
+#'
 #' @return The F value of the relevant model.
-#' 
+#'
 #' @importFrom stats lm
-#' 
+#'
 #' @rdname fVal
-#' 
+#'
 #' @export
 fVal <- function(fit, ...) {
   UseMethod("fVal")
@@ -286,20 +278,20 @@ fVal.formula <- function(formula, data = list(), ...) {
 }
 
 #' b0
-#' 
+#'
 #' A function to extract intercept/beta0 value.
-#' 
+#'
 #' @param fit A \code{\link{lm}} object.
 #' @param formula A \code{\link{formula}}.
 #' @param data A \code{\link{data.frame}}.
 #' @param ... Passthrough arguments.
-#' 
+#'
 #' @return The intercept of the relevant model.
-#' 
+#'
 #' @importFrom stats lm
-#' 
+#'
 #' @rdname b0
-#' 
+#'
 #' @export
 b0 <- function(fit, ...) {
   UseMethod("b0")
@@ -322,20 +314,20 @@ b0.formula <- function(formula, data = list(), ...) {
 }
 
 #' b1
-#' 
+#'
 #' A function to extract slope/beta1 value.
-#' 
+#'
 #' @param fit A \code{\link{lm}} object.
 #' @param formula A \code{\link{formula}}.
 #' @param data A \code{\link{data.frame}}.
 #' @param ... Passthrough arguments.
-#' 
+#'
 #' @return The slope of the relevant model.
-#' 
+#'
 #' @importFrom stats lm
-#' 
+#'
 #' @rdname b1
-#' 
+#'
 #' @export
 b1 <- function(fit, ...) {
   UseMethod("b1")

@@ -4,9 +4,9 @@
 \alias{printHelp}
 \title{printHelp}
 \usage{
-printHelp(x, digits = max(3L, getOption("digits") - 2L), dig.tst = max(1L,
-  min(5L, digits - 1L)), cs.ind = 1:k, tst.ind = k + 1, na.print = "",
-  ...)
+printHelp(x, digits = max(3L, getOption("digits") - 2L),
+  dig.tst = max(1L, min(5L, digits - 1L)), cs.ind = 1:k, tst.ind = k
+  + 1, na.print = "", ...)
 }
 \arguments{
 \item{x}{An atomic character.}
