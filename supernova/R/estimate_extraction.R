@@ -21,17 +21,13 @@ PRE <- function(fit, ...) {
 #' @rdname PRE
 #' @export
 PRE.default <- function(fit) {
-  pre <- summary(fit)$r.squared[1]
-  names(pre) <- NULL
-  pre
+  summary(fit)$r.squared[[1]]
 }
 
 #' @rdname PRE
 #' @export
 PRE.formula <- function(formula, data = list(), ...) {
-  fit <- lm(formula, data, ...)
-  pre <- PRE.default(fit)
-  pre
+  PRE.default(lm(formula, data, ...))
 }
 
 #' fVal
@@ -57,17 +53,13 @@ fVal <- function(fit, ...) {
 #' @rdname fVal
 #' @export
 fVal.default <- function(fit) {
-  fval <- summary(fit)$fstatistic[1]
-  names(fval) <- NULL
-  fval
+  summary(fit)$fstatistic[[1]]
 }
 
 #' @rdname fVal
 #' @export
 fVal.formula <- function(formula, data = list(), ...) {
-  fit <- lm(formula, data, ...)
-  fval <- fVal.default(fit)
-  fval
+  fVal.default(lm(formula, data, ...))
 }
 
 #' b0
@@ -93,17 +85,13 @@ b0 <- function(fit, ...) {
 #' @rdname b0
 #' @export
 b0.default <- function(fit) {
-  bz <- fit$coefficients[1]
-  names(bz) <- NULL
-  bz
+  fit$coefficients[[1]]
 }
 
 #' @rdname b0
 #' @export
 b0.formula <- function(formula, data = list(), ...) {
-  fit <- lm(formula, data, ...)
-  bz <- b0.default(fit)
-  bz
+  b0.default(lm(formula, data, ...))
 }
 
 #' b1
@@ -129,15 +117,11 @@ b1 <- function(fit, ...) {
 #' @rdname b1
 #' @export
 b1.default <- function(fit) {
-  bo <- fit$coefficients[2]
-  names(bo) <- NULL
-  bo
+  fit$coefficients[[2]]
 }
 
 #' @rdname b1
 #' @export
 b1.formula <- function(formula, data = list(), ...) {
-  fit <- lm(formula, data, ...)
-  bo <- b1.default(fit)
-  bo
+  b1.default(lm(formula, data, ...))
 }
