@@ -2,21 +2,30 @@
 % Please edit documentation in R/anova_tables.R
 \name{supernova}
 \alias{supernova}
+\alias{superanova}
 \title{supernova}
 \usage{
 supernova(fit)
 }
 \arguments{
-\item{fit}{\code{\link{lm}} object}
+\item{fit}{An \code{\link{lm}} object}
 }
 \value{
-An object of the class \code{\link{supernova}}, a named list with the munged data.frame and the original \code{\link{lm}} object.
+An object of the class \code{\link{supernova}}, which has a clean
+print method for displaying the ANOVA table in the console as well as a 
+named list:
+\item{tbl}{The ANOVA table as a data.frame.}
+\item{fit}{The original \code{\link{lm}} object being tested.}
 }
 \description{
-Creates a \code{supernova} object
+An alternative set of summary statistics for ANOVA. Sums of squares, degrees 
+of freedom, mean squares, and F value are all equivalent to 
+\code{\link{anova.lm}}. This package adds proportional reduction in error, an
+explicit summary of the whole model, and separate formatting of p values and
+is intended to match the output used in Judd, McClelland, and Ryan (2017).
 }
 \details{
-An alternative set of summary statistics for ANOVA. Sums of squares, degrees of freedom, mean squares, and F value are all equivalent to \code{\link{anova.lm}}. This package adds proportional reduction in error, an explicit summary of the whole model, and separate formatting of p values and is intended to match the output used in Judd, McClelland, and Ryan (2017).
+`superanova()` is an alias of `supernova()`
 }
 \examples{
 supernova(lm(Thumb ~ Weight, data = Fingers))
@@ -24,5 +33,7 @@ supernova(lm(Thumb ~ Weight, data = Fingers))
 
 }
 \references{
-Judd, C. M., McClelland, G. H., & Ryan, C. S. (2017). Data Analysis: A Model Comparison Approach to Regression, ANOVA, and Beyond (3rd edition). New York: Routledge. ISBN:879-1138819832
+Judd, C. M., McClelland, G. H., & Ryan, C. S. (2017). Data 
+Analysis: A Model Comparison Approach to Regression, ANOVA, and Beyond 
+(3rd edition). New York: Routledge. ISBN:879-1138819832
 }

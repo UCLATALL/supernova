@@ -15,7 +15,7 @@ b0(fit, ...)
 \arguments{
 \item{fit}{A \code{\link{lm}} object.}
 
-\item{...}{Passthrough arguments.}
+\item{...}{Passthrough arguments to \code{\link{lm}}.}
 
 \item{formula}{A \code{\link{formula}}.}
 

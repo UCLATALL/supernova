@@ -1,175 +1,134 @@
 #' supernova
 #'
-#' Creates a \code{supernova} object
+#' An alternative set of summary statistics for ANOVA. Sums of squares, degrees 
+#' of freedom, mean squares, and F value are all equivalent to 
+#' \code{\link{anova.lm}}. This package adds proportional reduction in error, an
+#' explicit summary of the whole model, and separate formatting of p values and
+#' is intended to match the output used in Judd, McClelland, and Ryan (2017).
+#' 
+#' `superanova()` is an alias of `supernova()`
 #'
-#' @param fit \code{\link{lm}} object
+#' @param fit An \code{\link{lm}} object
 #'
-#' @return An object of the class \code{\link{supernova}}, a named list with the munged data.frame and the original \code{\link{lm}} object.
-#'
-#' @details
-#' An alternative set of summary statistics for ANOVA. Sums of squares, degrees of freedom, mean squares, and F value are all equivalent to \code{\link{anova.lm}}. This package adds proportional reduction in error, an explicit summary of the whole model, and separate formatting of p values and is intended to match the output used in Judd, McClelland, and Ryan (2017).
+#' @return An object of the class \code{\link{supernova}}, which has a clean
+#' print method for displaying the ANOVA table in the console as well as a 
+#' named list:
+#' \item{tbl}{The ANOVA table as a data.frame.}
+#' \item{fit}{The original \code{\link{lm}} object being tested.}
 #'
 #' @examples
 #' supernova(lm(Thumb ~ Weight, data = Fingers))
 #'
+#' @importFrom stats update resid df.residual predict pf
 #'
-#' @importFrom stats anova model.matrix update pf
-#' @importFrom utils head tail
-#'
-#' @references Judd, C. M., McClelland, G. H., & Ryan, C. S. (2017). Data Analysis: A Model Comparison Approach to Regression, ANOVA, and Beyond (3rd edition). New York: Routledge. ISBN:879-1138819832
+#' @references Judd, C. M., McClelland, G. H., & Ryan, C. S. (2017). Data 
+#' Analysis: A Model Comparison Approach to Regression, ANOVA, and Beyond 
+#' (3rd edition). New York: Routledge. ISBN:879-1138819832
 #'
 #' @export
 supernova <- function(fit) {
-  if (all(colnames(model.matrix(fit)) == "(Intercept)")) {
-    y <- frameSetup(anova(fit))
-  } else {
-    af <- anova(fit)
-    nm <- anova(update(fit, . ~ NULL))
-    if (length(af$Df) == 2) {
-      y <- frameSetup(nm)
-      y[1:2, c(3:6,8)] <- apply(as.data.frame(af[c(2,1,3:5)]), c(1,2), function(x) ifelse(is.na(x), "", x))
-      y$PRE[1:2] <- c(as.numeric(y$SS[1]) / as.numeric(y$SS[3]), "")
-    } else {
-      y <- frameSetup(nm, x = length(af$Df) - 1)
-      y$v2[2:(nrow(y) - 2)] <- head(rownames(af), -1)
-      y[2:(nrow(y) - 1), c(3:5)] <- as.data.frame(af[c(2,1,3)])
-      y[2:(nrow(y) - 1),"F"] <- c(head(af$'F value', -1), "")
-      y[2:(nrow(y) - 1),"p"] <- c(head(af$'Pr(>F)', -1), "")
-      y$SS[1] <- sum(as.numeric(y$SS[2:(nrow(y) - 2)]))
-      y$df[1] <- sum(as.numeric(y$df[2:(nrow(y) - 2)]))
-      y$MS[1] <- as.numeric(y$SS[1]) / as.numeric(y$df[1])
-      fstat <- summary(fit)$fstatistic
-      y$F[1] <- fstat[1]
-      y$PRE[1:(nrow(y) - 2)] <- as.numeric(head(y$SS, -2)) / as.numeric(tail(y$SS, 1))
-      y$p[1] <- pf(fstat[1], fstat[2], fstat[3], lower.tail = FALSE)
-    }
+  fit_null <- update(fit, . ~ NULL)
+  
+  predictors <- variables(fit)$predictor
+  n_pred <- length(predictors)
+  n_rows <- 3 + ifelse(n_pred < 2, 0, n_pred)  # add a row for each partial
+  model_rows <- 1:(n_rows - 2)  # indices for rows that have SSMs
+  error_row <- n_rows - 1  # index for the error row
+  
+  # 0 PREDICTORS
+  tbl <- data.frame(
+    term = c("Model", if (n_pred < 2) NULL else predictors, "Error", "Total"),
+    description = c("(error reduced)", rep(NA, n_rows - 3), "(from model)", "(empty model)"),
+    SS = c(rep(NA_real_, n_rows - 1), sum(resid(fit_null) ^ 2)),
+    df = c(rep(NA_real_, n_rows - 1), df.residual(fit_null)),
+    MS = rep(NA_real_, n_rows),
+    F  = rep(NA_real_, n_rows),
+    PRE = rep(NA_real_, n_rows),
+    p = rep(NA_real_, n_rows),
+    stringsAsFactors = FALSE
+  )
+  
+  if (n_pred > 0) {  # 1+ PREDICTORS
+    # error row SS, df
+    tbl[n_rows - 1,]$SS <- sum(resid(fit) ^ 2)
+    tbl[n_rows - 1,]$df <- df.residual(fit)
+    
+    # model row SS, df, PRE
+    tbl[1,]$SS <- sum((predict(fit) - predict(fit_null)) ^ 2)
+    tbl[1,]$df <- n_pred
+    tbl[1,]$PRE <- calc_pre(fit, fit_null)
   }
-  rl <- list(f = y, fit = fit)
+  
+  if (n_pred > 1) {  # 2+ PREDICTORS
+    partial_rows <- 2:(n_pred + 1)
+    
+    compact_models <- lapply(predictors, function(x) {
+      # the update function drops the predictor-to-test
+      update(fit, formula(paste0("~ . -", x)))
+    })
+    
+    tbl[partial_rows, ]$df <- rep(1, n_pred)
+    tbl[partial_rows, ]$SS <- as.numeric(lapply(compact_models, calc_ssr))
+    tbl[partial_rows, ]$PRE <- as.numeric(lapply(compact_models, function(x) {
+      calc_pre(fit, x)
+    }))
+  }
+  
+  # update MS, F, p
+  tbl$MS <- tbl$SS / tbl$df
+  tbl[model_rows,]$F <- tbl$MS[model_rows] / tbl$MS[[error_row]]
+  tbl[model_rows,]$p <- pf(tbl$F[model_rows], tbl$df[model_rows], tbl$df[[error_row]], lower.tail = FALSE)
+
+  rl <- list(tbl = tbl, fit = fit)
   class(rl) <- "supernova"
   return(rl)
 }
 
-#' superanova
+#' Extract the variables from a model
 #'
-#' Alias for supernova
+#' @param fit An \code{\link{lm}} object of the model with the predictors being tested
+#' 
+#' @importFrom stats formula terms
 #'
-#' @param x A \code{\link{lm}} object.
+#' @return The variables in the model: outcome and predictors
+variables <- function(fit) {
+  fit_formula <- formula(fit)
+  all_vars <- all.vars(fit_formula)
+  ivs <- labels(terms(fit_formula))
+  dvs <- all_vars[!(all_vars %in% ivs)]
+  list(outcome = dvs, predictor = ivs) 
+}
+
+#' Calculate the PRE for a model
 #'
-#' @return A \code{\link{supernova}} object.
+#' @param fit_augmented An \code{\link{lm}} object of the model with the predictors being tested
+#' @param fit_compact An \code{\link{lm}} object of the model to test against
+#' 
+#' @importFrom stats resid
 #'
-#' @examples
-#' superanova(lm(Thumb ~ Weight, data = Fingers))
+#' @return The PRE for the model.
+calc_pre <- function(fit_augmented, fit_compact) {
+  sse.c <- sum(resid(fit_compact) ^ 2)
+  sse.a <- sum(resid(fit_augmented) ^ 2)
+  (sse.c - sse.a) / sse.c
+}
+
+#' Calculate the SSR for a model
 #'
+#' @param fit An \code{\link{lm}} object. 
+#' 
+#' @importFrom stats resid
+#'
+#' @return The sum of squares regression/between/explained
+calc_ssr <- function(fit) {
+  fit_null <- update(fit, . ~ NULL)
+  sum(resid(fit_null) ^ 2) - sum(resid(fit) ^ 2)
+}
+
 #' @export
-superanova <- function(x) {
-  supernova(x)
-}
-
-#' frameSetup
-#'
-#' Sets up a null supernova data.frame
-#'
-#' @param anm \code{\link{anova}} object with no predictors.
-#' @param x Number of predictiors to be included in the model.
-#'
-#' @return y An empty data.frame for use by \code{\link{supernova}}.
-frameSetup <- function(anm, x = 0) {
-  f <- "---"
-  y <- data.frame(v1 = c("Model", rep("", x), "Error", "Total"),
-                  v2 = c("(error reduced)", rep("", x), "(from model)", "(empty model)"),
-                  SS = c(f, rep("", x), f, anm$'Sum Sq'),
-                  df = c(f, rep("", x), f, anm$Df),
-                  MS = c(f, rep("", x), f, anm$'Mean Sq'),
-                  F = c(f, rep("", x), f, ""),
-                  PRE = c(f, rep("", x), ifelse(x > 1, "", f), ""),
-                  p = c(f, rep("", x), ifelse(x > 1, "", f), ""),
-                  stringsAsFactors = FALSE)
-  y
-}
-
-#' printHelp
-#'
-#' A function to help with formatting in \code{\link{print.supernova}}
-#'
-#' @param x An atomic character.
-#' @param digits From \code{\link{options}} by default.
-#' @param dig.tst As in printCoefMat.
-#' @param cs.ind As in printCoefMat.
-#' @param tst.ind As in printCoefMat.
-#' @param na.print Alternate string to print for NA values.
-#' @param ... Additional arguments.
-#'
-#' @return A character with correct numeric formatting.
-printHelp <- function (x, digits = max(3L, getOption("digits") - 2L), dig.tst = max(1L, min(5L, digits - 1L)), cs.ind = 1:k, tst.ind = k + 1, na.print = "", ...) {
-  x <- suppressWarnings(as.matrix(ifelse(x %in% c("", "---"), NA, as.numeric(x))))
-  if (is.null(d <- dim(x)) || length(d) != 2L)
-    stop("'x' must be coefficient matrix/data frame")
-  nc <- d[2L]
-  xm <- data.matrix(x)
-  k <- nc - (if (missing(tst.ind))
-    1
-    else length(tst.ind))
-  Cf <- array("", dim = d, dimnames = dimnames(xm))
-  ok <- !(ina <- is.na(xm))
-  if (length(cs.ind)) {
-    acs <- abs(coef.se <- xm[, cs.ind, drop = FALSE])
-    if (any(ia <- is.finite(acs))) {
-      digmin <- 1 + if (length(acs <- acs[ia & acs != 0]))
-        floor(log10(range(acs[acs != 0], finite = TRUE)))
-      else 0
-      Cf[, cs.ind] <- format(round(coef.se, max(1L, digits -
-                                                  digmin)), digits = digits)
-    }
-  }
-  if (length(tst.ind))
-    Cf[, tst.ind] <- format(round(xm[, tst.ind], digits = dig.tst),
-                            digits = digits)
-  if (any(r.ind <- !((1L:nc) %in% c(cs.ind, tst.ind))))
-    for (i in which(r.ind)) Cf[, i] <- format(xm[, i], digits = digits)
-  ok[, tst.ind] <- FALSE
-  okP <- ok
-  x1 <- Cf[okP]
-  dec <- getOption("OutDec")
-  x0 <- (xm[okP] == 0) != (as.numeric(x1) == 0)
-  if (length(not.both.0 <- which(x0 & !is.na(x0)))) {
-    Cf[okP][not.both.0] <- format(xm[okP][not.both.0], digits = max(1L, digits - 1L))
-  }
-  if (any(ina))
-    Cf[ina] <- na.print
-  as.vector(Cf)
-}
-
-#' barHelp
-#'
-#' A function to produce vertical bar separators.
-#'
-#' @param x Original name for row.
-#' @param y Number of spaces to add.
-#'
-#' @return The original row name with a number of spaces and vertical bar added.
-barHelp <- function(x, y) {
-  paste0(x, y, " |")
-}
-
-#' insertRow
-#'
-#' Function to insert formatting rows in the output data.frame.
-#'
-#' @param d Original data.frame
-#' @param nr Contents of the new row.
-#' @param rn The row in which to insert the new contents (remaining rows will be pushed down).
-#'
-#' @return d The original data.frame with the new row inserted.
-insertRow <- function(d, nr, rn = NULL) {
-  if (!is.null(rn)) {
-    d[seq(rn + 1,nrow(d) + 1), ] <- d[seq(rn, nrow(d)), ]
-    d[rn, ] <- nr
-  }
-  else if (is.null(rn)) {
-    d <- rbind(d, nr)
-  }
-  return(d)
-}
+#' @rdname supernova
+#' @usage NULL
+superanova <- supernova
 
 #' print.supernova
 #'
@@ -179,28 +138,65 @@ insertRow <- function(d, nr, rn = NULL) {
 #' @param pcut The integer number of decimal places of p-values to show.
 #' @param ... Additional display arguments.
 #'
-#' @return NULL
-#'
 #' @importFrom stats model.frame
 #'
 #' @export
 print.supernova <- function(x, pcut = 4, ...) {
   # setup
-  y <- x$f
-  y[3:(ncol(y) - 1)] <- apply(y[3:(ncol(y) - 1)], 2, printHelp)
-  y[x$f == "---"] <- "---"
-  y$p <- ifelse(y$p %in% c("", "---"), y$p, ifelse(as.numeric(y$p) < as.numeric(paste0(".", strrep("0", pcut - 1), "1")), paste0(".", strrep(0, pcut)), substring(format(round(as.numeric(y$p), pcut), scientific = FALSE), 2)))
-  nc <- abs(nchar(y$v2) - max(nchar(y$v2)))
-  y$v2 <- mapply(barHelp, y$v2, strrep(" ", nc), USE.NAMES = FALSE)
+  y <- x$tbl
+
+  # df to integer
+  y$df <- format(as.integer(y$df))
+  
+  # SS, MS, F to 3 decimals
+  digits_cols <- names(y) %in% c("SS", "MS", "F")
+  y[digits_cols] <- format(round(y[digits_cols], 3), nsmall = 3)
+  
+  # PRE to 4 decimals 
+  y$PRE <- format(round(y$PRE, 4), nsmall = 4, scientific = FALSE)
+  
+  # p to pcut
+  y$p <- format(round(y$p, pcut), nsmall = pcut, scientific = FALSE)
+  
+  # NAs to blank spots
+  y$description[is.na(y$description)] <- ""
+  y <- data.frame(lapply(y, function(x) {gsub("\\s*NA\\s*", "   ", x)}),
+                  stringsAsFactors = FALSE)
+  
+  # trim leading 0 from p
+  y$p <- substring(y$p, 2)
+  
+  # add spaces and a vertical bar to separate the terms & desc from values
+  barHelp <- function(x, y) paste0(x, y, " |")
+  spaces_to_add <- max(nchar(y$description)) - nchar(y$description)
+  y$description <- mapply(barHelp, y$description, strrep(" ", spaces_to_add))
+  
+  # remove unnecessary column names
   names(y)[1:2] <- c("", "")
 
-  sep <- strrep("-", sapply(y, function(x) max(nchar(x))))
-  y <- insertRow(y, sep, 1)
-  y <- insertRow(y, sep, nrow(y))
+  # add placeholders for null model
+  if (length(variables(x$fit)$predictor) == 0) y[1:2, 3:8] <- "---"
+  
+  # add horizontal separator under header and before total line
+  y <- insert_rule(y, 1)
+  y <- insert_rule(y, nrow(y))
 
   # printing
-  cat("Analysis of Variance Table\nOutcome variable:", colnames(model.frame(x$fit))[1], "\nModel: ")
-  print(x$fit$call)
+  cat("Analysis of Variance Table\nOutcome variable:", colnames(model.frame(x$fit))[1], 
+      "\nModel: ")
+  print(deparse(formula(x$fit)))
   cat("\n")
   print(y, row.names = FALSE)
+}
+
+#' Insert a horizontal rule in table for pretty printing
+#'
+#' @param df        Original data.frame
+#' @param insert_at The row in which to insert the new contents (remaining rows will be pushed down).
+#'
+#' @return df The original data.frame with the new row inserted.
+insert_rule <- function(df, insert_at) {
+  df[seq(insert_at + 1, nrow(df) + 1), ] <- df[seq(insert_at, nrow(df)), ]
+  df[insert_at, ] <- strrep("-", sapply(df, function(x) max(nchar(x))))
+  return(df)
 }

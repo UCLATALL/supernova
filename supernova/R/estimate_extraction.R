@@ -20,7 +20,7 @@ PRE <- function(fit, ...) {
 
 #' @rdname PRE
 #' @export
-PRE.default <- function(fit) {
+PRE.default <- function(fit, ...) {
   summary(fit)$r.squared[[1]]
 }
 
@@ -52,7 +52,7 @@ fVal <- function(fit, ...) {
 
 #' @rdname fVal
 #' @export
-fVal.default <- function(fit) {
+fVal.default <- function(fit, ...) {
   summary(fit)$fstatistic[[1]]
 }
 
@@ -84,7 +84,7 @@ b0 <- function(fit, ...) {
 
 #' @rdname b0
 #' @export
-b0.default <- function(fit) {
+b0.default <- function(fit, ...) {
   fit$coefficients[[1]]
 }
 
@@ -116,7 +116,7 @@ b1 <- function(fit, ...) {
 
 #' @rdname b1
 #' @export
-b1.default <- function(fit) {
+b1.default <- function(fit, ...) {
   fit$coefficients[[2]]
 }
 
