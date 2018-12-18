@@ -30,7 +30,6 @@ is intended to match the output used in Judd, McClelland, and Ryan (2017).
 \examples{
 supernova(lm(Thumb ~ Weight, data = Fingers))
 
-
 }
 \references{
 Judd, C. M., McClelland, G. H., & Ryan, C. S. (2017). Data 

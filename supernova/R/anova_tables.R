@@ -91,6 +91,7 @@ supernova <- function(fit) {
 #' @importFrom stats formula terms
 #'
 #' @return The variables in the model: outcome and predictors
+#' @export
 variables <- function(fit) {
   fit_formula <- formula(fit)
   all_vars <- all.vars(fit_formula)
@@ -99,27 +100,27 @@ variables <- function(fit) {
   list(outcome = dvs, predictor = ivs) 
 }
 
-#' Calculate the PRE for a model
-#'
-#' @param fit_augmented An \code{\link{lm}} object of the model with the predictors being tested
-#' @param fit_compact An \code{\link{lm}} object of the model to test against
-#' 
-#' @importFrom stats resid
-#'
-#' @return The PRE for the model.
+# Calculate the PRE for a model
+#
+# @param fit_augmented An \code{\link{lm}} object of the model with the predictors being tested
+# @param fit_compact An \code{\link{lm}} object of the model to test against
+# 
+# @importFrom stats resid
+#
+# @return The PRE for the model.
 calc_pre <- function(fit_augmented, fit_compact) {
   sse.c <- sum(resid(fit_compact) ^ 2)
   sse.a <- sum(resid(fit_augmented) ^ 2)
   (sse.c - sse.a) / sse.c
 }
 
-#' Calculate the SSR for a model
-#'
-#' @param fit An \code{\link{lm}} object. 
-#' 
-#' @importFrom stats resid
-#'
-#' @return The sum of squares regression/between/explained
+# Calculate the SSR for a model
+#
+# @param fit An \code{\link{lm}} object. 
+# 
+# @importFrom stats resid
+#
+# @return The sum of squares regression/between/explained
 calc_ssr <- function(fit) {
   fit_null <- update(fit, . ~ NULL)
   sum(resid(fit_null) ^ 2) - sum(resid(fit) ^ 2)
@@ -189,12 +190,12 @@ print.supernova <- function(x, pcut = 4, ...) {
   print(y, row.names = FALSE)
 }
 
-#' Insert a horizontal rule in table for pretty printing
-#'
-#' @param df        Original data.frame
-#' @param insert_at The row in which to insert the new contents (remaining rows will be pushed down).
-#'
-#' @return df The original data.frame with the new row inserted.
+# Insert a horizontal rule in table for pretty printing
+#
+# @param df        Original data.frame
+# @param insert_at The row in which to insert the new contents (remaining rows will be pushed down).
+#
+# @return df The original data.frame with the new row inserted.
 insert_rule <- function(df, insert_at) {
   df[seq(insert_at + 1, nrow(df) + 1), ] <- df[seq(insert_at, nrow(df)), ]
   df[insert_at, ] <- strrep("-", sapply(df, function(x) max(nchar(x))))
