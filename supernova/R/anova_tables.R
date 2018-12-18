@@ -67,8 +67,8 @@ supernova <- function(fit) {
       update(fit, formula(paste0("~ . -", x)))
     })
     
+    tbl[partial_rows, ]$SS <- as.numeric(lapply(compact_models, calc_ssr, fit_augmented = fit))
     tbl[partial_rows, ]$df <- rep(1, n_pred)
-    tbl[partial_rows, ]$SS <- as.numeric(lapply(compact_models, calc_ssr))
     tbl[partial_rows, ]$PRE <- as.numeric(lapply(compact_models, function(x) {
       calc_pre(fit, x)
     }))
@@ -121,9 +121,8 @@ calc_pre <- function(fit_augmented, fit_compact) {
 # @importFrom stats resid
 #
 # @return The sum of squares regression/between/explained
-calc_ssr <- function(fit) {
-  fit_null <- update(fit, . ~ NULL)
-  sum(resid(fit_null) ^ 2) - sum(resid(fit) ^ 2)
+calc_ssr <- function(fit, fit_augmented) {
+  sum(resid(fit) ^ 2) - sum(resid(fit_augmented) ^2)
 }
 
 #' @export
