@@ -1,5 +1,6 @@
 context("ANOVA values")
 library(supernova)
+library(magrittr)
 
 calc_ss <- function(model) {
   null_model <- update(model, . ~ NULL)
@@ -19,6 +20,19 @@ test_that("supernova object has table and fit", {
   expect_is(obj$tbl, "data.frame")
   expect_is(obj$fit, "lm")
   expect_identical(obj$fit, fit)
+})
+
+test_that("magrittr can pipe lm() to supernova", {
+  obj <- lm(mpg ~ NULL, data = mtcars) %>% supernova()
+  expect_is(obj, "supernova")
+})
+
+test_that("magrittr can pipe data to lm() to supernova", {
+  # Believe it or not, this might not work. Do not remove test.
+  # When update tries to get the call, the data object is just "."
+  # supernova has to middle-man the update function to get this to work
+  obj <- mtcars %>%  lm(mpg ~ NULL, data = .) %>% supernova()
+  expect_is(obj, "supernova")
 })
 
 test_that("supernova prints correct values for NULL model ANOVA", {

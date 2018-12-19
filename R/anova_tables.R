@@ -2,24 +2,24 @@
 #'
 #' An alternative set of summary statistics for ANOVA. Sums of squares, degrees 
 #' of freedom, mean squares, and F value are all equivalent to 
-#' \code{\link{anova.lm}}. This package adds proportional reduction in error, an
-#' explicit summary of the whole model, and separate formatting of p values and
-#' is intended to match the output used in Judd, McClelland, and Ryan (2017).
+#' \code{\link{anova.lm}}. This package adds proportional reduction in 
+#' error, an explicit summary of the whole model, and separate formatting of p 
+#' values and is intended to match the output used in Judd, McClelland, and 
+#' Ryan (2017).
 #' 
-#' `superanova()` is an alias of `supernova()`
+#' \code{superanova()} is an alias of \code{supernova()}
 #'
-#' @param fit An \code{\link{lm}} object
+#' @param fit A fitted \code{\link{lm}} object
 #'
-#' @return An object of the class \code{\link{supernova}}, which has a clean
-#' print method for displaying the ANOVA table in the console as well as a 
-#' named list:
-#' \item{tbl}{The ANOVA table as a data.frame.}
-#' \item{fit}{The original \code{\link{lm}} object being tested.}
+#' @return An object of the class \code{supernova}, which has a clean print method for 
+#' displaying the ANOVA table in the console as well as a  named list:
+#'   \item{tbl}{The ANOVA table as a \code{\link{data.frame}}}
+#'   \item{fit}{The original \code{\link[stats]{lm}} object being tested}
 #'
 #' @examples
 #' supernova(lm(Thumb ~ Weight, data = Fingers))
 #'
-#' @importFrom stats update resid df.residual predict pf
+#' @importFrom stats resid df.residual predict pf
 #'
 #' @references Judd, C. M., McClelland, G. H., & Ryan, C. S. (2017). Data 
 #' Analysis: A Model Comparison Approach to Regression, ANOVA, and Beyond 
@@ -82,6 +82,33 @@ supernova <- function(fit) {
   rl <- list(tbl = tbl, fit = fit)
   class(rl) <- "supernova"
   return(rl)
+}
+
+
+#' Robust version of \code{\link[stats]{update}}
+#' 
+#' \code{\link[stats]{update}} does not support linear models where the data was 
+#' piped via \code{\link[magrittr]{`%>%`}} to the  model function as in 
+#' \code{mtcars %>% lm(mpg ~ hp, data = .) %>% stats::update()}. This is because 
+#' the \code{\link[stats]{update}} function relies on \code{\link[stats]{getCall}}, 
+#' which returns a call that has \code{data = .} argument, which is completely 
+#' uninformative. This function creates a new model by extracting the formula 
+#' from the old model via \code{\link[stats]{formula}} and the data used in 
+#' the old model via the \code{model$call} and \code{environment}. Then the new 
+#' (old) model is updated as it now has all the necessary components.
+#'
+#' @param old An existing fit from a model function such as \code{\link{lm}}, 
+#'            \code{\link{glm}} and many others.
+#' @param new Changes to the formula – see \code{\link{update.formula}} for details.
+#' @param ... Additional arguments to the call, or arguments with changed values. 
+#'            Use name = NULL to remove the argument name.
+#'
+#' @return If evaluate = TRUE the fitted object, otherwise the updated call.
+#' @export
+update <- function(old, new, ...) {
+  data <- eval(old$call$data, environment(formula(old)))
+  old_with_data <- lm(formula(old), data = data)
+  stats::update(old_with_data, new, ...)
 }
 
 #' Extract the variables from a model
