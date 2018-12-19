@@ -28,7 +28,7 @@ Alternatively you can download the package directly from this repository using
 
 ``` r
 library(devtools)
-install_github("https://github.com/UCLATALL/supernova")
+install_github("UCLATALL/supernova")
 ```
 
 ## Examples
