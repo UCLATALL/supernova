@@ -2,7 +2,8 @@
 
 The goal of `supernova` is to provide ANOVA tables in the format used by Judd, 
 McClelland, and Ryan (2017, ISBN:978-1138819832) in their introductory textbook, 
-*Data Analysis: A Model Comparison Approach to Regression, ANOVA, and Beyond*. 
+*Data Analysis: A Model Comparison Approach to Regression, ANOVA, and Beyond* 
+[(book website)](http://www.dataanalysisbook.com/index.html). 
 These tables include proportional reduction in error, a useful measure for 
 teaching the underlying concepts of ANOVA and regression, and formatting to 
 improve ease the transition between the book and R.
