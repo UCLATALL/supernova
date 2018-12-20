@@ -182,7 +182,7 @@ print.supernova <- function(x, pcut = 4, ...) {
   y <- insert_rule(y, nrow(y))
 
   # printing
-  cat(" Analysis of Variance Table",                          "\n",
+  cat(" Analysis of Variance Table (Type III SS)",            "\n",
       " Model: ", deparse(formula(x$fit)),                    "\n",
       "\n", sep = "")
   print(y, row.names = FALSE)

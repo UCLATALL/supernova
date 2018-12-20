@@ -1,6 +1,7 @@
 context("ANOVA formatting")
 library(supernova)
 
+# TODO: A lot of repeated code in these tests -- refactor would be nice
 
 # Helpers -----------------------------------------------------------------
 
@@ -28,7 +29,7 @@ test_that("null model tables are beautifully formatted", {
                            "---", dashes(s_tbl$MS, 3), "--- --- ---")
   
   expect_length(printed, 3 + 1 + 3 + 2)  # header, colnames, rows, rules
-  expect_match(printed[1], "Analysis of Variance Table")
+  expect_match(printed[1], "Analysis of Variance Table \\(Type III SS\\)")
   expect_match(printed[2], paste("Model:", deparse(formula(model))), fixed = TRUE)
   expect_match(printed[3], "")
   expect_match(printed[[4]], "^\\s+SS\\s+df\\s+MS\\s+F\\s+PRE\\s+p$")
@@ -49,7 +50,7 @@ test_that("single predictor tables are beautifully formatted", {
                            dashes(s_tbl$F, 3), "------ -----")
 
   expect_length(printed, 3 + 1 + 3 + 2)  # header, colnames, rows, rules
-  expect_match(printed[1], "Analysis of Variance Table")
+  expect_match(printed[1], "Analysis of Variance Table \\(Type III SS\\)")
   expect_match(printed[2], paste("Model:", deparse(formula(model))), fixed = TRUE)
   expect_match(printed[3], "")
   expect_match(printed[[4]], "^\\s+SS\\s+df\\s+MS\\s+F\\s+PRE\\s+p$")
@@ -73,7 +74,7 @@ test_that("multiple predictor tables are beautifully formatted", {
     "------ -----"))
 
   expect_length(printed, 3 + 1 + 5 + 2)  # header, colnames, rows, rules
-  expect_match(printed[1], "Analysis of Variance Table")
+  expect_match(printed[1], "Analysis of Variance Table \\(Type III SS\\)")
   expect_match(printed[2], paste("Model:", deparse(formula(model))), fixed = TRUE)
   expect_match(printed[3], "")
   expect_match(printed[[4]], "^\\s+SS\\s+df\\s+MS\\s+F\\s+PRE\\s+p$")
