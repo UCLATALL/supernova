@@ -41,7 +41,7 @@ supernova(lm(mpg ~ NULL, data = mtcars))
 
 #> Analysis of Variance Table
 #> Outcome variable: mpg 
-#> Model: [1] "mpg ~ NULL"
+#> Model: mpg ~ NULL
 #> 
 #>                               SS  df     MS   F PRE   p
 #> ----- ----------------- -------- --- ------ --- --- ---
@@ -57,7 +57,7 @@ supernova(lm(mpg ~ hp, data = mtcars))
 
 #> Analysis of Variance Table
 #> Outcome variable: mpg 
-#> Model: [1] "mpg ~ hp"
+#> Model: mpg ~ hp
 #> 
 #>                               SS df      MS      F    PRE     p
 #> ----- ----------------- -------- -- ------- ------ ------ -----
@@ -73,7 +73,7 @@ supernova(lm(mpg ~ hp + disp, data = mtcars))
 
 #> Analysis of Variance Table
 #> Outcome variable: mpg 
-#> Model: [1] "mpg ~ hp + disp"
+#> Model: mpg ~ hp + disp
 #> 
 #>                               SS df      MS      F    PRE     p
 #> ----- ----------------- -------- -- ------- ------ ------ -----
@@ -91,7 +91,7 @@ supernova(lm(mpg ~ hp * disp, data = mtcars))
 
 #> Analysis of Variance Table
 #> Outcome variable: mpg 
-#> Model: [1] "mpg ~ hp * disp"
+#> Model: mpg ~ hp * disp
 #> 
 #>                                 SS df      MS      F    PRE     p
 #> ------- ----------------- -------- -- ------- ------ ------ -----
