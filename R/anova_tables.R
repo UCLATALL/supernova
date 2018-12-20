@@ -183,7 +183,6 @@ print.supernova <- function(x, pcut = 4, ...) {
 
   # printing
   cat(" Analysis of Variance Table",                          "\n",
-      " Outcome variable: ", colnames(model.frame(x$fit))[1], "\n",
       " Model: ", deparse(formula(x$fit)),                    "\n",
       "\n", sep = "")
   print(y, row.names = FALSE)
