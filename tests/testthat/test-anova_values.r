@@ -1,13 +1,77 @@
 context("ANOVA values")
 library(supernova)
 library(magrittr)
+library(glue)
 
+
+# Helper functions --------------------------------------------------------
+
+# calculates overall model SS
 calc_ss <- function(model) {
   null_model <- update(model, . ~ NULL)
-  SSR <- sum((predict(model) - predict(null_model)) ^ 2)
-  SST <- sum(resid(null_model) ^ 2)
-  list(SSR = SSR, SSE = SST - SSR, SST = SST)
+  ssr <- sum((predict(model) - predict(null_model)) ^ 2)
+  sst <- sum(resid(null_model) ^ 2)
+  list(ssr = ssr, sse = sst - ssr, sst = sst)
 }
+
+calc_pre <- function(ssr, sse) {
+  ssr / (ssr + sse)
+}
+
+calc_p <- function(model) {
+  f <- summary(model)$fstatistic
+  pf(f[[1]], f[[2]], f[[3]], lower.tail = FALSE)
+}
+
+# Test a named column of a data.frame against a vector of expected values
+expect_col_equal <- function(object, col_name, expected, ...) {
+  column <- object[[col_name]]
+  act <- quasi_label(rlang::enquo(column), glue("obj${col_name}"))
+  exp <- quasi_label(rlang::enquo(expected))
+  comp <- compare(act$val, exp$val, ...)
+  expect(comp$equal, glue("{act$lab} not equal to {exp$lab}.\n{comp$message}"))
+  invisible(object)
+}
+
+# Test a values of a supernova data.frame against vectors of expected values
+# Tolerances are set to be within the printed output's rounded values
+expect_data <- function(object, ss, df, ms, f, pre, p) {
+  object %>% 
+    expect_col_equal("SS", ss, tolerance = .0001) %>% 
+    expect_col_equal("df", df) %>% 
+    expect_col_equal("MS", ms, tolerance = .0001) %>% 
+    expect_col_equal("F", f, tolerance = .0001) %>% 
+    expect_col_equal("PRE", pre, tolerance = .00001) %>% 
+    expect_col_equal("p", p, tolerance = .00001)
+}
+
+# Test a numbered row from a supernova data.frame (e.g. data[1,])
+expect_data_row <- function(object, row, ss, df, ms, f, pre, p) {
+  expect_data(object[row, ], ss, df, ms, f, pre, p)
+  invisible(object)
+}
+
+# Test the regression, error, and total rows of a supernova table
+# Will work for all except null models
+expect_data_overall_model <- function(object, model) {
+  expected <- anova(model)
+  expected_SS <- as.numeric(calc_ss(model))
+  expected_f <- summary(model)$fstatistic
+  expected_df <- c(expected_f[["numdf"]], df.residual(model), sum(expected$Df))
+  object[c(1, nrow(object) - 1, nrow(object)), ] %>% 
+    expect_data(
+      expected_SS,
+      expected_df,
+      expected_SS / expected_df,
+      c(expected_f[['value']], NA, NA),
+      c(summary(model)$r.squared, NA, NA),
+      c(calc_p(model), NA, NA)
+    )
+  invisible(object)
+}
+
+
+# Structure tests ---------------------------------------------------------
 
 test_that("superanova is an alias of supernova", {
   expect_identical(superanova, supernova)
@@ -16,117 +80,92 @@ test_that("superanova is an alias of supernova", {
 test_that("supernova object has table and fit", {
   fit <- lm(mpg ~ NULL, data = mtcars)
   obj <- supernova(fit)
-  expect_is(obj, "supernova")
-  expect_is(obj$tbl, "data.frame")
-  expect_is(obj$fit, "lm")
-  expect_identical(obj$fit, fit)
+  obj %>% expect_is("supernova")
+  obj$tbl %>% expect_is("data.frame")
+  obj$fit %>% 
+    expect_is("lm") %>% 
+    expect_identical(fit)
+})
+
+test_that("supernova table structure is well-formed", {
+  obj <- supernova(lm(mpg ~ NULL, data = mtcars))$tbl %>% 
+    expect_is("data.frame") %>% 
+    expect_named(c("term", "description", "SS", "df", "MS", "F", "PRE", "p"))
+  expect_true(
+    all(sapply(obj, class) == c(rep("character", 2), rep("numeric", 6)))
+  )
 })
 
 test_that("magrittr can pipe lm() to supernova", {
-  obj <- lm(mpg ~ NULL, data = mtcars) %>% supernova()
-  expect_is(obj, "supernova")
+  lm(mpg ~ NULL, data = mtcars) %>% 
+    supernova() %>% 
+    expect_is("supernova")
 })
 
 test_that("magrittr can pipe data to lm() to supernova", {
-  # Believe it or not, this might not work. Do not remove test.
-  # When update tries to get the call, the data object is just "."
-  # supernova has to middle-man the update function to get this to work
-  obj <- mtcars %>%  lm(mpg ~ NULL, data = .) %>% supernova()
-  expect_is(obj, "supernova")
+  # Believe it or not, this might not work. Do not remove or refactor test.
+  # When stats::update() tries to get the call, the data object is just "."
+  # supernova has to middle-man with supernova::update() to get this to work
+  mtcars %>%  
+    lm(mpg ~ NULL, data = .) %>% 
+    supernova() %>% 
+    expect_is("supernova")
 })
 
+
+# Simple regression -------------------------------------------------------
+
 test_that("supernova prints correct values for NULL model ANOVA", {
-  null_model <- lm(mpg ~ NULL, data = mtcars)
-  actual_anova <- supernova(null_model)$tbl
-  expected_anova <- anova(null_model)
-  
-  expect_equivalent(actual_anova$SS[[3]], expected_anova$`Sum Sq`)
-  expect_equivalent(actual_anova$df[[3]], expected_anova$Df)
-  expect_equivalent(actual_anova$MS[[3]], expected_anova$`Mean Sq`)
-  expect_equivalent(actual_anova$F[[3]], NA_real_)
-  expect_equivalent(actual_anova$PRE[[3]], NA_real_)
-  expect_equivalent(actual_anova$p[[3]], NA_real_)
+  model <- lm(mpg ~ NULL, data = mtcars)
+  expected <- anova(model)
+  supernova(model)$tbl %>%   
+    tail(1) %>% 
+    expect_data(
+      expected$`Sum Sq`, expected$Df, expected$`Mean Sq`, 
+      NA_real_, NA_real_, NA_real_
+    )
 })
 
 test_that("supernova prints correct values for single predictor regrssion", {
   model <- lm(mpg ~ hp, data = mtcars)
-  actual_anova <- supernova(model)$tbl
-  expected_anova <- anova(model)
-  
-  exp_SS <- c(expected_anova$`Sum Sq`, sum(expected_anova$`Sum Sq`))
-  exp_df <- c(expected_anova$Df, sum(expected_anova$Df))
-  exp_f <- c(expected_anova$`F value`, NA)
-  exp_pre <- c(summary(model)$r.squared, NA, NA)
-  exp_p <- c(expected_anova$`Pr(>F)`, NA)
-  
-  expect_equivalent(actual_anova$SS, exp_SS)
-  expect_equivalent(actual_anova$df, exp_df)
-  expect_equivalent(actual_anova$MS, exp_SS / exp_df)
-  expect_equivalent(actual_anova$F, exp_f)
-  expect_equivalent(actual_anova$PRE, exp_pre)
-  expect_equivalent(actual_anova$p, exp_p)
+  supernova(model)$tbl %>% 
+    expect_data_overall_model(model)
 })
 
+
+# Multiple regression -----------------------------------------------------
+
+# NOTE: All hard-coded test values below are for the partials, and they were
+# found by car::Anova(model, type = 3). The car package is widely
+# known and used by many, and can be considered trustworthy.
+
 test_that("supernova prints correct values for additive multiple regression", {
-  # NOTE: All hard-coded test values below are for the partials, and they were
-  # found by car::Anova(model, type = 3). The car package is widely
-  # known and used by many, and can be considered trustworthy.
-  
   model <- lm(mpg ~ hp + disp, data = mtcars)
-  actual <- supernova(model)$tbl
-  
   ss <- calc_ss(model)
-  exp_ss <- c(ss$SSR, 33.66525, 164.18088, ss$SSE, ss$SST)
-  expect_equivalent(actual$SS, exp_ss, tolerance = .0001)
+  hp <- list(ssr = 33.66525, f = 3.4438, p = 0.07368) %>% 
+    c(pre = calc_pre(.$ssr, ss$sse))
+  disp <- list(ssr = 164.18088, f = 16.7949, p = 0.00031) %>% 
+    c(pre = calc_pre(.$ssr, ss$sse))
   
-  exp_df <- c(2, 1, 1, df.residual(model), 2 + df.residual(model))
-  expect_equivalent(actual$df, exp_df)
-  
-  exp_ms <- exp_ss / exp_df
-  expect_equivalent(actual$MS, exp_ms, tolerance = .0001)
-  
-  exp_f <- c(summary(model)$fstatistic["value"], 3.4438, 16.7949, NA, NA)
-  expect_equivalent(actual$F, exp_f, tolerance = .0001)
-  
-  exp_pre <- c(ss$SSR / (ss$SSR + ss$SSE), 
-               33.66525 / (33.66525 + ss$SSE), 
-               164.18088 / (164.18088 + ss$SSE), NA, NA)
-  expect_equivalent(actual$PRE, exp_pre, tolerance = .00001)
-  
-  exp_p <- c(pf(exp_f[[1]], exp_df[[1]], exp_df[[4]], lower.tail = FALSE), 
-             0.07368, 0.00031, NA, NA)
-  expect_equivalent(actual$p, exp_p, tolerance = .00001)
+  supernova(model)$tbl %>% 
+    expect_data_overall_model(model) %>%
+    expect_data_row(2, hp$ssr, 1, hp$ssr / 1, hp$f, hp$pre, hp$p) %>% 
+    expect_data_row(3, disp$ssr, 1, disp$ssr / 1, disp$f, disp$pre, disp$p)
 })
 
 test_that("supernova gives Type III sums of squares for interaction models", {
-  # NOTE: All hard-coded test values below are for the partials, and they were
-  # found by car::Anova(model, type = 3). The car package is widely
-  # known and used by many, and can be considered trustworthy.
-  
   model <- lm(mpg ~ hp * disp, data = mtcars)
-  actual <- supernova(model)$tbl
-  
   ss <- calc_ss(model)
-  car_ss <- as.double(c(hp = 113.39272, disp = 188.44895, int = 80.63539))
-  exp_ss <- c(ss$SSR, car_ss, ss$SSE, ss$SST)
-  expect_equivalent(actual$SS, exp_ss, tolerance = .0001)
+  hp   <- list(ssr = 113.39272, f = 15.651, p = 0.0004725) %>% 
+    c(pre = calc_pre(.$ssr, ss$sse))
+  disp <- list(ssr = 188.44895, f = 26.011, p = 0.00002109) %>% 
+    c(pre = calc_pre(.$ssr, ss$sse))
+  int  <- list(ssr =  80.63539, f = 11.130, p = 0.0024070) %>% 
+    c(pre = calc_pre(.$ssr, ss$sse))
   
-  exp_df <- c(3, 1, 1, 1, df.residual(model), df.residual(model) + 3)
-  expect_equivalent(actual$df, exp_df)
-  
-  exp_ms <- exp_ss / exp_df
-  expect_equivalent(actual$MS, exp_ms, tolerance = .0001)
-  
-  exp_f <- c(summary(model)$fstatistic["value"], 15.651, 26.011, 11.130, NA, NA)
-  expect_equivalent(actual$F, exp_f, tolerance = .0001)
-  
-  exp_pre <- c(ss$SSR / (ss$SSR + ss$SSE),
-               113.39272 / (113.39272 + ss$SSE), 
-               188.44895 / (188.44895 + ss$SSE), 
-               80.63539 / (80.63539 + ss$SSE), NA, NA)
-  expect_equivalent(actual$PRE, exp_pre, tolerance = .00001)
-  
-  exp_p <- exp_p <- c(pf(exp_f[[1]], exp_df[[1]], exp_df[[5]], lower.tail = FALSE), 
-                      0.0004725, 0.00002109, .0024070, NA, NA)
-  expect_equivalent(actual$p, exp_p, tolerance = .0001)
+  supernova(model)$tbl %>% 
+    expect_data_overall_model(model) %>%
+    expect_data_row(2, hp$ssr, 1, hp$ssr / 1, hp$f, hp$pre, hp$p) %>% 
+    expect_data_row(3, disp$ssr, 1, disp$ssr / 1, disp$f, disp$pre, disp$p) %>% 
+    expect_data_row(4, int$ssr, 1, int$ssr / 1, int$f, int$pre, int$p)
 })
