@@ -99,7 +99,7 @@ supernova <- function(fit) {
 #'
 #' @param old An existing fit from a model function such as \code{\link{lm}}, 
 #'            \code{\link{glm}} and many others.
-#' @param new Changes to the formula – see \code{\link{update.formula}} for details.
+#' @param new Changes to the formula; see \code{\link{update.formula}} for details.
 #' @param ... Additional arguments to the call, or arguments with changed values. 
 #'            Use name = NULL to remove the argument name.
 #'
@@ -209,9 +209,9 @@ print.supernova <- function(x, pcut = 4, ...) {
   y <- insert_rule(y, nrow(y))
 
   # printing
-  cat(" Analysis of Variance Table (Type III SS)",            "\n",
-      " Model: ", deparse(formula(x$fit)),                    "\n",
-      "\n", sep = "")
+  cat(" Analysis of Variance Table (Type III SS)", "\n",
+      " Model: ", deparse(formula(x$fit)),         "\n",
+      " \n", sep = "")
   print(y, row.names = FALSE)
 }
 
