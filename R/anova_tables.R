@@ -31,13 +31,14 @@ supernova <- function(fit) {
   predictors <- variables(fit)$predictor
   n_pred <- length(predictors)
   n_rows <- 3 + ifelse(n_pred < 2, 0, n_pred)  # add a row for each partial
+  calc_sse <- function(fit) sum(resid(fit) ^ 2)
   
   # 0 PREDICTORS
   na_pad <- rep(NA_real_, n_rows)
   tbl <- data.frame(
     term = c("Model", if (n_pred < 2) NULL else predictors, "Error", "Total"),
     description = c("(error reduced)", rep(NA, n_rows - 3), "(from model)", "(empty model)"),
-    SS = c(rep(NA_real_, n_rows - 1), sum(resid(fit_null) ^ 2)),
+    SS = c(rep(NA_real_, n_rows - 1), calc_sse(fit_null)),
     df = c(rep(NA_real_, n_rows - 1), df.residual(fit_null)),
     MS = na_pad, F = na_pad, PRE = na_pad, p = na_pad,
     stringsAsFactors = FALSE
@@ -45,29 +46,31 @@ supernova <- function(fit) {
   
   if (n_pred > 0) {  # 1+ PREDICTORS
     # error row SS, df
-    tbl[n_rows - 1,]$SS <- sum(resid(fit) ^ 2)
+    tbl[n_rows - 1,]$SS <- calc_sse(fit)
     tbl[n_rows - 1,]$df <- df.residual(fit)
     
-    # model row SS, df, PRE
-    tbl[1,]$SS <- calc_ssr(fit_null, fit)
+    # model row SS, PRE, df
+    tbl[1,]$SS <- calc_sse(fit_null) - calc_sse(fit)
+    tbl[1,]$PRE <- summary(fit)$r.squared
     tbl[1,]$df <- length(coefficients(fit)) - 1
-    tbl[1,]$PRE <- tbl$SS[[1]] / tbl$SS[[n_rows]]
   }
   
-  if (n_pred > 1) {  # 2+ PREDICTORS
-    iv_rows <- 2:(n_pred + 1)
-    compact_models <- lapply(predictors, function(x) {
-      # the update function drops the predictor-to-test
-      update(fit, formula(paste0("~ . -", x)))
-    })
-    tbl[iv_rows, ]$SS <- vapply(compact_models, calc_ssr, 0, fit_aug = fit)
-    tbl[iv_rows, ]$df <- vapply(predictors, calc_pred_df, 0, fit = fit)
-    tbl[iv_rows, ]$PRE <- vapply(compact_models, calc_pre, 0, fit_aug = fit)
+  if (n_pred > 1) { # 2+ PREDICTORS
+    iv_rows <- 1 + seq_along(predictors)
+
+    # drop1 drops each term, keeping all others in, and then computes SS
+    single_term_deletions <- drop1(fit, . ~ .)
+    sse.c <- single_term_deletions[iv_rows,]$RSS
+    sse.a <- calc_sse(fit)
+    tbl[iv_rows,]$PRE <- (sse.c - sse.a) / sse.c
+    tbl[iv_rows,]$SS <- single_term_deletions$`Sum of Sq`[iv_rows]
+    tbl[iv_rows, ]$df <- single_term_deletions$`Df`[iv_rows]
   }
   
   # update MS, F, p
   model_rows <- 1:(n_rows - 2)  # indices for rows that have SSMs
   error_row <- n_rows - 1  # index for the error row
+  
   tbl$MS <- tbl$SS / tbl$df
   tbl[model_rows,]$F <- tbl$MS[model_rows] / tbl$MS[[error_row]]
   tbl[model_rows,]$p <- pf(tbl$F[model_rows], tbl$df[model_rows], 
@@ -119,34 +122,6 @@ variables <- function(fit) {
   ivs <- labels(terms(fit_formula))
   dvs <- all_vars[!(all_vars %in% ivs)]
   list(outcome = dvs, predictor = ivs) 
-}
-
-# Calculate the PRE for a model
-#
-# @param fit_compact An \code{\link{lm}} object of the model to test against
-# @param fit_aug An \code{\link{lm}} object of the model with the 
-#                      predictors being tested
-# 
-# @importFrom stats resid
-#
-# @return The PRE for the model.
-calc_pre <- function(fit_compact, fit_aug) {
-  sse.c <- sum(resid(fit_compact) ^ 2)
-  sse.a <- sum(resid(fit_aug) ^ 2)
-  (sse.c - sse.a) / sse.c
-}
-
-# Calculate the SSR for a model
-#
-# @param fit_compact An \code{\link{lm}} object of the model to test against
-# @param fit_aug An \code{\link{lm}} object of the model with the 
-#                      predictors being tested
-# 
-# @importFrom stats resid
-#
-# @return The sum of squares regression/between/explained
-calc_ssr <- function(fit_compact, fit_aug) {
-  sum(resid(fit_compact) ^ 2) - sum(resid(fit_aug) ^2)
 }
 
 # Calculate the degrees of freedom for a predictor in a model
