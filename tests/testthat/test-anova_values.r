@@ -6,7 +6,7 @@ library(glue)
 
 # Helper functions --------------------------------------------------------
 
-# calculates overall model SS
+# calcs. overall model SS
 calc_ss <- function(model) {
   null_model <- update(model, . ~ NULL)
   ssr <- sum((predict(model) - predict(null_model)) ^ 2)
@@ -115,7 +115,7 @@ test_that("magrittr can pipe data to lm() to supernova", {
 
 # Simple regression -------------------------------------------------------
 
-test_that("supernova calculates (quant. ~ NULL) ANOVA correctly", {
+test_that("supernova calcs. (quant. ~ NULL) ANOVA correctly", {
   model <- lm(mpg ~ NULL, data = mtcars)
   expected <- anova(model)
   supernova(model)$tbl %>%   
@@ -126,13 +126,13 @@ test_that("supernova calculates (quant. ~ NULL) ANOVA correctly", {
     )
 })
 
-test_that("supernova calculates (quant. ~ quant.) ANOVA correctly", {
+test_that("supernova calcs. (quant. ~ quant.) ANOVA correctly", {
   model <- lm(mpg ~ hp, data = mtcars)
   supernova(model)$tbl %>% 
     expect_data_overall_model(model)
 })
 
-test_that("supernova calculates (quant. ~ cat.) ANOVA correctly", {
+test_that("supernova calcs. (quant. ~ cat.) ANOVA correctly", {
   model <- lm(uptake ~ Type, data = CO2)
   supernova(model)$tbl %>% 
     expect_data_overall_model(model)
@@ -145,7 +145,7 @@ test_that("supernova calculates (quant. ~ cat.) ANOVA correctly", {
 # found by car::Anova(model, type = 3). The car package is widely
 # known and used by many, and can be considered trustworthy.
 
-test_that("supernova calculates (quant. ~ quant. + quant.) ANOVA Type 3 SS", {
+test_that("supernova calcs. (quant. ~ quant. + quant.) ANOVA Type 3 SS", {
   model <- lm(mpg ~ hp + disp, data = mtcars)
   ss <- calc_ss(model)
   x1 <- list(ssr = 33.66525, f = 3.4438, p = 0.07368) %>%
@@ -159,7 +159,7 @@ test_that("supernova calculates (quant. ~ quant. + quant.) ANOVA Type 3 SS", {
     expect_data_row(3, x2$ssr, 1, x2$ssr / 1, x2$f, x2$pre, x2$p)
 })
 
-test_that("supernova calculates (quant. ~ cat. + quant.) ANOVA Type 3 SS", {
+test_that("supernova calcs. (quant. ~ cat. + quant.) ANOVA Type 3 SS", {
   model <- lm(Thumb ~ RaceEthnic + Weight, data = Fingers)
   ss <- calc_ss(model)
   x1 <- list(ssr =  347.5909, df = 4, f =  1.3381, p = 0.2584) %>%
@@ -173,7 +173,7 @@ test_that("supernova calculates (quant. ~ cat. + quant.) ANOVA Type 3 SS", {
     expect_data_row(3, x2$ssr, x2$df, x2$ssr / x2$df, x2$f, x2$pre, x2$p)
 })
 
-test_that("supernova calculates (quant. ~ cat. + cat.) ANOVA Type 3 SS", {
+test_that("supernova calcs. (quant. ~ cat. + cat.) ANOVA Type 3 SS", {
   model <- lm(Thumb ~ RaceEthnic + Sex, data = Fingers)
   ss <- calc_ss(model)
   x1 <- list(ssr = 542.1871, df = 4, f =  2.045974, p = 9.076844e-02) %>%
@@ -187,6 +187,22 @@ test_that("supernova calculates (quant. ~ cat. + cat.) ANOVA Type 3 SS", {
     expect_data_row(3, x2$ssr, x2$df, x2$ssr / x2$df, x2$f, x2$pre, x2$p)
 })
 
+test_that("supernova calcs. additive 3-way mixed model ANOVA Type 3 SS", {
+  model <- lm(Thumb ~ RaceEthnic + Weight + Sex, data = Fingers)
+  ss <- calc_ss(model)
+  x1 <- list(ssr = 327.1720, df = 4, f = 1.292271, p = 2.756319e-01) %>%
+    c(pre = calc_pre(.$ssr, ss$sse))
+  x2 <- list(ssr = 509.7228, df = 1, f = 8.053257, p = 5.171346e-03) %>%
+    c(pre = calc_pre(.$ssr, ss$sse))
+  x3 <- list(ssr = 311.8257, df = 1, f = 4.926625, p = 2.794657e-02) %>%
+    c(pre = calc_pre(.$ssr, ss$sse))
+  
+  supernova(model)$tbl %>%
+    expect_data_overall_model(model) %>%
+    expect_data_row(2, x1$ssr, x1$df, x1$ssr / x1$df, x1$f, x1$pre, x1$p) %>%
+    expect_data_row(3, x2$ssr, x2$df, x2$ssr / x2$df, x2$f, x2$pre, x2$p) %>% 
+    expect_data_row(4, x3$ssr, x3$df, x3$ssr / x3$df, x3$f, x3$pre, x3$p)
+})
 
 # Interactive multiple regression -----------------------------------------
 
@@ -194,7 +210,7 @@ test_that("supernova calculates (quant. ~ cat. + cat.) ANOVA Type 3 SS", {
 # found by car::Anova(model, type = 3). The car package is widely
 # known and used by many, and can be considered trustworthy.
 
-test_that("supernova calculates (quant. ~ quant. * quant.) ANOVA Type 3 SS", {
+test_that("supernova calcs. (quant. ~ quant. * quant.) ANOVA Type 3 SS", {
   model <- lm(mpg ~ hp * disp, data = mtcars)
   ss <- calc_ss(model)
   x1   <- list(ssr = 113.39272, f = 15.651, p = 0.0004725) %>%
@@ -211,7 +227,7 @@ test_that("supernova calculates (quant. ~ quant. * quant.) ANOVA Type 3 SS", {
     expect_data_row(4, int$ssr, 1, int$ssr / 1, int$f, int$pre, int$p)
 })
 
-test_that("supernova calculates (quant. ~ cat. * quant.) ANOVA Type 3 SS", {
+test_that("supernova calcs. (quant. ~ cat. * quant.) ANOVA Type 3 SS", {
   model <- lm(Thumb ~ RaceEthnic * Weight, data = Fingers)
   ss <- calc_ss(model)
   x1 <-  list(ssr = 237.8776, df = 4, f = 0.9053925, p = 4.625566e-01) %>%
@@ -228,7 +244,7 @@ test_that("supernova calculates (quant. ~ cat. * quant.) ANOVA Type 3 SS", {
     expect_data_row(4, int$ssr, int$df, int$ssr / int$df, int$f, int$pre, int$p)
 })
 
-test_that("supernova calculates (quant. ~ cat. * cat.) ANOVA Type 3 SS", {
+test_that("supernova calcs. (quant. ~ cat. * cat.) ANOVA Type 3 SS", {
   model <- lm(Thumb ~ RaceEthnic * Sex, data = Fingers)
   ss <- calc_ss(model)
   x1 <-  list(ssr = 720.1771, df = 4, f =  2.745803, p = 3.061602e-02) %>%
@@ -244,3 +260,53 @@ test_that("supernova calculates (quant. ~ cat. * cat.) ANOVA Type 3 SS", {
     expect_data_row(3, x2$ssr, x2$df, x2$ssr / x2$df, x2$f, x2$pre, x2$p) %>% 
     expect_data_row(4, int$ssr, int$df, int$ssr / int$df, int$f, int$pre, int$p)
 })
+
+test_that("supernova calcs. interactive model with addl. regressor Type 3 SS", {
+  model <- lm(Thumb ~ RaceEthnic + Weight * Sex, data = Fingers)
+  ss <- calc_ss(model)
+  r <- list(ssr = 327.29294, df = 4, f = 1.29505, p = 0.2745969) %>%
+    c(pre = calc_pre(.$ssr, ss$sse))
+  w <- list(ssr = 485.92344, df = 1, f = 7.69091, p = 0.0062597) %>%
+    c(pre = calc_pre(.$ssr, ss$sse))
+  s <- list(ssr = 177.56371, df = 1, f = 2.81037, p = 0.0957535) %>%
+    c(pre = calc_pre(.$ssr, ss$sse))
+  ws <- list(ssr = 80.05167, df = 1, f = 1.26701, p = 0.2621380) %>%
+    c(pre = calc_pre(.$ssr, ss$sse))
+  
+  supernova(model)$tbl %>%
+    expect_data_overall_model(model) %>%
+    expect_data_row(2, r$ssr, r$df, r$ssr / r$df, r$f, r$pre, r$p) %>%
+    expect_data_row(3, w$ssr, w$df, w$ssr / w$df, w$f, w$pre, w$p) %>%
+    expect_data_row(4, s$ssr, s$df, s$ssr / s$df, s$f, s$pre, s$p) %>% 
+    expect_data_row(5, ws$ssr, ws$df, ws$ssr / ws$df, ws$f, ws$pre, ws$p)
+})
+
+test_that("supernova calcs. interactive 3-way mixed model ANOVA Type 3 SS", {
+  model <- lm(Thumb ~ RaceEthnic * Weight * Sex, data = Fingers)
+  ss <- calc_ss(model)
+  r <- list(ssr =  137.94928, df = 4, f = 0.52429, p = 0.71803) %>% 
+    c(pre = calc_pre(.$ssr, ss$sse))
+  w <- list(ssr =    8.89483, df = 1, f = 0.13522, p = 0.71364) %>% 
+    c(pre = calc_pre(.$ssr, ss$sse))
+  s <- list(ssr =    6.84062, df = 1, f = 0.10399, p = 0.74758) %>%
+    c(pre = calc_pre(.$ssr, ss$sse))
+  rw <- list(ssr =  91.58906, df = 4, f = 0.34809, p = 0.84499) %>% 
+    c(pre = calc_pre(.$ssr, ss$sse))
+  rs <- list(ssr =   9.16352, df = 4, f = 0.03483, p = 0.99765) %>% 
+    c(pre = calc_pre(.$ssr, ss$sse))
+  ws <- list(ssr =   3.04586, df = 1, f = 0.04630, p = 0.82994) %>% 
+    c(pre = calc_pre(.$ssr, ss$sse))
+  rws <- list(ssr = 22.27521, df = 4, f = 0.08466, p = 0.98704) %>% 
+    c(pre = calc_pre(.$ssr, ss$sse))
+    
+  supernova(model)$tbl %>%
+    expect_data_overall_model(model) %>%
+    expect_data_row(2, r$ssr, r$df, r$ssr / r$df, r$f, r$pre, r$p) %>%
+    expect_data_row(3, w$ssr, w$df, w$ssr / w$df, w$f, w$pre, w$p) %>%
+    expect_data_row(4, s$ssr, s$df, s$ssr / s$df, s$f, s$pre, s$p) %>% 
+    expect_data_row(5, rw$ssr, rw$df, rw$ssr / rw$df, rw$f, rw$pre, rw$p) %>% 
+    expect_data_row(6, rs$ssr, rs$df, rs$ssr / rs$df, rs$f, rs$pre, rs$p) %>% 
+    expect_data_row(7, ws$ssr, ws$df, ws$ssr / ws$df, ws$f, ws$pre, ws$p) %>% 
+    expect_data_row(8, rws$ssr, rws$df, rws$ssr / rws$df, rws$f, rws$pre, rws$p)
+})
+
