@@ -18,11 +18,10 @@ displaying the ANOVA table in the console as well as a  named list:
 }
 \description{
 An alternative set of summary statistics for ANOVA. Sums of squares, degrees 
-of freedom, mean squares, and F value are all equivalent to 
-\code{\link{anova.lm}}. This package adds proportional reduction in 
-error, an explicit summary of the whole model, and separate formatting of p 
-values and is intended to match the output used in Judd, McClelland, and 
-Ryan (2017).
+of freedom, mean squares, and F value are all computed with type 3 sums of 
+squares. This package adds proportional reduction in error, an explicit 
+summary of the whole model, and separate formatting of p values and is 
+intended to match the output used in Judd, McClelland, and Ryan (2017).
 }
 \details{
 \code{superanova()} is an alias of \code{supernova()}

@@ -1,11 +1,10 @@
 #' supernova
 #'
 #' An alternative set of summary statistics for ANOVA. Sums of squares, degrees 
-#' of freedom, mean squares, and F value are all equivalent to 
-#' \code{\link{anova.lm}}. This package adds proportional reduction in 
-#' error, an explicit summary of the whole model, and separate formatting of p 
-#' values and is intended to match the output used in Judd, McClelland, and 
-#' Ryan (2017).
+#' of freedom, mean squares, and F value are all computed with type 3 sums of 
+#' squares. This package adds proportional reduction in error, an explicit 
+#' summary of the whole model, and separate formatting of p values and is 
+#' intended to match the output used in Judd, McClelland, and Ryan (2017).
 #' 
 #' \code{superanova()} is an alias of \code{supernova()}
 #'
@@ -19,7 +18,7 @@
 #' @examples
 #' supernova(lm(Thumb ~ Weight, data = Fingers))
 #'
-#' @importFrom stats resid df.residual predict pf
+#' @importFrom stats resid df.residual predict pf coefficients drop1
 #'
 #' @references Judd, C. M., McClelland, G. H., & Ryan, C. S. (2017). Data 
 #' Analysis: A Model Comparison Approach to Regression, ANOVA, and Beyond 
