@@ -10,7 +10,7 @@ update(old, new, ...)
 \item{old}{An existing fit from a model function such as \code{\link{lm}}, 
 \code{\link{glm}} and many others.}
 
-\item{new}{Changes to the formula – see \code{\link{update.formula}} for details.}
+\item{new}{Changes to the formula; see \code{\link{update.formula}} for details.}
 
 \item{...}{Additional arguments to the call, or arguments with changed values. 
 Use name = NULL to remove the argument name.}

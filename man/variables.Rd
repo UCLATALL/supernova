@@ -7,7 +7,7 @@
 variables(fit)
 }
 \arguments{
-\item{fit}{An \code{\link{lm}} object of the model with the predictors being tested}
+\item{fit}{An \code{\link{lm}} object}
 }
 \value{
 The variables in the model: outcome and predictors
