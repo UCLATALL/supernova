@@ -1,6 +1,6 @@
 context("ANOVA values")
 library(supernova)
-library(magrittr)
+library(dplyr)
 library(glue)
 
 
@@ -16,11 +16,6 @@ calc_ss <- function(model) {
 
 calc_pre <- function(ssr, sse) {
   ssr / (ssr + sse)
-}
-
-calc_p <- function(model) {
-  f <- summary(model)$fstatistic
-  pf(f[[1]], f[[2]], f[[3]], lower.tail = FALSE)
 }
 
 # Test a named column of a data.frame against a vector of expected values
@@ -45,28 +40,21 @@ expect_data <- function(object, ss, df, ms, f, pre, p) {
     expect_col_equal("p", p, tolerance = .00001)
 }
 
-# Test a numbered row from a supernova data.frame (e.g. data[1,])
-expect_data_row <- function(object, row, ss, df, ms, f, pre, p) {
-  expect_data(object[row, ], ss, df, ms, f, pre, p)
-  invisible(object)
-}
-
 # Test the regression, error, and total rows of a supernova table
 # Will work for all except null models
 expect_data_overall_model <- function(object, model) {
-  expected <- anova(model)
-  expected_SS <- as.numeric(calc_ss(model))
-  expected_f <- summary(model)$fstatistic
-  expected_df <- c(expected_f[["numdf"]], df.residual(model), sum(expected$Df))
-  object[c(1, nrow(object) - 1, nrow(object)), ] %>% 
-    expect_data(
-      expected_SS,
-      expected_df,
-      expected_SS / expected_df,
-      c(expected_f[['value']], NA, NA),
-      c(summary(model)$r.squared, NA, NA),
-      c(calc_p(model), NA, NA)
-    )
+  f <- summary(model)$fstatistic
+  p <- pf(f[[1]], f[[2]], f[[3]], lower.tail = FALSE)
+  df <- tibble(
+    ss = as.numeric(calc_ss(model)), 
+    df = c(f[["numdf"]], df.residual(model), sum(anova(model)$Df)),
+    ms = ss / df,
+    f = c(f[["value"]], NA, NA),
+    pre = c(summary(model)$r.squared, NA, NA),
+    p = c(p, NA, NA)
+  )
+  object[c(1, nrow(object) - 1, nrow(object)),] %>% 
+    expect_data(df$ss, df$df, df$ms, df$f, df$pre, df$p)
   invisible(object)
 }
 
@@ -117,13 +105,10 @@ test_that("magrittr can pipe data to lm() to supernova", {
 
 test_that("supernova calcs. (quant. ~ NULL) ANOVA correctly", {
   model <- lm(mpg ~ NULL, data = mtcars)
-  expected <- anova(model)
-  supernova(model)$tbl %>%   
+  e <- anova(model)
+  supernova(model)$tbl %>%
     tail(1) %>% 
-    expect_data(
-      expected$`Sum Sq`, expected$Df, expected$`Mean Sq`, 
-      NA_real_, NA_real_, NA_real_
-    )
+    expect_data(e$`Sum Sq`, e$Df, e$`Mean Sq`, NA_real_, NA_real_, NA_real_)
 })
 
 test_that("supernova calcs. (quant. ~ quant.) ANOVA correctly", {
@@ -147,61 +132,59 @@ test_that("supernova calcs. (quant. ~ cat.) ANOVA correctly", {
 
 test_that("supernova calcs. (quant. ~ quant. + quant.) ANOVA Type 3 SS", {
   model <- lm(mpg ~ hp + disp, data = mtcars)
-  ss <- calc_ss(model)
-  x1 <- list(ssr = 33.66525, f = 3.4438, p = 0.07368) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
-  x2 <- list(ssr = 164.18088, f = 16.7949, p = 0.00031) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
-
+  df <- tibble(
+    ss = c(33.66525, 164.18088), df = c(1, 1), ms = ss / df,
+    f = c(3.4438, 16.7949), p = c(0.07368, 0.00031),
+    pre = calc_pre(ss, calc_ss(model)$sse)
+  )
+  
   supernova(model)$tbl %>%
     expect_data_overall_model(model) %>%
-    expect_data_row(2, x1$ssr, 1, x1$ssr / 1, x1$f, x1$pre, x1$p) %>%
-    expect_data_row(3, x2$ssr, 1, x2$ssr / 1, x2$f, x2$pre, x2$p)
+    slice(2:3) %>% 
+    expect_data(df$ss, df$df, df$ms, df$f, df$pre, df$p)
 })
 
 test_that("supernova calcs. (quant. ~ cat. + quant.) ANOVA Type 3 SS", {
   model <- lm(Thumb ~ RaceEthnic + Weight, data = Fingers)
-  ss <- calc_ss(model)
-  x1 <- list(ssr =  347.5909, df = 4, f =  1.3381, p = 0.2584) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
-  x2 <- list(ssr = 1411.9531, df = 1, f = 21.7425, p = 6.808e-06) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
+  df <- tibble(
+    ss = c(347.5909, 1411.9531), df = c(4, 1), ms = ss / df,
+    f = c(1.3381, 21.7425), p = c(0.2584, 0.000006808),
+    pre = calc_pre(ss, calc_ss(model)$sse)
+  )
   
   supernova(model)$tbl %>%
     expect_data_overall_model(model) %>%
-    expect_data_row(2, x1$ssr, x1$df, x1$ssr / x1$df, x1$f, x1$pre, x1$p) %>%
-    expect_data_row(3, x2$ssr, x2$df, x2$ssr / x2$df, x2$f, x2$pre, x2$p)
+    slice(2:3) %>% 
+    expect_data(df$ss, df$df, df$ms, df$f, df$pre, df$p)
 })
 
 test_that("supernova calcs. (quant. ~ cat. + cat.) ANOVA Type 3 SS", {
   model <- lm(Thumb ~ RaceEthnic + Sex, data = Fingers)
-  ss <- calc_ss(model)
-  x1 <- list(ssr = 542.1871, df = 4, f =  2.045974, p = 9.076844e-02) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
-  x2 <- list(ssr = 1214.1,   df = 1, f = 18.325244, p = 3.295751e-05) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
+  df <- tibble(
+    ss = c(542.1871, 1214.1), df = c(4, 1), ms = ss / df,
+    f = c(2.045974, 18.325244), p = c(0.09076844, 0.00003295751),
+    pre = calc_pre(ss, calc_ss(model)$sse)
+  )
   
   supernova(model)$tbl %>%
     expect_data_overall_model(model) %>%
-    expect_data_row(2, x1$ssr, x1$df, x1$ssr / x1$df, x1$f, x1$pre, x1$p) %>%
-    expect_data_row(3, x2$ssr, x2$df, x2$ssr / x2$df, x2$f, x2$pre, x2$p)
+    slice(2:3) %>% 
+    expect_data(df$ss, df$df, df$ms, df$f, df$pre, df$p)
 })
 
 test_that("supernova calcs. additive 3-way mixed model ANOVA Type 3 SS", {
   model <- lm(Thumb ~ RaceEthnic + Weight + Sex, data = Fingers)
-  ss <- calc_ss(model)
-  x1 <- list(ssr = 327.1720, df = 4, f = 1.292271, p = 2.756319e-01) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
-  x2 <- list(ssr = 509.7228, df = 1, f = 8.053257, p = 5.171346e-03) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
-  x3 <- list(ssr = 311.8257, df = 1, f = 4.926625, p = 2.794657e-02) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
+  df <- tibble(
+    ss = c(327.1720, 509.7228, 311.8257), df = c(4, 1, 1), ms = ss / df,
+    f = c(1.292271, 8.053257, 4.926625),
+    p = c(0.2756319, 0.005171346, 0.02794657),
+    pre = calc_pre(ss, calc_ss(model)$sse)
+  )
   
   supernova(model)$tbl %>%
     expect_data_overall_model(model) %>%
-    expect_data_row(2, x1$ssr, x1$df, x1$ssr / x1$df, x1$f, x1$pre, x1$p) %>%
-    expect_data_row(3, x2$ssr, x2$df, x2$ssr / x2$df, x2$f, x2$pre, x2$p) %>% 
-    expect_data_row(4, x3$ssr, x3$df, x3$ssr / x3$df, x3$f, x3$pre, x3$p)
+    slice(2:4) %>% 
+    expect_data(df$ss, df$df, df$ms, df$f, df$pre, df$p)
 })
 
 # Interactive multiple regression -----------------------------------------
@@ -212,101 +195,86 @@ test_that("supernova calcs. additive 3-way mixed model ANOVA Type 3 SS", {
 
 test_that("supernova calcs. (quant. ~ quant. * quant.) ANOVA Type 3 SS", {
   model <- lm(mpg ~ hp * disp, data = mtcars)
-  ss <- calc_ss(model)
-  x1   <- list(ssr = 113.39272, f = 15.651, p = 0.0004725) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
-  x2 <- list(ssr = 188.44895, f = 26.011, p = 0.00002109) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
-  int  <- list(ssr =  80.63539, f = 11.130, p = 0.0024070) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
+  df <- tibble(
+    ss = c(113.39272, 188.44895, 80.63539),
+    df = c(1, 1, 1),
+    ms = ss / df,
+    f = c(15.651, 26.011, 11.130),
+    p = c(0.0004725, 0.00002109, 0.0024070),
+    pre = calc_pre(ss, calc_ss(model)$sse)
+  )
   
   supernova(model)$tbl %>%
     expect_data_overall_model(model) %>%
-    expect_data_row(2, x1$ssr, 1, x1$ssr / 1, x1$f, x1$pre, x1$p) %>%
-    expect_data_row(3, x2$ssr, 1, x2$ssr / 1, x2$f, x2$pre, x2$p) %>%
-    expect_data_row(4, int$ssr, 1, int$ssr / 1, int$f, int$pre, int$p)
+    slice(2:4) %>% 
+    expect_data(df$ss, df$df, df$ms, df$f, df$pre, df$p)
 })
 
 test_that("supernova calcs. (quant. ~ cat. * quant.) ANOVA Type 3 SS", {
   model <- lm(Thumb ~ RaceEthnic * Weight, data = Fingers)
-  ss <- calc_ss(model)
-  x1 <-  list(ssr = 237.8776, df = 4, f = 0.9053925, p = 4.625566e-01) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
-  x2 <-  list(ssr = 599.5416, df = 1, f = 9.1277270, p = 2.970283e-03) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
-  int <- list(ssr = 150.4405, df = 4, f = 0.5725956, p = 6.829344e-01) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
-
+  df <- tibble(
+    ss = c(237.8776, 599.5416, 150.4405),
+    df = c(4, 1, 4),
+    ms = ss / df,
+    f = c(0.9053925, 9.1277270, 0.5725956),
+    p = c(0.4625566, 0.002970283, 0.6829344),
+    pre = calc_pre(ss, calc_ss(model)$sse)
+  )
+  
   supernova(model)$tbl %>%
     expect_data_overall_model(model) %>%
-    expect_data_row(2, x1$ssr, x1$df, x1$ssr / x1$df, x1$f, x1$pre, x1$p) %>%
-    expect_data_row(3, x2$ssr, x2$df, x2$ssr / x2$df, x2$f, x2$pre, x2$p) %>% 
-    expect_data_row(4, int$ssr, int$df, int$ssr / int$df, int$f, int$pre, int$p)
+    slice(2:4) %>% 
+    expect_data(df$ss, df$df, df$ms, df$f, df$pre, df$p)
 })
 
 test_that("supernova calcs. (quant. ~ cat. * cat.) ANOVA Type 3 SS", {
   model <- lm(Thumb ~ RaceEthnic * Sex, data = Fingers)
-  ss <- calc_ss(model)
-  x1 <-  list(ssr = 720.1771, df = 4, f =  2.745803, p = 3.061602e-02) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
-  x2 <-  list(ssr = 919.3382, df = 1, f = 14.020560, p = 2.589060e-04) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
-  int <- list(ssr = 364.9248, df = 4, f =  1.391340, p = 2.397720e-01) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
-
+  df <- tibble(
+    ss = c(720.1771, 919.3382, 364.9248),
+    df = c(4, 1, 4),
+    ms = ss / df,
+    f = c(2.745803, 14.020560, 1.391340),
+    p = c(0.03061602, 0.0002589060, 0.239772),
+    pre = calc_pre(ss, calc_ss(model)$sse)
+  )
+  
   supernova(model)$tbl %>%
     expect_data_overall_model(model) %>%
-    expect_data_row(2, x1$ssr, x1$df, x1$ssr / x1$df, x1$f, x1$pre, x1$p) %>% 
-    expect_data_row(3, x2$ssr, x2$df, x2$ssr / x2$df, x2$f, x2$pre, x2$p) %>% 
-    expect_data_row(4, int$ssr, int$df, int$ssr / int$df, int$f, int$pre, int$p)
+    slice(2:4) %>% 
+    expect_data(df$ss, df$df, df$ms, df$f, df$pre, df$p)
 })
 
 test_that("supernova calcs. interactive model with addl. regressor Type 3 SS", {
   model <- lm(Thumb ~ RaceEthnic + Weight * Sex, data = Fingers)
-  ss <- calc_ss(model)
-  r <- list(ssr = 327.29294, df = 4, f = 1.29505, p = 0.2745969) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
-  w <- list(ssr = 485.92344, df = 1, f = 7.69091, p = 0.0062597) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
-  s <- list(ssr = 177.56371, df = 1, f = 2.81037, p = 0.0957535) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
-  ws <- list(ssr = 80.05167, df = 1, f = 1.26701, p = 0.2621380) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
+  df <- tibble(
+    ss = c(327.29294, 485.92344, 177.56371, 80.05167),
+    df = c(4, 1, 1, 1),
+    ms = ss / df,
+    f = c(1.29505, 7.69091, 2.81037, 1.26701),
+    p = c(0.2745969, 0.0062597, 0.0957535, 0.2621380),
+    pre = calc_pre(ss, calc_ss(model)$sse)
+  )
   
   supernova(model)$tbl %>%
     expect_data_overall_model(model) %>%
-    expect_data_row(2, r$ssr, r$df, r$ssr / r$df, r$f, r$pre, r$p) %>%
-    expect_data_row(3, w$ssr, w$df, w$ssr / w$df, w$f, w$pre, w$p) %>%
-    expect_data_row(4, s$ssr, s$df, s$ssr / s$df, s$f, s$pre, s$p) %>% 
-    expect_data_row(5, ws$ssr, ws$df, ws$ssr / ws$df, ws$f, ws$pre, ws$p)
+    slice(2:5) %>% 
+    expect_data(df$ss, df$df, df$ms, df$f, df$pre, df$p)
 })
 
 test_that("supernova calcs. interactive 3-way mixed model ANOVA Type 3 SS", {
   model <- lm(Thumb ~ RaceEthnic * Weight * Sex, data = Fingers)
-  ss <- calc_ss(model)
-  r <- list(ssr =  137.94928, df = 4, f = 0.52429, p = 0.71803) %>% 
-    c(pre = calc_pre(.$ssr, ss$sse))
-  w <- list(ssr =    8.89483, df = 1, f = 0.13522, p = 0.71364) %>% 
-    c(pre = calc_pre(.$ssr, ss$sse))
-  s <- list(ssr =    6.84062, df = 1, f = 0.10399, p = 0.74758) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
-  rw <- list(ssr =  91.58906, df = 4, f = 0.34809, p = 0.84499) %>% 
-    c(pre = calc_pre(.$ssr, ss$sse))
-  rs <- list(ssr =   9.16352, df = 4, f = 0.03483, p = 0.99765) %>% 
-    c(pre = calc_pre(.$ssr, ss$sse))
-  ws <- list(ssr =   3.04586, df = 1, f = 0.04630, p = 0.82994) %>% 
-    c(pre = calc_pre(.$ssr, ss$sse))
-  rws <- list(ssr = 22.27521, df = 4, f = 0.08466, p = 0.98704) %>% 
-    c(pre = calc_pre(.$ssr, ss$sse))
+  df <- tibble(
+    ss = c(137.94928, 8.89483, 6.84062, 91.58906, 9.16352, 3.04586, 22.27521),
+    df = c(4, 1, 1, 4, 4, 1, 4),
+    ms = ss / df,
+    f = c(0.52429, 0.13522, 0.10399, 0.34809, 0.03483, 0.04630, 0.08466),
+    p = c(0.71803, 0.71364, 0.74758, 0.84499, 0.99765, 0.82994, 0.98704),
+    pre = calc_pre(ss, calc_ss(model)$sse)
+  )
     
   supernova(model)$tbl %>%
     expect_data_overall_model(model) %>%
-    expect_data_row(2, r$ssr, r$df, r$ssr / r$df, r$f, r$pre, r$p) %>%
-    expect_data_row(3, w$ssr, w$df, w$ssr / w$df, w$f, w$pre, w$p) %>%
-    expect_data_row(4, s$ssr, s$df, s$ssr / s$df, s$f, s$pre, s$p) %>% 
-    expect_data_row(5, rw$ssr, rw$df, rw$ssr / rw$df, rw$f, rw$pre, rw$p) %>% 
-    expect_data_row(6, rs$ssr, rs$df, rs$ssr / rs$df, rs$f, rs$pre, rs$p) %>% 
-    expect_data_row(7, ws$ssr, ws$df, ws$ssr / ws$df, ws$f, ws$pre, ws$p) %>% 
-    expect_data_row(8, rws$ssr, rws$df, rws$ssr / rws$df, rws$f, rws$pre, rws$p)
+    slice(2:8) %>% 
+    expect_data(df$ss, df$df, df$ms, df$f, df$pre, df$p)
 })
 
