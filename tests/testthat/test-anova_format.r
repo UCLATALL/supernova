@@ -23,11 +23,11 @@ pat_total <- paste("^Total (empty model)   |", pat_et, sep = "\\s+")
 test_that("null model tables are beautifully formatted", {
   model <- lm(mpg ~ NULL, data = mtcars)
   printed <- capture.output(supernova(model))
-  
+
   s_tbl <- supernova(model)$tbl
-  horizontal_rule <- paste(" -----", "-----------------", dashes(s_tbl$SS, 3), 
+  horizontal_rule <- paste(" -----", "-----------------", dashes(s_tbl$SS, 3),
                            "---", dashes(s_tbl$MS, 3), "--- --- ---")
-  
+
   expect_length(printed, 3 + 1 + 3 + 2)  # header, colnames, rows, rules
   expect_match(printed[1], "Analysis of Variance Table \\(Type III SS\\)")
   expect_match(printed[2], paste("Model:", deparse(formula(model))), fixed = TRUE)

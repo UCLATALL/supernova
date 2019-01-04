@@ -11,16 +11,16 @@ supernova(fit)
 \item{fit}{A fitted \code{\link{lm}} object}
 }
 \value{
-An object of the class \code{supernova}, which has a clean print method for 
-displaying the ANOVA table in the console as well as a  named list:
-  \item{tbl}{The ANOVA table as a \code{\link{data.frame}}}
+An object of the class \code{supernova}, which has a clean print
+  method for displaying the ANOVA table in the console as well as a  named
+  list: \item{tbl}{The ANOVA table as a \code{\link{data.frame}}}
   \item{fit}{The original \code{\link[stats]{lm}} object being tested}
 }
 \description{
-An alternative set of summary statistics for ANOVA. Sums of squares, degrees 
-of freedom, mean squares, and F value are all computed with type 3 sums of 
-squares. This package adds proportional reduction in error, an explicit 
-summary of the whole model, and separate formatting of p values and is 
+An alternative set of summary statistics for ANOVA. Sums of squares, degrees
+of freedom, mean squares, and F value are all computed with type 3 sums of
+squares. This package adds proportional reduction in error, an explicit
+summary of the whole model, and separate formatting of p values and is
 intended to match the output used in Judd, McClelland, and Ryan (2017).
 }
 \details{
@@ -31,7 +31,7 @@ supernova(lm(Thumb ~ Weight, data = Fingers))
 
 }
 \references{
-Judd, C. M., McClelland, G. H., & Ryan, C. S. (2017). Data 
-Analysis: A Model Comparison Approach to Regression, ANOVA, and Beyond 
-(3rd edition). New York: Routledge. ISBN:879-1138819832
+Judd, C. M., McClelland, G. H., & Ryan, C. S. (2017).
+  \emph{Data Analysis: A Model Comparison Approach to Regression, ANOVA,
+  and Beyond} (3rd ed.). New York: Routledge. ISBN:879-1138819832
 }

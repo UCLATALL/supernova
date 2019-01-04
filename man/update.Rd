@@ -4,20 +4,56 @@
 \alias{update}
 \title{Robust version of \code{\link[stats]{update}}}
 \usage{
-update(old, new, ...)
+update(old, new, ..., na.action = get(getOption("na.action")))
 }
 \arguments{
-\item{old}{An existing fit from a model function such as \code{\link{lm}}, 
+\item{old}{An existing fit from a model function such as \code{\link{lm}},
 \code{\link{glm}} and many others.}
 
-\item{new}{Changes to the formula; see \code{\link{update.formula}} for details.}
+\item{new}{Changes to the formula; see \code{\link{update.formula}} for
+details.}
 
-\item{...}{Additional arguments to the call, or arguments with changed values. 
-Use name = NULL to remove the argument name.}
+\item{...}{Additional arguments to the call (see
+\code{\link[stats]{update}}), or arguments with changed values. Use
+\code{name = NULL} to remove the argument name.}
+
+\item{na.action}{As in \code{\link{lm}}, a function which indicates what
+should happen when the data contain NAs. The default is set by the
+\code{na.action} setting of \code{\link{options}}, and is
+\code{\link{na.fail}} if that is unset. The ‘factory-fresh’ default is
+\code{\link{na.omit}}. Another possible value is \code{NULL}, no action.
+Value \code{\link{na.exclude}} can be useful.}
 }
 \value{
 If evaluate = TRUE the fitted object, otherwise the updated call.
 }
 \description{
-Robust version of \code{\link[stats]{update}}
+This function solves two problems with \code{\link[stats]{update}}: pipes
+will break when the data is first piped to the \code{\link[stats]{lm}}
+object, and data is re-evaluated against the full dataset, even if the model
+being updated had \code{na.action = "na.omit"}. See details below for more
+information.
+}
+\details{
+\strong{Problem with pipes:} \code{\link[stats]{update}} does not support
+linear models where the data was piped via \code{\link[magrittr]{\%>\%}} to
+the model function as in \code{mtcars \%>\% lm(mpg ~ hp, data = .) \%>\%
+stats::update()}. This is because the \code{\link[stats]{update}} function
+relies on \code{\link[stats]{getCall}}, which returns a call that has
+\code{data = .} argument, which is completely uninformative. This function
+creates a new model by extracting the formula from the old model via
+\code{\link[stats]{formula}} and the data used in the old model via the
+\code{model$call} and \code{environment}. Then the new (old) model is updated
+as it now has all the necessary components.
+
+\strong{Problem with \code{na.action}}: When updating models with missing
+data, the new model is evaluated against the full dataset even if the
+original model had missing data for some of the values. For example, if there
+are missing values on X for a model where Y ~ X, when updating to fit the
+null model Y ~ NULL, the full set of Y is used instead of only the values of
+Y where there are values of X. This is not inherently a problem, however it
+yields incorrect degrees of freedom and sum of squares for the total row in
+an ANOVA because different datasets are being used for the total row and the
+model and error rows. The present solution runs the \code{na.action} from the
+\code{old} model on the full dataset before passing it to the \code{new} one.
 }
