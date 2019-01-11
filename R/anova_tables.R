@@ -127,21 +127,27 @@ supernova <- function(fit) {
 #'
 #' @return If evaluate = TRUE the fitted object, otherwise the updated call.
 #' @export
-update <- function(old, new, ..., na.action = get(getOption("na.action"))) {
+update <- function(old, new, ..., na.action) {
   vars <- all.vars(formula(old))
   data <- eval(old$call$data, environment(formula(old)))
-  data_clean <- na.action(data[names(data) %in% vars])
 
-  removed_rows <- as.integer(attr(data_clean, "na.action"))
-  if (length(removed_rows) > 0) {
-    plural <- if (length(removed_rows) > 1) "s" else ""
+  # listwise delete values from all affected variables
+  na_rows <- sort(unlist(
+    lapply(data[,vars], function(x) which(is.na(x))),
+    use.names = FALSE
+  ))
+  data[na_rows, vars] <- NA
+
+  # create warning message
+  if (length(na_rows) > 0) {
+    plural <- if (length(na_rows) > 1) "s" else ""
     message(sprintf(
       "Note: %s case%s removed due to missing value(s). Row number%s: %s",
-      length(removed_rows), plural, plural, paste(removed_rows, collapse = ", ")
+      length(na_rows), plural, plural, paste(na_rows, collapse = ", ")
     ))
   }
 
-  stats::update(lm(formula(old), data = data_clean), new, ...)
+  stats::update(old, new, data = data)
 }
 
 #' Extract the variables from a model

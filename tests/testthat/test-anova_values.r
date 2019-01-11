@@ -281,11 +281,42 @@ test_that("supernova calcs. interactive 3-way mixed model ANOVA Type 3 SS", {
 
 # Unbalanced and missing data ---------------------------------------------
 
-test_that("supernova uses listwise deletion for missing data, one-way", {
+get_data_with_missing <- function() {
   mtcopy <- mtcars
   mtcopy[1,]$hp <- NA_real_
+  mtcopy[2:3,]$disp <- NA_real_
+  return(mtcopy)
+}
+
+test_that("update() inherits na.action from lm() fit", {
+  # no missing data
+  model <- lm(mpg ~ hp * disp, data = mtcars)
+  updated <- update(model, . ~ NULL)
+  expect_length(resid(updated), length(resid(model)))
+
+  # missing data
+  mtcopy <- get_data_with_missing()
+
+  # na.omit (default)
+  model <- lm(mpg ~ hp * disp, data = mtcopy)
+  updated <- update(model, . ~ NULL)
+  expect_length(resid(updated), length(resid(model)))
+
+  # na.omit (explicit)
+  model <- lm(mpg ~ hp * disp, data = mtcopy, na.action = na.omit)
+  updated <- update(model, . ~ NULL)
+  expect_length(resid(updated), length(resid(model)))
+
+  # na.exclude
+  model <- lm(mpg ~ hp * disp, data = mtcopy, na.action = na.exclude)
+  updated <- update(model, . ~ NULL)
+  expect_length(resid(updated), length(resid(model)))
+})
+
+test_that("supernova uses listwise deletion for missing data, one-way", {
+  mtcopy <- get_data_with_missing()
   model <- lm(mpg ~ hp, data = mtcopy)
-  df_total <- (mtcopy %>% na.omit %>% nrow) - 1
+  df_total <- sum(!is.na(mtcopy$hp)) - 1
   supernova(model)$tbl %>%
     # this is explicitly tests correct df
     # this needs to be checked because otherwise the total row will show
@@ -295,17 +326,15 @@ test_that("supernova uses listwise deletion for missing data, one-way", {
 })
 
 test_that("supernova uses listwise deletion for missing data, two-way", {
-  mtcopy <- mtcars
-  mtcopy[1,]$hp <- NA_real_
-  mtcopy[2,]$disp <- NA_real_
+  mtcopy <- get_data_with_missing()
   model <- lm(mpg ~ hp * disp, data = mtcopy)
-  df_total <- (mtcopy %>% na.omit %>% nrow) - 1
+  df_total <- (mtcopy %>% select(mpg, hp, disp) %>% na.omit %>% nrow) - 1
   df <- tibble(
-    ss = c(107.55895, 181.26912, 74.15816),
+    ss = c(109.54859, 186.83053, 75.96658),
     df = c(1, 1, 1),
     ms = ss / df,
-    f = c(14.035118, 23.653388, 9.676727),
-    p = c(0.0009027054, 0.00004818408, 0.004490579),
+    f = c(14.391796, 24.544606, 9.980006),
+    p = c(8.400431e-04, 4.195566e-05, 4.106818e-03),
     pre = calc_pre(ss, calc_ss(model)$sse)
   )
 
@@ -317,9 +346,7 @@ test_that("supernova uses listwise deletion for missing data, two-way", {
 })
 
 test_that("message is given for number of rows deleted due to missing cases", {
-  mtcopy <- mtcars
-  mtcopy[1,]$hp <- NA_real_
-  mtcopy[2:3,]$disp <- NA_real_
+  mtcopy <- get_data_with_missing()
 
   expect_message(supernova(lm(mpg ~ hp, data = mtcars)), NA)
   expect_message(
