@@ -151,6 +151,13 @@ test_that("variables works with bare formulae", {
   )
 })
 
+test_that("variables works with supernova object", {
+  expect_identical(
+    variables(supernova(lm(mpg ~ NULL, mtcars))),
+    list(outcome = "mpg", predictor = character(0))
+  )
+})
+
 # Regression values -------------------------------------------------------
 
 test_that("supernova calcs. (quant. ~ NULL) ANOVA correctly", {

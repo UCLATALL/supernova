@@ -152,18 +152,19 @@ update <- function(old, new, ..., na.action) {
 
 #' Extract the variables from a model
 #'
-#' @param fit An \code{\link{lm}} object
+#' @param object An \code{\link{lm}} or \code{\link{supernova}} object
 #'
 #' @importFrom stats formula terms
 #'
-#' @return The variables in the model: outcome and predictors
+#' @return A list containing the \code{outcome} and \code{predictor} variables
+#'   in the model.
 #' @export
-variables <- function(fit) {
+variables <- function(object) {
+  fit <- if (class(object) == "supernova") object$fit else object
   fit_formula <- formula(fit)
   all_vars <- all.vars(fit_formula)
   ivs <- labels(terms(fit_formula))
-  dvs <- all_vars[!(all_vars %in% ivs)]
-  list(outcome = dvs, predictor = ivs)
+  list(outcome = all_vars[!(all_vars %in% ivs)], predictor = ivs)
 }
 
 # Calculate the degrees of freedom for a predictor in a model
