@@ -4,7 +4,7 @@
 \alias{update}
 \title{Robust version of \code{\link[stats]{update}}}
 \usage{
-update(old, new, ..., na.action = get(getOption("na.action")))
+update(old, new, ...)
 }
 \arguments{
 \item{old}{An existing fit from a model function such as \code{\link{lm}},
@@ -16,13 +16,6 @@ details.}
 \item{...}{Additional arguments to the call (see
 \code{\link[stats]{update}}), or arguments with changed values. Use
 \code{name = NULL} to remove the argument name.}
-
-\item{na.action}{As in \code{\link{lm}}, a function which indicates what
-should happen when the data contain NAs. The default is set by the
-\code{na.action} setting of \code{\link{options}}, and is
-\code{\link{na.fail}} if that is unset. The ‘factory-fresh’ default is
-\code{\link{na.omit}}. Another possible value is \code{NULL}, no action.
-Value \code{\link{na.exclude}} can be useful.}
 }
 \value{
 If evaluate = TRUE the fitted object, otherwise the updated call.
@@ -54,6 +47,7 @@ null model Y ~ NULL, the full set of Y is used instead of only the values of
 Y where there are values of X. This is not inherently a problem, however it
 yields incorrect degrees of freedom and sum of squares for the total row in
 an ANOVA because different datasets are being used for the total row and the
-model and error rows. The present solution runs the \code{na.action} from the
-\code{old} model on the full dataset before passing it to the \code{new} one.
+model and error rows. The present solution creates \code{NA} values listwise
+for all variables in the old model so that the new model does not use those
+data.
 }
