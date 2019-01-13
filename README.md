@@ -1,19 +1,30 @@
 # supernova
 
-The goal of `supernova` is to create ANOVA tables in the format used by Judd, 
-McClelland, and Ryan (2017, ISBN:978-1138819832) in their introductory textbook, 
-*Data Analysis: A Model Comparison Approach to Regression, ANOVA, and Beyond* 
-[(book website)](http://www.dataanalysisbook.com/index.html). 
-These tables include proportional reduction in error, a useful measure for 
-teaching the underlying concepts of ANOVA and regression, and formatting to ease 
-the transition between the book and R.
+The goal of `supernova` is to create ANOVA tables in the format used by Judd, McClelland, and Ryan (2017, ISBN:978-1138819832) in their introductory textbook, *Data Analysis: A Model Comparison Approach to Regression, ANOVA, and Beyond* [(book website)](http://www.dataanalysisbook.com/index.html).\* These tables include proportional reduction in error, a useful measure for teaching the underlying concepts of ANOVA and regression, and formatting to ease the transition between the book and R. (\* Note: we are NOT affiliated with the authors or their institution.)
 
-Additionally, `supernova` provides some useful functions for extracting estimates
-from a linear model: `b0()`, `b1()`, `fVal()`, `PRE()`. These are especially
-useful in the context of creating bootstrapped sampling distributions as in the
-examples below.
+In keeping with the approach in Judd, McClelland, and Ryan (2017), the ANOVA tables in this package are calculated using a model comparison approach that should be understandable given a beginner's understanding of base R and the information from the book (so if you have these and don't understand what is going on in the code, let us know because we are missing the mark!). Here is an explanation of how the tables are calculated:
 
-Note: we are NOT affiliated with the authors or their institution.
+1. The "Total" row is calculated by updating the model passed to an empty model. For example, `lm(mpg ~ hp * disp, data = mtcars)` is updated to `(lm(mpg ~ NULL, data = mtcars))`. From this empty model, the sum of squares and df can be calculated. 
+
+2. If there is at least one predictor in the model, the overall model row and the error row are calculated. In the vernacular of the book, the compact model is represented by the updated empty model from 1 above, and the augmented model is the original model passed to ```supernova()```. From these models the SSE(A) is calculated by `sum(resid(null_model) ^ 2)`, the SSR is calculated by SSE(C) - SSE(A), the PRE for the overall model is extracted from the fit (`r.squared`), the df for the error row is extracted from the `lm()` fit (`df.residuals`).
+
+3. If there are more than one predictors, the single term deletions are computed using `drop1()`. For the model `y ~ a * b` (which expands to `y ~ a + b + a:b`, where `a:b` is the interaction of `a` and `b`), `drop1()` essentially creates three models each with one term removed: `y ~ a + a:b`, `y ~ b + a:b`, and `y ~ a + b`. These models are considered the compact models which do not include the tested terms `a`, `b`, and `a:b`, respectively. `drop1()` computes the SSR (`Sum Sq`) and SSE(C) (`RSS`) for each of these augmented and compact model pairs, and these values are used to compute the SSR and PRE for each.
+
+4. Finally, the `MS` (`SS / df`), `F` (`MSR / MSE`), and `p` columns are calculated from already-computed values in the table.
+   
+In addition to the ANOVA table provided by `supernova()`, the `supernova` package provides some useful functions for extracting estimates from a linear model: `b0()`, `b1()`, `fVal()`, `PRE()`. These are especially useful in the context of creating bootstrapped sampling distributions as in the [Examples](#examples) below.
+
+### Supported models
+
+The following models are explicitly tested and supported by `supernova()`, _for independent samples (between-subjects) data only_. For these models, there is also support for datasets with missing or unbalanced data.
+* empty models: `y ~ NULL`
+* simple regression: `y ~ a`
+* multiple regression: `y ~ a + b`
+* interactive regression: `y ~ a * b`
+
+Anything not included above is not (yet) explicitly tested and may yield errors or incorrect statistics. This includes, but is not limited to
+* one-sample _t_-tests
+* dependent samples (within-subjects, repeated measures)
 
 ## Installing
 
@@ -67,7 +78,7 @@ supernova(lm(mpg ~ hp, data = mtcars))
 #> Total (empty model)   | 1126.047 31  36.324          
 ```
 
-### Multiple regression
+### Multiple regression (Type III SS)
 ``` r
 supernova(lm(mpg ~ hp + disp, data = mtcars))
 
@@ -116,10 +127,7 @@ hist(sd_of_b1$bi)
 
 # Contributing
 
-If you see an issue, problem, or improvement that you think we should know about, 
-or you think would fit with this package, please let us know on our 
-[issues page](https://github.com/UCLATALL/supernova/issues). Alternatively, if
-you are up for a little coding of your own, submit a pull request:
+If you see an issue, problem, or improvement that you think we should know about, or you think would fit with this package, please let us know on our [issues page](https://github.com/UCLATALL/supernova/issues). Alternatively, if you are up for a little coding of your own, submit a pull request:
 
 1. Fork it!
 2. Create your feature branch: ```git checkout -b my-new-feature```
