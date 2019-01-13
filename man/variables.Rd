@@ -4,13 +4,14 @@
 \alias{variables}
 \title{Extract the variables from a model}
 \usage{
-variables(fit)
+variables(object)
 }
 \arguments{
-\item{fit}{An \code{\link{lm}} object}
+\item{object}{An \code{\link{lm}} or \code{\link{supernova}} object}
 }
 \value{
-The variables in the model: outcome and predictors
+A list containing the \code{outcome} and \code{predictor} variables
+  in the model.
 }
 \description{
 Extract the variables from a model

@@ -1,7 +1,18 @@
 context("ANOVA values")
-library(supernova)
-library(magrittr)
 library(glue)
+library(dplyr)
+library(supernova)
+
+# Notes -------------------------------------------------------------------
+
+# When checking multiple regression, the data are sanity checked against the
+# output from car::Anova(type = 3). The car package is NOT included in the
+# supernova package, so these data are cached in
+# "./tests/testthat/model_cache.Rds". This cache is accessed every time there
+# are more than one predictor in the model, and the model is being tested using
+# expect_supernova(). If you are going to test a new model using
+# expect_supernova() and it has more than one predictor, you need to add that
+# model in the "cache_test_data.R" script.
 
 
 # Helper functions --------------------------------------------------------
@@ -9,19 +20,17 @@ library(glue)
 # calcs. overall model SS
 calc_ss <- function(model) {
   null_model <- update(model, . ~ NULL)
-  ssr <- sum((predict(model) - predict(null_model)) ^ 2)
+  sse <- sum(resid(model) ^ 2)
   sst <- sum(resid(null_model) ^ 2)
-  list(ssr = ssr, sse = sst - ssr, sst = sst)
+  list(ssr = sst - sse, sse = sse, sst = sst)
 }
 
 calc_pre <- function(ssr, sse) {
   ssr / (ssr + sse)
 }
 
-calc_p <- function(model) {
-  f <- summary(model)$fstatistic
-  pf(f[[1]], f[[2]], f[[3]], lower.tail = FALSE)
-}
+
+# Custom expectations -----------------------------------------------------
 
 # Test a named column of a data.frame against a vector of expected values
 expect_col_equal <- function(object, col_name, expected, ...) {
@@ -29,44 +38,57 @@ expect_col_equal <- function(object, col_name, expected, ...) {
   act <- quasi_label(rlang::enquo(column), glue("obj${col_name}"))
   exp <- quasi_label(rlang::enquo(expected))
   comp <- compare(act$val, exp$val, ...)
-  expect(comp$equal, glue("{act$lab} not equal to {exp$lab}.\n{comp$message}"))
+  expect(comp$equal, glue(
+    "{act$lab} not equal to {exp$lab}.\n", "{comp$message}\n",
+    "Actual: {tibble(act$val)}\n", "Expected: {tibble(exp$val)}"
+  ))
   invisible(object)
 }
 
 # Test a values of a supernova data.frame against vectors of expected values
 # Tolerances are set to be within the printed output's rounded values
-expect_data <- function(object, ss, df, ms, f, pre, p) {
-  object %>% 
-    expect_col_equal("SS", ss, tolerance = .0001) %>% 
-    expect_col_equal("df", df) %>% 
-    expect_col_equal("MS", ms, tolerance = .0001) %>% 
-    expect_col_equal("F", f, tolerance = .0001) %>% 
-    expect_col_equal("PRE", pre, tolerance = .00001) %>% 
-    expect_col_equal("p", p, tolerance = .00001)
+expect_data <- function(object, SS, df, MS, F, PRE, p) {
+  tol <- c(SS = .0001, df = .1, MS = .0001, F = .0001, PRE = .00001, p = .00001)
+  for (i in seq_along(tol)) {
+    name <- names(tol)[[i]]
+    expect_col_equal(object, name, get(name), tol[[i]])
+  }
+  invisible(object)
 }
 
-# Test a numbered row from a supernova data.frame (e.g. data[1,])
-expect_data_row <- function(object, row, ss, df, ms, f, pre, p) {
-  expect_data(object[row, ], ss, df, ms, f, pre, p)
-  invisible(object)
+# Retrieves partial row data for multiple regression from the model cache
+get_partials <- function(model) {
+  ivs <- labels(terms(formula(model)))
+  if (length(ivs) < 2) return(NULL)
+
+  cache_name <- Reduce(paste, deparse(model$call))
+  if (!exists("model_cache")) {
+    model_cache <<- readRDS("./model_cache.Rds")
+  }
+  model_cache[[cache_name]] %>%
+    setNames(c("SS", "df", "F", "p")) %>%
+    mutate(term = rownames(.)) %>%
+    filter(term %in% ivs)
 }
 
 # Test the regression, error, and total rows of a supernova table
 # Will work for all except null models
-expect_data_overall_model <- function(object, model) {
-  expected <- anova(model)
-  expected_SS <- as.numeric(calc_ss(model))
-  expected_f <- summary(model)$fstatistic
-  expected_df <- c(expected_f[["numdf"]], df.residual(model), sum(expected$Df))
-  object[c(1, nrow(object) - 1, nrow(object)), ] %>% 
-    expect_data(
-      expected_SS,
-      expected_df,
-      expected_SS / expected_df,
-      c(expected_f[['value']], NA, NA),
-      c(summary(model)$r.squared, NA, NA),
-      c(calc_p(model), NA, NA)
-    )
+expect_supernova <- function(model) {
+  object <- supernova(model)
+
+  ss <- calc_ss(model)
+  f <- summary(model)$fstatistic
+  p <- pf(f[[1]], f[[2]], f[[3]], lower.tail = FALSE)
+
+  exp <- tibble(SS = ss$ssr, df = f[[2]], F = f[[1]], p = p) %>%
+    bind_rows(., get_partials(model)) %>%
+    mutate(PRE = calc_pre(SS, calc_ss(model)$sse)) %>%  # PRE only in these rows
+    # add error and total rows
+    add_row(SS = ss$sse, df = f[[3]]) %>%
+    add_row(SS = ss$sst, df = sum(f[2:3])) %>%
+    mutate(MS = SS / df)
+
+  expect_data(object$tbl, exp$SS, exp$df, exp$MS, exp$F, exp$PRE, exp$p)
   invisible(object)
 }
 
@@ -78,18 +100,18 @@ test_that("superanova is an alias of supernova", {
 })
 
 test_that("supernova object has table and fit", {
-  fit <- lm(mpg ~ NULL, data = mtcars)
+  fit <- lm(mpg ~ NULL, mtcars)
   obj <- supernova(fit)
   obj %>% expect_is("supernova")
   obj$tbl %>% expect_is("data.frame")
-  obj$fit %>% 
-    expect_is("lm") %>% 
+  obj$fit %>%
+    expect_is("lm") %>%
     expect_identical(fit)
 })
 
 test_that("supernova table structure is well-formed", {
-  obj <- supernova(lm(mpg ~ NULL, data = mtcars))$tbl %>% 
-    expect_is("data.frame") %>% 
+  obj <- supernova(lm(mpg ~ NULL, mtcars))$tbl %>%
+    expect_is("data.frame") %>%
     expect_named(c("term", "description", "SS", "df", "MS", "F", "PRE", "p"))
   expect_true(
     all(sapply(obj, class) == c(rep("character", 2), rep("numeric", 6)))
@@ -97,8 +119,8 @@ test_that("supernova table structure is well-formed", {
 })
 
 test_that("magrittr can pipe lm() to supernova", {
-  lm(mpg ~ NULL, data = mtcars) %>% 
-    supernova() %>% 
+  lm(mpg ~ NULL, mtcars) %>%
+    supernova() %>%
     expect_is("supernova")
 })
 
@@ -106,207 +128,169 @@ test_that("magrittr can pipe data to lm() to supernova", {
   # Believe it or not, this might not work. Do not remove or refactor test.
   # When stats::update() tries to get the call, the data object is just "."
   # supernova has to middle-man with supernova::update() to get this to work
-  mtcars %>%  
-    lm(mpg ~ NULL, data = .) %>% 
-    supernova() %>% 
+  mtcars %>%
+    lm(mpg ~ NULL, data = .) %>%
+    supernova() %>%
     expect_is("supernova")
 })
 
 
-# Simple regression -------------------------------------------------------
+# Variable extraction -----------------------------------------------------
+
+test_that("variables returns the variables in a model", {
+  expect_identical(
+    variables(lm(mpg ~ NULL, mtcars)),
+    list(outcome = "mpg", predictor = character(0))
+  )
+  expect_identical(
+    variables(lm(mpg ~ hp, mtcars)),
+    list(outcome = "mpg", predictor = "hp")
+  )
+  expect_identical(
+    variables(lm(mpg ~ hp + disp, mtcars)),
+    list(outcome = "mpg", predictor = c("hp", "disp"))
+  )
+  expect_identical(
+    variables(lm(mpg ~ hp * disp, mtcars)),
+    list(outcome = "mpg", predictor = c("hp", "disp", "hp:disp"))
+  )
+  expect_identical(
+    variables(lm(mpg + hp ~ disp, mtcars)),
+    list(outcome = c("mpg", "hp"), predictor = c("disp"))
+  )
+})
+
+test_that("variables works with bare formulae", {
+  expect_identical(
+    variables(mpg ~ NULL),
+    list(outcome = "mpg", predictor = character(0))
+  )
+})
+
+test_that("variables works with supernova object", {
+  expect_identical(
+    variables(supernova(lm(mpg ~ NULL, mtcars))),
+    list(outcome = "mpg", predictor = character(0))
+  )
+})
+
+# Regression values -------------------------------------------------------
 
 test_that("supernova calcs. (quant. ~ NULL) ANOVA correctly", {
-  model <- lm(mpg ~ NULL, data = mtcars)
-  expected <- anova(model)
-  supernova(model)$tbl %>%   
-    tail(1) %>% 
-    expect_data(
-      expected$`Sum Sq`, expected$Df, expected$`Mean Sq`, 
-      NA_real_, NA_real_, NA_real_
-    )
-})
-
-test_that("supernova calcs. (quant. ~ quant.) ANOVA correctly", {
-  model <- lm(mpg ~ hp, data = mtcars)
-  supernova(model)$tbl %>% 
-    expect_data_overall_model(model)
-})
-
-test_that("supernova calcs. (quant. ~ cat.) ANOVA correctly", {
-  model <- lm(uptake ~ Type, data = CO2)
-  supernova(model)$tbl %>% 
-    expect_data_overall_model(model)
-})
-
-
-# Additive multiple regression --------------------------------------------
-
-# NOTE: All hard-coded test values below are for the partials, and they were
-# found by car::Anova(model, type = 3). The car package is widely
-# known and used by many, and can be considered trustworthy.
-
-test_that("supernova calcs. (quant. ~ quant. + quant.) ANOVA Type 3 SS", {
-  model <- lm(mpg ~ hp + disp, data = mtcars)
-  ss <- calc_ss(model)
-  x1 <- list(ssr = 33.66525, f = 3.4438, p = 0.07368) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
-  x2 <- list(ssr = 164.18088, f = 16.7949, p = 0.00031) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
-
+  model <- lm(Thumb ~ NULL, Fingers)
+  e <- anova(model)
   supernova(model)$tbl %>%
-    expect_data_overall_model(model) %>%
-    expect_data_row(2, x1$ssr, 1, x1$ssr / 1, x1$f, x1$pre, x1$p) %>%
-    expect_data_row(3, x2$ssr, 1, x2$ssr / 1, x2$f, x2$pre, x2$p)
+    tail(1) %>%
+    expect_data(e$`Sum Sq`, e$Df, e$`Mean Sq`,NA_real_, NA_real_, NA_real_)
 })
 
-test_that("supernova calcs. (quant. ~ cat. + quant.) ANOVA Type 3 SS", {
-  model <- lm(Thumb ~ RaceEthnic + Weight, data = Fingers)
-  ss <- calc_ss(model)
-  x1 <- list(ssr =  347.5909, df = 4, f =  1.3381, p = 0.2584) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
-  x2 <- list(ssr = 1411.9531, df = 1, f = 21.7425, p = 6.808e-06) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
-  
-  supernova(model)$tbl %>%
-    expect_data_overall_model(model) %>%
-    expect_data_row(2, x1$ssr, x1$df, x1$ssr / x1$df, x1$f, x1$pre, x1$p) %>%
-    expect_data_row(3, x2$ssr, x2$df, x2$ssr / x2$df, x2$f, x2$pre, x2$p)
+test_that("supernova correctly calcs. ANOVA Type 3 SS for multiple regression", {
+  # q ~ q
+  expect_supernova(lm(Thumb ~ Weight, Fingers))
+
+  # q ~ c
+  expect_supernova(lm(Thumb ~ RaceEthnic, Fingers))
+
+  # q ~ q + q
+  expect_supernova(lm(Thumb ~ Weight + Height, Fingers))
+
+  # q ~ c + q
+  expect_supernova(lm(Thumb ~ RaceEthnic + Weight, Fingers))
+
+  # q ~ c + c
+  expect_supernova(lm(Thumb ~ RaceEthnic + Sex, Fingers))
+
+  # q ~ c + c + c
+  expect_supernova(lm(Thumb ~ RaceEthnic + Weight + Sex, Fingers))
+
+  # q ~ q * q
+  expect_supernova(lm(Thumb ~ Weight * Height, Fingers))
+
+  # q ~ c * q
+  expect_supernova(lm(Thumb ~ RaceEthnic * Weight, Fingers))
+
+  # q ~ c * c
+  expect_supernova(lm(Thumb ~ RaceEthnic * Sex, Fingers))
+
+  # q ~ c + q * c
+  expect_supernova(lm(Thumb ~ RaceEthnic + Weight * Sex, Fingers))
+
+  # q ~ c * q * c
+  expect_supernova(lm(Thumb ~ RaceEthnic * Weight * Sex, Fingers))
 })
 
-test_that("supernova calcs. (quant. ~ cat. + cat.) ANOVA Type 3 SS", {
-  model <- lm(Thumb ~ RaceEthnic + Sex, data = Fingers)
-  ss <- calc_ss(model)
-  x1 <- list(ssr = 542.1871, df = 4, f =  2.045974, p = 9.076844e-02) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
-  x2 <- list(ssr = 1214.1,   df = 1, f = 18.325244, p = 3.295751e-05) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
-  
-  supernova(model)$tbl %>%
-    expect_data_overall_model(model) %>%
-    expect_data_row(2, x1$ssr, x1$df, x1$ssr / x1$df, x1$f, x1$pre, x1$p) %>%
-    expect_data_row(3, x2$ssr, x2$df, x2$ssr / x2$df, x2$f, x2$pre, x2$p)
+
+# Unbalanced and missing data ---------------------------------------------
+
+# This needs to match with df.missing in cache_test_data.R
+get_data_with_missing <- function() {
+  df.missing <- mtcars
+  df.missing[1,]$hp <- NA_real_
+  df.missing[2:3,]$disp <- NA_real_
+  return(df.missing)
+}
+
+test_that("update() inherits na.action from lm() fit", {
+  # no missing data
+  model <- lm(mpg ~ hp * disp, mtcars)
+  updated <- update(model, . ~ NULL)
+  expect_length(resid(updated), length(resid(model)))
+
+  # missing data
+  df.missing <- get_data_with_missing()
+
+  # na.omit (default)
+  model <- lm(mpg ~ hp * disp, df.missing)
+  updated <- update(model, . ~ NULL)
+  expect_length(resid(updated), length(resid(model)))
+
+  # na.omit (explicit)
+  model <- lm(mpg ~ hp * disp, df.missing, na.action = na.omit)
+  updated <- update(model, . ~ NULL)
+  expect_length(resid(updated), length(resid(model)))
+
+  # na.exclude
+  model <- lm(mpg ~ hp * disp, df.missing, na.action = na.exclude)
+  updated <- update(model, . ~ NULL)
+  expect_length(resid(updated), length(resid(model)))
 })
 
-test_that("supernova calcs. additive 3-way mixed model ANOVA Type 3 SS", {
-  model <- lm(Thumb ~ RaceEthnic + Weight + Sex, data = Fingers)
-  ss <- calc_ss(model)
-  x1 <- list(ssr = 327.1720, df = 4, f = 1.292271, p = 2.756319e-01) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
-  x2 <- list(ssr = 509.7228, df = 1, f = 8.053257, p = 5.171346e-03) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
-  x3 <- list(ssr = 311.8257, df = 1, f = 4.926625, p = 2.794657e-02) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
-  
-  supernova(model)$tbl %>%
-    expect_data_overall_model(model) %>%
-    expect_data_row(2, x1$ssr, x1$df, x1$ssr / x1$df, x1$f, x1$pre, x1$p) %>%
-    expect_data_row(3, x2$ssr, x2$df, x2$ssr / x2$df, x2$f, x2$pre, x2$p) %>% 
-    expect_data_row(4, x3$ssr, x3$df, x3$ssr / x3$df, x3$f, x3$pre, x3$p)
+test_that("supernova uses listwise deletion for missing data", {
+  df.missing <- get_data_with_missing()
+
+  # one-way
+  df_total <- sum(!is.na(df.missing$hp)) - 1
+  expect_supernova(lm(mpg ~ hp, df.missing))  %>%
+    # explicitly test correct df
+    # this needs to be checked because otherwise the total row will show
+    # nrow() - 1 for df instead of looking at only complete cases
+    .$tbl %>% expect_col_equal("df", c(1, df_total - 1, df_total))
+
+  # two-way
+  df_total <- nrow(na.omit(select(df.missing, mpg, hp, disp))) - 1
+  expect_supernova(lm(mpg ~ hp * disp, df.missing)) %>%
+    .$tbl %>% expect_col_equal("df", c(3, 1, 1, 1, df_total - 3, df_total))
 })
 
-# Interactive multiple regression -----------------------------------------
+test_that("message is given for number of rows deleted due to missing cases", {
+  df.missing <- get_data_with_missing()
 
-# NOTE: All hard-coded test values below are for the partials, and they were
-# found by car::Anova(model, type = 3). The car package is widely
-# known and used by many, and can be considered trustworthy.
-
-test_that("supernova calcs. (quant. ~ quant. * quant.) ANOVA Type 3 SS", {
-  model <- lm(mpg ~ hp * disp, data = mtcars)
-  ss <- calc_ss(model)
-  x1   <- list(ssr = 113.39272, f = 15.651, p = 0.0004725) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
-  x2 <- list(ssr = 188.44895, f = 26.011, p = 0.00002109) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
-  int  <- list(ssr =  80.63539, f = 11.130, p = 0.0024070) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
-  
-  supernova(model)$tbl %>%
-    expect_data_overall_model(model) %>%
-    expect_data_row(2, x1$ssr, 1, x1$ssr / 1, x1$f, x1$pre, x1$p) %>%
-    expect_data_row(3, x2$ssr, 1, x2$ssr / 1, x2$f, x2$pre, x2$p) %>%
-    expect_data_row(4, int$ssr, 1, int$ssr / 1, int$f, int$pre, int$p)
+  expect_message(supernova(lm(mpg ~ hp, mtcars)), NA)
+  expect_message(
+    supernova(lm(mpg ~ hp, df.missing)),
+    "Note: 1 case removed due to missing value(s). Row number: 1",
+    fixed = TRUE)
+  expect_message(
+    supernova(lm(mpg ~ disp, df.missing)),
+    "Note: 2 cases removed due to missing value(s). Row numbers: 2, 3",
+    fixed = TRUE)
+  expect_message(
+    supernova(lm(mpg ~ hp * disp, df.missing)),
+    "Note: 3 cases removed due to missing value(s). Row numbers: 1, 2, 3",
+    fixed = TRUE)
 })
 
-test_that("supernova calcs. (quant. ~ cat. * quant.) ANOVA Type 3 SS", {
-  model <- lm(Thumb ~ RaceEthnic * Weight, data = Fingers)
-  ss <- calc_ss(model)
-  x1 <-  list(ssr = 237.8776, df = 4, f = 0.9053925, p = 4.625566e-01) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
-  x2 <-  list(ssr = 599.5416, df = 1, f = 9.1277270, p = 2.970283e-03) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
-  int <- list(ssr = 150.4405, df = 4, f = 0.5725956, p = 6.829344e-01) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
-
-  supernova(model)$tbl %>%
-    expect_data_overall_model(model) %>%
-    expect_data_row(2, x1$ssr, x1$df, x1$ssr / x1$df, x1$f, x1$pre, x1$p) %>%
-    expect_data_row(3, x2$ssr, x2$df, x2$ssr / x2$df, x2$f, x2$pre, x2$p) %>% 
-    expect_data_row(4, int$ssr, int$df, int$ssr / int$df, int$f, int$pre, int$p)
+test_that("supernova makes correct calculations for unbalanced data", {
+  expect_supernova(lm(uptake ~ Treatment, data = CO2[1:80,]))
+  expect_supernova(lm(uptake ~ Treatment * Type, data = CO2[1:80,]))
 })
-
-test_that("supernova calcs. (quant. ~ cat. * cat.) ANOVA Type 3 SS", {
-  model <- lm(Thumb ~ RaceEthnic * Sex, data = Fingers)
-  ss <- calc_ss(model)
-  x1 <-  list(ssr = 720.1771, df = 4, f =  2.745803, p = 3.061602e-02) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
-  x2 <-  list(ssr = 919.3382, df = 1, f = 14.020560, p = 2.589060e-04) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
-  int <- list(ssr = 364.9248, df = 4, f =  1.391340, p = 2.397720e-01) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
-
-  supernova(model)$tbl %>%
-    expect_data_overall_model(model) %>%
-    expect_data_row(2, x1$ssr, x1$df, x1$ssr / x1$df, x1$f, x1$pre, x1$p) %>% 
-    expect_data_row(3, x2$ssr, x2$df, x2$ssr / x2$df, x2$f, x2$pre, x2$p) %>% 
-    expect_data_row(4, int$ssr, int$df, int$ssr / int$df, int$f, int$pre, int$p)
-})
-
-test_that("supernova calcs. interactive model with addl. regressor Type 3 SS", {
-  model <- lm(Thumb ~ RaceEthnic + Weight * Sex, data = Fingers)
-  ss <- calc_ss(model)
-  r <- list(ssr = 327.29294, df = 4, f = 1.29505, p = 0.2745969) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
-  w <- list(ssr = 485.92344, df = 1, f = 7.69091, p = 0.0062597) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
-  s <- list(ssr = 177.56371, df = 1, f = 2.81037, p = 0.0957535) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
-  ws <- list(ssr = 80.05167, df = 1, f = 1.26701, p = 0.2621380) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
-  
-  supernova(model)$tbl %>%
-    expect_data_overall_model(model) %>%
-    expect_data_row(2, r$ssr, r$df, r$ssr / r$df, r$f, r$pre, r$p) %>%
-    expect_data_row(3, w$ssr, w$df, w$ssr / w$df, w$f, w$pre, w$p) %>%
-    expect_data_row(4, s$ssr, s$df, s$ssr / s$df, s$f, s$pre, s$p) %>% 
-    expect_data_row(5, ws$ssr, ws$df, ws$ssr / ws$df, ws$f, ws$pre, ws$p)
-})
-
-test_that("supernova calcs. interactive 3-way mixed model ANOVA Type 3 SS", {
-  model <- lm(Thumb ~ RaceEthnic * Weight * Sex, data = Fingers)
-  ss <- calc_ss(model)
-  r <- list(ssr =  137.94928, df = 4, f = 0.52429, p = 0.71803) %>% 
-    c(pre = calc_pre(.$ssr, ss$sse))
-  w <- list(ssr =    8.89483, df = 1, f = 0.13522, p = 0.71364) %>% 
-    c(pre = calc_pre(.$ssr, ss$sse))
-  s <- list(ssr =    6.84062, df = 1, f = 0.10399, p = 0.74758) %>%
-    c(pre = calc_pre(.$ssr, ss$sse))
-  rw <- list(ssr =  91.58906, df = 4, f = 0.34809, p = 0.84499) %>% 
-    c(pre = calc_pre(.$ssr, ss$sse))
-  rs <- list(ssr =   9.16352, df = 4, f = 0.03483, p = 0.99765) %>% 
-    c(pre = calc_pre(.$ssr, ss$sse))
-  ws <- list(ssr =   3.04586, df = 1, f = 0.04630, p = 0.82994) %>% 
-    c(pre = calc_pre(.$ssr, ss$sse))
-  rws <- list(ssr = 22.27521, df = 4, f = 0.08466, p = 0.98704) %>% 
-    c(pre = calc_pre(.$ssr, ss$sse))
-    
-  supernova(model)$tbl %>%
-    expect_data_overall_model(model) %>%
-    expect_data_row(2, r$ssr, r$df, r$ssr / r$df, r$f, r$pre, r$p) %>%
-    expect_data_row(3, w$ssr, w$df, w$ssr / w$df, w$f, w$pre, w$p) %>%
-    expect_data_row(4, s$ssr, s$df, s$ssr / s$df, s$f, s$pre, s$p) %>% 
-    expect_data_row(5, rw$ssr, rw$df, rw$ssr / rw$df, rw$f, rw$pre, rw$p) %>% 
-    expect_data_row(6, rs$ssr, rs$df, rs$ssr / rs$df, rs$f, rs$pre, rs$p) %>% 
-    expect_data_row(7, ws$ssr, ws$df, ws$ssr / ws$df, ws$f, ws$pre, ws$p) %>% 
-    expect_data_row(8, rws$ssr, rws$df, rws$ssr / rws$df, rws$f, rws$pre, rws$p)
-})
-
