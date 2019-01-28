@@ -1,5 +1,4 @@
 context("ANOVA values")
-library(glue)
 library(dplyr)
 library(supernova)
 
@@ -35,12 +34,12 @@ calc_pre <- function(ssr, sse) {
 # Test a named column of a data.frame against a vector of expected values
 expect_col_equal <- function(object, col_name, expected, ...) {
   column <- object[[col_name]]
-  act <- quasi_label(rlang::enquo(column), glue("obj${col_name}"))
+  act <- quasi_label(rlang::enquo(column), sprintf("obj$%s", col_name))
   exp <- quasi_label(rlang::enquo(expected))
   comp <- compare(act$val, exp$val, ...)
-  expect(comp$equal, glue(
-    "{act$lab} not equal to {exp$lab}.\n", "{comp$message}\n",
-    "Actual: {tibble(act$val)}\n", "Expected: {tibble(exp$val)}"
+  expect(comp$equal, sprintf(
+    "%s not equal to %s.\n%s\nActual: %s\n", "Expected: %s",
+    act$lab, exp$lab, comp$message, tibble(act$val), tibble(exp$val)
   ))
   invisible(object)
 }
@@ -231,6 +230,8 @@ get_data_with_missing <- function() {
 }
 
 test_that("update() inherits na.action from lm() fit", {
+  update <- supernova:::update
+
   # no missing data
   model <- lm(mpg ~ hp * disp, mtcars)
   updated <- update(model, . ~ NULL)
