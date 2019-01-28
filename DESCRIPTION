@@ -21,3 +21,5 @@ Suggests:
 RoxygenNote: 6.1.1
 URL: https://github.com/UCLATALL/supernova
 BugReports: https://github.com/UCLATALL/supernova/issues
+Imports: 
+    dplyr
