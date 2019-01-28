@@ -230,6 +230,8 @@ get_data_with_missing <- function() {
 }
 
 test_that("update() inherits na.action from lm() fit", {
+  update <- supernova:::update
+
   # no missing data
   model <- lm(mpg ~ hp * disp, mtcars)
   updated <- update(model, . ~ NULL)

@@ -121,7 +121,6 @@ supernova <- function(fit) {
 #'   \code{name = NULL} to remove the argument name.
 #'
 #' @return If evaluate = TRUE the fitted object, otherwise the updated call.
-#' @export
 update <- function(old, new, ...) {
   vars <- all.vars(formula(old))
   data <- eval(old$call$data, environment(formula(old)))
