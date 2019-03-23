@@ -50,7 +50,6 @@ test_that("single predictor tables are beautifully formatted", {
                            dashes(s_tbl$F, 3), "------ -----")
 
   expect_length(printed, 3 + 1 + 3 + 2)  # header, colnames, rows, rules
-  expect_match(printed[1], "Analysis of Variance Table \\(Type III SS\\)")
   expect_match(printed[2], paste("Model:", deparse(formula(model))), fixed = TRUE)
   expect_match(printed[3], "")
   expect_match(printed[[4]], "^\\s+SS\\s+df\\s+MS\\s+F\\s+PRE\\s+p$")
@@ -74,7 +73,6 @@ test_that("multiple predictor tables are beautifully formatted", {
     "------ -----"))
 
   expect_length(printed, 3 + 1 + 5 + 2)  # header, colnames, rows, rules
-  expect_match(printed[1], "Analysis of Variance Table \\(Type III SS\\)")
   expect_match(printed[2], paste("Model:", deparse(formula(model))), fixed = TRUE)
   expect_match(printed[3], "")
   expect_match(printed[[4]], "^\\s+SS\\s+df\\s+MS\\s+F\\s+PRE\\s+p$")
@@ -85,4 +83,15 @@ test_that("multiple predictor tables are beautifully formatted", {
   expect_match(printed[[9]], pat_error)
   expect_identical(printed[[10]], horizontal_rule)
   expect_match(printed[[11]], pat_total)
+})
+
+test_that("type information is included in the header attribute", {
+  headers <- list(
+    capture.output(supernova(lm(mpg ~ hp, data = mtcars), type = 1))[[1]],
+    capture.output(supernova(lm(mpg ~ hp, data = mtcars), type = 2))[[1]],
+    capture.output(supernova(lm(mpg ~ hp, data = mtcars), type = 3))[[1]]
+  )
+  expect_match(headers[[1]], "Analysis of Variance Table \\(Type I SS\\)")
+  expect_match(headers[[2]], "Analysis of Variance Table \\(Type II SS\\)")
+  expect_match(headers[[3]], "Analysis of Variance Table \\(Type III SS\\)")
 })
