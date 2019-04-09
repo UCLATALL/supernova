@@ -13,14 +13,17 @@ Description: Produces ANOVA tables in the format used by Judd, McClelland, and R
 License: GPL-3
 Suggests: 
     car,
-    dplyr,
-    mosaic,
+    fivethirtyeight,
     Lock5withR,
     okcupiddata,
-    fivethirtyeight,
     purrr,
     rlang,
     testthat
 RoxygenNote: 6.1.1
 URL: https://github.com/UCLATALL/supernova
 BugReports: https://github.com/UCLATALL/supernova/issues
+Imports: 
+    dplyr,
+    magrittr,
+    mosaic,
+    ggformula
