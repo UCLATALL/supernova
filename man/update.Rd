@@ -29,10 +29,10 @@ information.
 }
 \details{
 \strong{Problem with pipes:} \code{\link[stats]{update}} does not support
-linear models where the data was piped via \code{\link[magrittr]{\%>\%}} to
-the model function as in \code{mtcars \%>\% lm(mpg ~ hp, data = .) \%>\%
+linear models where the data was piped via \code{\link[magrittr:pipe]{\%>\%}}
+to the model function as in \code{mtcars \%>\% lm(mpg ~ hp, data = .) \%>\%
 stats::update()}. This is because the \code{\link[stats]{update}} function
-relies on \code{\link[stats]{getCall}}, which returns a call that has
+relies on \code{\link[stats:update]{getCall}}, which returns a call that has
 \code{data = .} argument, which is completely uninformative. This function
 creates a new model by extracting the formula from the old model via
 \code{\link[stats]{formula}} and the data used in the old model via the

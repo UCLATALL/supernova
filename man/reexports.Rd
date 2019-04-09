@@ -50,12 +50,11 @@ below to see their documentation.
 \describe{
   \item{dplyr}{\code{\link[dplyr]{select}}, \code{\link[dplyr]{filter}}, \code{\link[dplyr]{arrange}}, \code{\link[dplyr]{mutate}}, \code{\link[dplyr]{recode}}}
 
-  \item{ggformula}{\code{\link[ggformula]{gf_bar}}, \code{\link[ggformula]{gf_boxplot}}, \code{\link[ggformula]{gf_boxploth}}, \code{\link[ggformula]{gf_density}}, \code{\link[ggformula]{gf_histogram}}, \code{\link[ggformula]{gf_histogramh}}, \code{\link[ggformula]{gf_dhistogram}}, \code{\link[ggformula]{gf_dhistogramh}}, \code{\link[ggformula]{gf_point}}, \code{\link[ggformula]{gf_jitter}}, \code{\link[ggformula]{gf_dist}}, \code{\link[ggformula]{gf_lm}}, \code{\link[ggformula]{gf_abline}}, \code{\link[ggformula]{gf_hline}}, \code{\link[ggformula]{gf_vline}}, \code{\link[ggformula]{gf_facet_grid}}, \code{\link[ggformula]{gf_facet_wrap}}, \code{\link[ggformula]{gf_labs}}}
+  \item{ggformula}{\code{\link[ggformula]{gf_bar}}, \code{\link[ggformula]{gf_boxplot}}, \code{\link[ggformula]{gf_boxploth}}, \code{\link[ggformula]{gf_density}}, \code{\link[ggformula]{gf_histogram}}, \code{\link[ggformula:gf_histogram]{gf_histogramh}}, \code{\link[ggformula:gf_histogram]{gf_dhistogram}}, \code{\link[ggformula:gf_histogram]{gf_dhistogramh}}, \code{\link[ggformula]{gf_point}}, \code{\link[ggformula]{gf_jitter}}, \code{\link[ggformula]{gf_dist}}, \code{\link[ggformula:gf_smooth]{gf_lm}},\code{\link[ggformula:gf_lines]{gf_abline}}, \code{\link[ggformula:gf_lines]{gf_hline}}, \code{\link[ggformula:gf_lines]{gf_vline}}, \code{\link[ggformula:gf_facet_grid]{gf_facet_grid}}, \code{\link[ggformula:gf_facet_grid]{gf_facet_wrap}}, \code{\link[ggformula:gf_aux]{gf_labs}}}
 
   \item{lsr}{\code{\link[lsr]{cohensD}}}
 
-  \item{mosaic}{\code{\link[mosaic]{mean}}, \code{\link[mosaic]{median}}, \code{\link[mosaic]{var}}, \code{\link[mosaic]{sd}}, \code{\link[mosaic]{favstats}}, \code{\link[mosaic]{cor}}, \code{\link[mosaic]{xpnorm}}, \code{\link[mosaic]{zscore}}, \code{\link[mosaic]{sample}}, \code{\link[mosaic]{resample}}, \code{\link[mosaic]{do}}, \code{\link[mosaic]{shuffle}}}
+  \item{mosaic}{\code{\link[mosaic:aggregating]{mean}}, \code{\link[mosaic:aggregating]{median}}, \code{\link[mosaic:aggregating]{var}}, \code{\link[mosaic:aggregating]{sd}}, \code{\link[mosaic:aggregating]{favstats}}, \code{\link[mosaic:aggregating]{cor}}, \code{\link[mosaic]{xpnorm}}, \code{\link[mosaic]{zscore}}, \code{\link[mosaic:resample]{sample}}, \code{\link[mosaic]{resample}}, \code{\link[mosaic]{do}}, \code{\link[mosaic:resample]{shuffle}}}
 
   \item{mosaicCore}{\code{\link[mosaicCore]{tally}}, \code{\link[mosaicCore]{makeFun}}}
 }}
-
