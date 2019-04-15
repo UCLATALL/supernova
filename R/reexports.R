@@ -37,7 +37,6 @@ mosaic::IQR
 mosaic::mean
 
 #' @importFrom mosaic mean_
-#' @export
 mosaic::mean_
 
 #' @importFrom mosaic median
@@ -196,11 +195,9 @@ ggformula::gf_dist
 ggformula::gf_lm
 
 #' @importFrom ggformula StatLm
-#' @export
 ggformula::StatLm
 
 #' @importFrom ggformula GeomLm
-#' @export
 ggformula::GeomLm
 
 #' @importFrom ggformula gf_abline
