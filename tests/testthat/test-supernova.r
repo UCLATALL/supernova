@@ -1,4 +1,4 @@
-context("ANOVA values")
+context("ANOVA values and formatting")
 library(dplyr)
 
 # Notes -------------------------------------------------------------------
@@ -306,3 +306,67 @@ test_that("supernova makes correct calculations for unbalanced data", {
   expect_supernova(supernova(lm(uptake ~ Treatment, data = CO2[1:80,])))
   expect_supernova(supernova(lm(uptake ~ Treatment * Type, data = CO2[1:80,])))
 })
+
+
+# Formatting --------------------------------------------------------------
+
+test_that("supernova tables object has explanatory header", {
+  model <- lm(mpg ~ hp * disp, data = mtcars)
+  printed <- capture.output(supernova(model, type = 1))
+  expect_identical(printed[1:3], c(
+    " Analysis of Variance Table (Type I SS)",
+    " Model: mpg ~ hp * disp",
+    " "
+  ))
+
+  printed <- capture.output(supernova(model, type = 2))
+  expect_identical(printed[[1]], " Analysis of Variance Table (Type II SS)")
+
+  printed <- capture.output(supernova(model, type = 3))
+  expect_identical(printed[[1]], " Analysis of Variance Table (Type III SS)")
+})
+
+test_that("columns have general ANOVA table names", {
+  model <- lm(mpg ~ hp * disp, data = mtcars)
+  printed <- capture.output(supernova(model, type = 1))
+  expect_match(printed[[4]], "^\\s+SS\\s+df\\s+MS\\s+F\\s+PRE\\s+p$")
+})
+
+test_that("null model tables are beautifully formatted", {
+  model <- lm(mpg ~ NULL, data = mtcars)
+  printed <- capture.output(supernova(model))
+  expect_identical(printed[5:9], c(
+    " ----- ----------------- -------- --- ------ --- --- ---",
+    " Model (error reduced) |      --- ---    --- --- --- ---",
+    " Error (from model)    |      --- ---    --- --- --- ---",
+    " ----- ----------------- -------- --- ------ --- --- ---",
+    " Total (empty model)   | 1126.047  31 36.324            "
+  ))
+})
+
+test_that("single predictor tables are beautifully formatted", {
+  model <- lm(mpg ~ hp, data = mtcars)
+  printed <- capture.output(supernova(model))
+  expect_identical(printed[5:9], c(
+    " ----- ----------------- -------- -- ------- ------ ------ -----",
+    " Model (error reduced) |  678.373  1 678.373 45.460 0.6024 .0000",
+    " Error (from model)    |  447.674 30  14.922                    ",
+    " ----- ----------------- -------- -- ------- ------ ------ -----",
+    " Total (empty model)   | 1126.047 31  36.324                    "
+  ))
+})
+
+test_that("multiple predictor tables are beautifully formatted", {
+  model <- lm(mpg ~ hp + disp, data = mtcars)
+  printed <- capture.output(supernova(model))
+  expect_identical(printed[5:11], c(
+    " ----- ----------------- -------- -- ------- ------ ------ -----",
+    " Model (error reduced) |  842.554  2 421.277 43.095 0.7482 .0000",
+    "    hp                 |   33.665  1  33.665  3.444 0.1061 .0737",
+    "  disp                 |  164.181  1 164.181 16.795 0.3667 .0003",
+    " Error (from model)    |  283.493 29   9.776                    ",
+    " ----- ----------------- -------- -- ------- ------ ------ -----",
+    " Total (empty model)   | 1126.047 31  36.324                    "
+  ))
+})
+

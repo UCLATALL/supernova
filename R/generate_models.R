@@ -76,16 +76,15 @@
 #' @export
 generate_models <- function(model, type) {
   type <- resolve_type(type)
-
-  if (type == 3) warning(
-    "The Type III models generated above cannot be compared using anova().\n",
-    "  For model comparisons with Type III, use drop1() instead.\n",
-    "  Type ?generate_models() for more details.\n"
-  )
-
   mod_vars <- variables(model)
   outcome <- mod_vars$outcome
   terms <- mod_vars$predictor
+
+  if (type == 3) warning(
+    "The Type III models generated cannot be compared using anova().\n",
+    "  For model comparisons with Type III, use drop1() instead.\n",
+    "  Type ?generate_models() for more details.\n"
+  )
 
   # generate comparison models for individual terms
   models <- purrr::imap(terms, function(term, term_index) {
@@ -96,18 +95,16 @@ generate_models <- function(model, type) {
         # remove terms other than the target term that contain the target term
         purrr::discard(function(x) all(strsplit(term,  ":")[[1]] %in% x)) %>%
         names() %>%
-        # re-add the target term at its position
         append(term, after = term_index - 1)
       complex <- to_formula(outcome, rhs)
     }
     if (type == 3) complex <- to_formula(outcome, terms)
 
-    simple <- remove_term(complex, term)
-    list(complex = complex, simple = simple)
+    list(complex = complex, simple = remove_term(complex, term))
   })
 
+  # add names to list and prepend full model comparison
   if (!purrr::is_empty(models)) {
-    # add names to list and prepend full model comparison
     models <- models %>%
       magrittr::set_names(terms) %>%
       append(list(`Full Model` = list(
@@ -166,10 +163,6 @@ remove_term <- function(model, term) {
   terms <- vars$predictor
   rhs <- if (length(terms) == 1) "NULL" else terms[!terms %in% term]
   to_formula(vars$outcome, rhs)
-}
-
-cat_line <- function(...) {
-  cat(paste0(...), "\n", sep = "")
 }
 
 formula_string <- function(obj, part, term) {
