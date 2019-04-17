@@ -103,65 +103,45 @@ supernova <- function(fit, type = 3) {
 #' @rdname supernova
 superanova <- supernova
 
-
-# Printing ----------------------------------------------------------------
-
-#' print.supernova
-#'
-#' A print method for the supernova class
-#'
-#' @param x A \code{\link{supernova}} object.
-#' @param pcut The integer number of decimal places of p-values to show.
-#' @param ... Additional display arguments.
-#'
-#' @importFrom stats formula
-#'
 #' @export
 print.supernova <- function(x, pcut = 4, ...) {
   # setup
-  y <- x$tbl
+  tbl <- x$tbl
 
-  # df to integer
-  y$df <- format(as.integer(y$df))
-
-  # SS, MS, F to 3 decimals
-  digits_cols <- names(y) %in% c("SS", "MS", "F")
-  y[digits_cols] <- format(round(y[digits_cols], 3), nsmall = 3)
-
-  # PRE to 4 decimals
-  y$PRE <- format(round(y$PRE, 4), nsmall = 4, scientific = FALSE)
-
-  # p to pcut
-  y$p <- format(round(y$p, pcut), nsmall = pcut, scientific = FALSE)
+  # df to integer; SS, MS, F to 3 decimals; PRE to 4 decimals; p to pcut
+  tbl$df <- format(as.integer(tbl$df))
+  tbl[c("SS", "MS", "F")] <- format(round(tbl[c("SS", "MS", "F")], 3), nsmall = 3)
+  tbl$PRE <- format(round(tbl$PRE, 4), nsmall = 4, scientific = FALSE)
+  tbl$p <- format(round(tbl$p, pcut), nsmall = pcut, scientific = FALSE)
 
   # NAs to blank spots
-  y$description[is.na(y$description)] <- ""
-  y <- data.frame(lapply(y, function(x) {gsub("\\s*NA\\s*", "   ", x)}),
+  tbl$description[is.na(tbl$description)] <- ""
+  tbl <- data.frame(lapply(tbl, function(x) gsub("\\s*NA\\s*", "   ", x)),
                   stringsAsFactors = FALSE)
 
   # trim leading 0 from p
-  y$p <- substring(y$p, 2)
+  tbl$p <- substring(tbl$p, 2)
 
   # add spaces and a vertical bar to separate the terms & desc from values
   barHelp <- function(x, y) paste0(x, y, " |")
-  spaces_to_add <- max(nchar(y$description)) - nchar(y$description)
-  y$description <- mapply(barHelp, y$description, strrep(" ", spaces_to_add))
+  spaces_to_add <- max(nchar(tbl$description)) - nchar(tbl$description)
+  tbl$description <- mapply(barHelp, tbl$description, strrep(" ", spaces_to_add))
 
   # remove unnecessary column names
-  names(y)[1:2] <- c("", "")
+  names(tbl)[1:2] <- c("", "")
 
   # add placeholders for null model
-  if (length(variables(x$fit)$predictor) == 0) y[1:2, 3:8] <- "---"
+  if (length(variables(x$fit)$predictor) == 0) tbl[1:2, 3:8] <- "---"
 
   # add horizontal separator under header and before total line
-  y <- insert_rule(y, 1)
-  y <- insert_rule(y, nrow(y))
+  tbl <- insert_rule(tbl, 1)
+  tbl <- insert_rule(tbl, nrow(tbl))
 
   # printing
-  cat(" Analysis of Variance Table (Type ", attr(x, "type"), " SS)", "\n",
-      " Model: ", deparse(formula(x$fit)),         "\n",
-      " \n", sep = "")
-  print(y, row.names = FALSE)
+  cat_line(" Analysis of Variance Table (Type ", attr(x, "type"), " SS)")
+  cat_line(" Model: ", deparse(formula(x$fit)))
+  cat_line(" ")
+  print(tbl, row.names = FALSE)
 }
 
 # Insert a horizontal rule in table for pretty printing
@@ -169,7 +149,7 @@ print.supernova <- function(x, pcut = 4, ...) {
 # @param df        Original data.frame
 # @param insert_at The row in which to insert the new contents
 #
-# @return df The original data.frame with the new row inserted.
+# @return The original data.frame with the new row inserted.
 insert_rule <- function(df, insert_at) {
   df[seq(insert_at + 1, nrow(df) + 1), ] <- df[seq(insert_at, nrow(df)), ]
   df[insert_at, ] <- strrep("-", vapply(df, function(x) max(nchar(x)), 0))
