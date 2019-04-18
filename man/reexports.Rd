@@ -21,6 +21,8 @@
 \alias{var}
 \alias{cohensD}
 \alias{makeFun}
+\alias{fitdistr}
+\alias{fit_distr_fun}
 \alias{xcnorm}
 \alias{xpnorm}
 \alias{xqnorm}
@@ -39,9 +41,21 @@
 \alias{shuffle}
 \alias{gf_bar}
 \alias{gf_boxplot}
+\alias{GeomBoxploth}
+\alias{StatBoxploth}
+\alias{gf_boxploth}
 \alias{gf_density}
 \alias{gf_histogram}
 \alias{gf_dhistogram}
+\alias{StatBinh}
+\alias{GeomBarh}
+\alias{stat_binh}
+\alias{geom_barh}
+\alias{position_stackv}
+\alias{gf_histogramh}
+\alias{gf_dhistogramh}
+\alias{StatFitdistr}
+\alias{gf_fitdistr}
 \alias{gf_point}
 \alias{gf_jitter}
 \alias{gf_dist}
@@ -61,14 +75,18 @@ These objects are imported from other packages. Follow the links
 below to see their documentation.
 
 \describe{
+  \item{MASS}{\code{\link[MASS]{fitdistr}}}
+
   \item{dplyr}{\code{\link[dplyr]{select}}, \code{\link[dplyr]{filter}}, \code{\link[dplyr]{arrange}}, \code{\link[dplyr]{mutate}}, \code{\link[dplyr]{recode}}}
 
-  \item{ggformula}{\code{\link[ggformula]{gf_bar}}, \code{\link[ggformula]{gf_boxplot}}, \code{\link[ggformula]{gf_density}}, \code{\link[ggformula]{gf_histogram}}, \code{\link[ggformula:gf_histogram]{gf_dhistogram}}, \code{\link[ggformula]{gf_point}}, \code{\link[ggformula]{gf_jitter}}, \code{\link[ggformula]{gf_dist}}, \code{\link[ggformula:gf_smooth]{gf_lm}}, \code{\link[ggformula:ggformula-ggproto]{StatLm}}, \code{\link[ggformula:ggformula-ggproto]{GeomLm}}, \code{\link[ggformula:gf_lines]{gf_abline}}, \code{\link[ggformula:gf_lines]{gf_hline}}, \code{\link[ggformula:gf_lines]{gf_vline}}, \code{\link[ggformula]{gf_facet_grid}}, \code{\link[ggformula:gf_facet_grid]{gf_facet_wrap}}, \code{\link[ggformula:gf_aux]{gf_labs}}}
+  \item{ggformula}{\code{\link[ggformula]{gf_bar}}, \code{\link[ggformula]{gf_boxplot}}, \code{\link[ggformula]{gf_boxploth}}, \code{\link[ggformula]{gf_density}}, \code{\link[ggformula]{gf_histogram}}, \code{\link[ggformula:gf_histogram]{gf_dhistogram}}, \code{\link[ggformula:gf_histogram]{gf_histogramh}}, \code{\link[ggformula:gf_histogram]{gf_dhistogramh}}, \code{\link[ggformula:ggformula-ggproto]{StatFitdistr}}, \code{\link[ggformula]{gf_fitdistr}}, \code{\link[ggformula]{gf_point}}, \code{\link[ggformula]{gf_jitter}}, \code{\link[ggformula]{gf_dist}}, \code{\link[ggformula:gf_smooth]{gf_lm}}, \code{\link[ggformula:ggformula-ggproto]{StatLm}}, \code{\link[ggformula:ggformula-ggproto]{GeomLm}}, \code{\link[ggformula:gf_lines]{gf_abline}}, \code{\link[ggformula:gf_lines]{gf_hline}}, \code{\link[ggformula:gf_lines]{gf_vline}}, \code{\link[ggformula]{gf_facet_grid}}, \code{\link[ggformula:gf_facet_grid]{gf_facet_wrap}}, \code{\link[ggformula:gf_aux]{gf_labs}}}
+
+  \item{ggstance}{\code{\link[ggstance:ggstance-ggproto]{GeomBoxploth}}, \code{\link[ggstance:ggstance-ggproto]{StatBoxploth}}, \code{\link[ggstance:ggstance-ggproto]{StatBinh}}, \code{\link[ggstance:ggstance-ggproto]{GeomBarh}}, \code{\link[ggstance]{stat_binh}}, \code{\link[ggstance]{geom_barh}}, \code{\link[ggstance:position-vertical]{position_stackv}}}
 
   \item{lsr}{\code{\link[lsr]{cohensD}}}
 
   \item{mosaic}{\code{\link[mosaic:aggregating]{cor}}, \code{\link[mosaic:aggregating]{cov}}, \code{\link[mosaic:aggregating]{favstats}}, \code{\link[mosaic:aggregating]{IQR}}, \code{\link[mosaic:aggregating]{mean}}, \code{\link[mosaic:aggregating]{mean_}}, \code{\link[mosaic:aggregating]{median}}, \code{\link[mosaic:aggregating]{max}}, \code{\link[mosaic:aggregating]{min}}, \code{\link[mosaic:aggregating]{prod}}, \code{\link[mosaic:aggregating]{range}}, \code{\link[mosaic:aggregating]{sd}}, \code{\link[mosaic:aggregating]{sum}}, \code{\link[mosaic:aggregating]{var}}, \code{\link[mosaic:xpnorm]{xcnorm}}, \code{\link[mosaic:xpnorm]{xpnorm}}, \code{\link[mosaic:xpnorm]{xqnorm}}, \code{\link[mosaic:cdist]{xcf}}, \code{\link[mosaic:pdist]{xpf}}, \code{\link[mosaic:qdist]{xqf}}, \code{\link[mosaic]{zscore}}, \code{\link[mosaic:resample]{sample}}, \code{\link[mosaic]{resample}}, \code{\link[mosaic]{do}}, \code{\link[mosaic:resample]{shuffle}}}
 
-  \item{mosaicCore}{\code{\link[mosaicCore:prop]{count}}, \code{\link[mosaicCore]{tally}}, \code{\link[mosaicCore]{makeFun}}}
+  \item{mosaicCore}{\code{\link[mosaicCore:prop]{count}}, \code{\link[mosaicCore]{tally}}, \code{\link[mosaicCore]{makeFun}}, \code{\link[mosaicCore]{fit_distr_fun}}}
 }}
 

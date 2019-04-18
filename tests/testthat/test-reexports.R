@@ -100,14 +100,22 @@ test_that("all other re-exports do not throw errors for normal use", {
   expect_error(count(~x, data = test_data), NA)
   expect_error(tally(~x, data = test_data), NA)
   expect_error(makeFun(lm(x ~ y, data = test_data)), NA)
+  expect_error(fit_distr_fun(~x, data = test_data, dist = "dnorm"), NA)
+
+  # MASS
+  expect_error(fitdistr(test_data$x, "norm"))
 
   # ggformula
   expect_error(gf_bar(x ~ z, data = test_data), NA)
   expect_error(gf_boxplot(x ~ z, data = test_data), NA)
+  expect_error(gf_boxploth(x ~ z, data = test_data), NA)
   expect_error(gf_density(~x, data = test_data), NA)
   expect_error(gf_dist("norm"), NA)
+  expect_error(gf_fitdistr(~x, data = test_data), NA)
   expect_error(gf_histogram(~x, data = test_data), NA)
   expect_error(gf_dhistogram(~x, data = test_data), NA)
+  expect_error(gf_histogramh(~x, data = test_data), NA)
+  expect_error(gf_dhistogramh(~x, data = test_data), NA)
   expect_error(gf_point(x ~ z, data = test_data), NA)
   expect_error(gf_jitter(x ~ z, data = test_data), NA)
   expect_error(gf_lm(x ~ y, data = test_data), NA)

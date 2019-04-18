@@ -24,8 +24,10 @@ BugReports: https://github.com/UCLATALL/supernova/issues
 Imports: 
     dplyr,
     ggformula,
+    ggstance,
     lsr,
     magrittr,
+    MASS,
     mosaic,
     mosaicCore,
     purrr,

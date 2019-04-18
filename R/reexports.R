@@ -85,6 +85,14 @@ mosaicCore::makeFun
 
 # Probability Distributions -----------------------------------------------
 
+#' @importFrom MASS fitdistr
+#' @export
+MASS::fitdistr
+
+#' @importFrom mosaicCore fit_distr_fun
+#' @export
+mosaicCore::fit_distr_fun
+
 #' @importFrom mosaic xcnorm
 #' @export
 mosaic::xcnorm
@@ -166,6 +174,16 @@ ggformula::gf_bar
 #' @export
 ggformula::gf_boxplot
 
+#' @importFrom ggstance GeomBoxploth
+ggstance::GeomBoxploth
+
+#' @importFrom ggstance StatBoxploth
+ggstance::StatBoxploth
+
+#' @importFrom ggformula gf_boxploth
+#' @export
+ggformula::gf_boxploth
+
 #' @importFrom ggformula gf_density
 #' @export
 ggformula::gf_density
@@ -174,9 +192,42 @@ ggformula::gf_density
 #' @export
 ggformula::gf_histogram
 
-#' @importFrom ggformula gf_dhistogram
+#' @importFrom ggformula gf_histogramh
 #' @export
 ggformula::gf_dhistogram
+
+#' @importFrom ggstance StatBinh
+ggstance::StatBinh
+
+#' @importFrom ggstance GeomBarh
+ggstance::GeomBarh
+
+#' @importFrom ggstance stat_binh
+#' @export
+ggstance::stat_binh
+
+#' @importFrom ggstance geom_barh
+#' @export
+ggstance::geom_barh
+
+#' @importFrom ggstance position_stackv
+#' @export
+ggstance::position_stackv
+
+#' @importFrom ggformula gf_dhistogram
+#' @export
+ggformula::gf_histogramh
+
+#' @importFrom ggformula gf_dhistogramh
+#' @export
+ggformula::gf_dhistogramh
+
+#' @importFrom ggformula StatFitdistr
+ggformula::StatFitdistr
+
+#' @importFrom ggformula gf_fitdistr
+#' @export
+ggformula::gf_fitdistr
 
 #' @importFrom ggformula gf_point
 #' @export
