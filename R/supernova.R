@@ -18,8 +18,10 @@
 #'
 #' @return An object of the class \code{supernova}, which has a clean print
 #'   method for displaying the ANOVA table in the console as well as a  named
-#'   list: \item{tbl}{The ANOVA table as a \code{\link{data.frame}}}
+#'   list:
+#'   \item{tbl}{The ANOVA table as a \code{\link{data.frame}}}
 #'   \item{fit}{The original \code{\link[stats]{lm}} object being tested}
+#'   \item{models}{Models created by \code{\link{generate_models}}}
 #'
 #' @examples
 #' supernova(lm(Thumb ~ Weight, data = Fingers))
@@ -33,6 +35,7 @@
 #' @export
 supernova <- function(fit, type = 3) {
   type <- resolve_type(type)
+  models <- suppressWarnings(generate_models(fit, type))
   predictors <- variables(fit)$predictor
   fit_null <- update(fit, . ~ NULL)
 
@@ -70,7 +73,6 @@ supernova <- function(fit, type = 3) {
   # SS, DF for 2+ PREDICTORS
   if (n_pred > 1) {
     tbl$SS[iv_rows] <- if (type != 3) {
-      models <- generate_models(fit, type)
       purrr::map_dbl(models[2:length(models)], function(model) {
         anova(model$simple, model$complex)$`Sum of Sq`[[2]]
       })
@@ -91,9 +93,9 @@ supernova <- function(fit, type = 3) {
   tbl$PRE[model_rows] <- tbl[model_rows, "SS"] / (tbl[model_rows, "SS"] + SSE(fit))
   tbl$p[model_rows] <- pf(tbl$F[model_rows], tbl$df[model_rows], tbl$df[[error_row]], lower.tail = FALSE)
 
-  rl <- list(tbl = tbl, fit = fit)
+  rl <- list(tbl = tbl, fit = fit, models = models)
   class(rl) <- "supernova"
-  attr(rl, "ss_type") <- type
+  attr(rl, "type") <- strrep("I", type)
   return(rl)
 }
 
@@ -155,10 +157,8 @@ print.supernova <- function(x, pcut = 4, ...) {
   y <- insert_rule(y, 1)
   y <- insert_rule(y, nrow(y))
 
-  roman_type <- rep("I", times = attr(x, "ss_type"))
-
   # printing
-  cat(" Analysis of Variance Table (Type ", roman_type, " SS)", "\n",
+  cat(" Analysis of Variance Table (Type ", attr(x, "type"), " SS)", "\n",
       " Model: ", deparse(formula(x$fit)),         "\n",
       " \n", sep = "")
   print(y, row.names = FALSE)

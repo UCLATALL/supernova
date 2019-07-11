@@ -22,8 +22,10 @@ superanova(fit, type = 3)
 \value{
 An object of the class \code{supernova}, which has a clean print
   method for displaying the ANOVA table in the console as well as a  named
-  list: \item{tbl}{The ANOVA table as a \code{\link{data.frame}}}
+  list:
+  \item{tbl}{The ANOVA table as a \code{\link{data.frame}}}
   \item{fit}{The original \code{\link[stats]{lm}} object being tested}
+  \item{models}{Models created by \code{\link{generate_models}}}
 }
 \description{
 An alternative set of summary statistics for ANOVA. Sums of squares, degrees

@@ -169,14 +169,17 @@ test_that("superanova is an alias of supernova", {
   expect_identical(superanova, supernova)
 })
 
-test_that("supernova object has table and fit", {
+test_that("supernova object has table, fit, and models", {
   fit <- lm(mpg ~ NULL, mtcars)
-  obj <- supernova(fit)
+  obj <- supernova(fit, type = 3)
   obj %>% expect_is("supernova")
   obj$tbl %>% expect_is("data.frame")
   obj$fit %>%
     expect_is("lm") %>%
     expect_identical(fit)
+  obj$models %>%
+    expect_is("comparison_models") %>%
+    expect_identical(suppressWarnings(generate_models(fit, 3)))
 })
 
 test_that("supernova table structure is well-formed", {
