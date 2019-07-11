@@ -22,16 +22,18 @@ A list of the augmented models for each term, where the associated
   term is the key for each model in the list.
 }
 \description{
-This function will return a list that contains two lists of models, named
-\code{augmented} and \code{compact}. In each list, the keys (names) of the
-values indicate the term that the model relates to. The \code{augmented}
-models always include the target term, and the \code{compact} models are
-identical to the \code{augmented} except the target term is removed. Thus,
-when the models are compared (e.g. using \code{\link{anova}}, except for Type
-III; see details below), the resulting values will show the effect of adding
-the target term to the model. There are three generally used approaches to
-determining what the appropriate comparison models should be, called Type I,
-II, and III. See the sections below for more information on these types.
+This function will return a list of lists where the top-level keys (names) of
+the items indicate the component of the full model (i.e. the term) that the
+generated models can be used to test. At each of these keys is a list with
+both the \code{complex} and \code{simple} models that can be compared to test
+the component. The \code{complex} models always include the target term, and
+the \code{simple} models are identical to the \code{complex} except the
+target term is removed. Thus, when the models are compared (e.g. using
+\code{\link{anova}}, except for Type III; see details below), the resulting
+values will show the effect of adding the target term to the model. There are
+three generally used approaches to determining what the appropriate
+comparison models should be, called Type I, II, and III. See the sections
+below for more information on these types.
 }
 \section{Type I}{
  For Type I SS, or sequential SS, each term is considered in
@@ -84,9 +86,7 @@ mod <- lm(Thumb ~ Height * Sex, data = Fingers)
 mods_2 <- generate_models(mod, type = 2)
 
 # compute the SS for the Height term
-mod_Height <- anova(mods_2$compact[["Height"]], mods_2$augmented[["Height"]])
+mod_Height <- anova(mods_2[["Height"]]$simple, mods_2[["Height"]]$complex)
 mod_Height[["Sum of Sq"]][[2]]
-
-
 
 }

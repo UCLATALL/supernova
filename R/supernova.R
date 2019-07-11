@@ -71,9 +71,9 @@ supernova <- function(fit, type = 3) {
   if (n_pred > 1) {
     tbl$SS[iv_rows] <- if (type != 3) {
       models <- generate_models(fit, type)
-      as.numeric(purrr::map2(models$augmented, models$compact, function(a, c) {
-        anova(c, a)$`Sum of Sq`[[2]]
-      }))
+      purrr::map_dbl(models[2:length(models)], function(model) {
+        anova(model$simple, model$complex)$`Sum of Sq`[[2]]
+      })
     } else if (type == 3) {
       # Type 3 SS cannot be calculated using model comparison with anova()
       # anova() will automatically include lower-order terms when an interaction
