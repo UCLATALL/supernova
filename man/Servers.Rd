@@ -1,9 +1,11 @@
 \name{Servers}
 \docType{data}
 \alias{Servers}
-\title{Data about tips collected from an experiment with 44 servers.}
+\title{Servers data}
 \description{
-  Servers.
+  Data about tips collected from an experiment with 44 servers.
+
+  Note: this dataset will be removed in future versions in favor of \code{\link{Tables}}.
 }
 
 \usage{Servers}
