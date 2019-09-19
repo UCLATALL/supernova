@@ -1,7 +1,7 @@
 Package: supernova
 Type: Package
 Title: Judd, McClelland, & Ryan Formatting for ANOVA Output
-Version: 2.0.0
+Version: 2.0.1
 Date: 2019-01-29
 Authors@R: c(person("Adam", "Blake", email = "theadamattack@gmail.com", role = "aut"),
              person("Jeff", "Chrabaszcz", role = "aut"),
@@ -11,6 +11,7 @@ Encoding: UTF-8
 LazyData: yes
 Description: Produces ANOVA tables in the format used by Judd, McClelland, and Ryan (2017, ISBN:978-1138819832) in their introductory textbook, Data Analysis. This includes proportional reduction in error and formatting to improve ease the transition between the book and R.
 License: GPL-3
+Depends: R (>= 2.10)
 Suggests: 
     car,
     dplyr,
