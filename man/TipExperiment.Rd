@@ -6,7 +6,7 @@
 Data about tips collected in an experiment from 44 different tables.
 }
 \description{
-Servers were randomly assigned to write nothing or "Thank you" on the back of customers' receipts. Data was collected from 44 tables in an effort to examine whether the note would cause more generous tipping.
+Tables were randomly assigned to receive checks that either included or did not include a drawing of a smiley face. Data was collected from 44 tables in an effort to examine whether the added smiley face would cause more generous tipping.
 }
 
 \usage{TipExperiment}
