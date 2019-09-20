@@ -3,12 +3,8 @@
 \alias{TipExperiment}
 \title{Data from an experiment about smiley faces and tips}
 \description{
-Data about tips collected in an experiment from 44 different tables.
-}
-\description{
 Tables were randomly assigned to receive checks that either included or did not include a drawing of a smiley face. Data was collected from 44 tables in an effort to examine whether the added smiley face would cause more generous tipping.
 }
-
 \usage{TipExperiment}
 \format{
  A dataset with 44 observations on the following 3 variables.
