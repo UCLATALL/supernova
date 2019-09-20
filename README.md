@@ -1,4 +1,4 @@
-# supernova <img src="man/figures/logo.png" width="160px" align="right" />
+# supernova <img src="man/figures/logo.png" width="40%" align="right" />
 
 The goal of `supernova` is to create ANOVA tables in the format used by Judd, McClelland, and Ryan (2017, ISBN:978-1138819832) in their introductory textbook, *Data Analysis: A Model Comparison Approach to Regression, ANOVA, and Beyond* [(book website)](http://www.dataanalysisbook.com/index.html).\* These tables include proportional reduction in error, a useful measure for teaching the underlying concepts of ANOVA and regression, and formatting to ease the transition between the book and R. (\* Note: we are NOT affiliated with the authors or their institution.)
 
@@ -50,8 +50,7 @@ Here are some basic examples of the code and output for this package:
 ``` r
 supernova(lm(mpg ~ NULL, data = mtcars))
 
-#> Analysis of Variance Table
-#> Outcome variable: mpg 
+#> Analysis of Variance Table (Type III SS)
 #> Model: mpg ~ NULL
 #> 
 #>                               SS  df     MS   F PRE   p
@@ -66,8 +65,7 @@ supernova(lm(mpg ~ NULL, data = mtcars))
 ``` r
 supernova(lm(mpg ~ hp, data = mtcars))
 
-#> Analysis of Variance Table
-#> Outcome variable: mpg 
+#> Analysis of Variance Table (Type III SS)
 #> Model: mpg ~ hp
 #> 
 #>                               SS df      MS      F    PRE     p
@@ -82,8 +80,7 @@ supernova(lm(mpg ~ hp, data = mtcars))
 ``` r
 supernova(lm(mpg ~ hp + disp, data = mtcars))
 
-#> Analysis of Variance Table
-#> Outcome variable: mpg 
+#> Analysis of Variance Table (Type III SS)
 #> Model: mpg ~ hp + disp
 #> 
 #>                               SS df      MS      F    PRE     p
@@ -100,8 +97,7 @@ supernova(lm(mpg ~ hp + disp, data = mtcars))
 ``` r
 supernova(lm(mpg ~ hp * disp, data = mtcars))
 
-#> Analysis of Variance Table
-#> Outcome variable: mpg 
+#> Analysis of Variance Table (Type III SS)
 #> Model: mpg ~ hp * disp
 #> 
 #>                                 SS df      MS      F    PRE     p
@@ -114,6 +110,54 @@ supernova(lm(mpg ~ hp * disp, data = mtcars))
 #> ------- ----------------- -------- -- ------- ------ ------ -----
 #>   Total (empty model)   | 1126.047 31  36.324                                       
 ```
+
+### Using Different SS Types 
+
+```r
+# Default is Type III
+# These are equivalent:
+supernova(lm(mpg ~ hp * disp, data = mtcars), type = 3)
+supernova(lm(mpg ~ hp * disp, data = mtcars), type = "III")
+supernova(lm(mpg ~ hp * disp, data = mtcars), type = "orthogonal")
+```
+
+``` r
+supernova(lm(mpg ~ hp * disp, data = mtcars), type = 1)
+supernova(lm(mpg ~ hp * disp, data = mtcars), type = "I")
+supernova(lm(mpg ~ hp * disp, data = mtcars), type = "sequential")
+
+#> Analysis of Variance Table (Type I SS)
+#> Model: mpg ~ hp * disp
+#> 
+#>                              SS df      MS      F    PRE     p
+#> ------- ----------------- -------- -- ------- ------ ------ -----
+#>   Model (error reduced) |  923.189  3 307.730 42.475 0.8198 .0000
+#>      hp                 |  678.373  1 678.373 93.634 0.7698 .0000
+#>    disp                 |  164.181  1 164.181 22.661 0.4473 .0001
+#> hp:disp                 |   80.635  1  80.635 11.130 0.2844 .0024
+#>   Error (from model)    |  202.858 28   7.245                    
+#> ------- ----------------- -------- -- ------- ------ ------ -----
+#>   Total (empty model)   | 1126.047 31  36.324
+``` 
+
+``` r
+supernova(lm(mpg ~ hp * disp, data = mtcars), type = 2)
+supernova(lm(mpg ~ hp * disp, data = mtcars), type = "II")
+supernova(lm(mpg ~ hp * disp, data = mtcars), type = "hierarchical")
+
+#> Analysis of Variance Table (Type II SS)
+#> Model: mpg ~ hp * disp
+#> 
+#>                                 SS df      MS      F    PRE     p
+#> ------- ----------------- -------- -- ------- ------ ------ -----
+#>   Model (error reduced) |  923.189  3 307.730 42.475 0.8198 .0000
+#>      hp                 |   33.665  1  33.665  4.647 0.1423 .0399
+#>    disp                 |  164.181  1 164.181 22.661 0.4473 .0001
+#> hp:disp                 |   80.635  1  80.635 11.130 0.2844 .0024
+#>   Error (from model)    |  202.858 28   7.245                    
+#> ------- ----------------- -------- -- ------- ------ ------ -----
+#>   Total (empty model)   | 1126.047 31  36.324
+``` 
 
 ### Bootstrapping a sampling distribution of the slope
 ``` r
