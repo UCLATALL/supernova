@@ -2,3 +2,4 @@
 ^\.Rproj\.user$
 ^scripts$
 cache_test_data
+^README\.Rmd$
