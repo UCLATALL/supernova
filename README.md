@@ -4,7 +4,7 @@
 # supernova <img src="man/figures/logo.png" width="40%" align="right" />
 
 The goal of `supernova` is to create ANOVA tables in the format used by
-Judd, McClelland, and Ryan (2017, <ISBN:978-1138819832>) in their
+Judd, McClelland, and Ryan (2017, ISBN: 978-1138819832) in their
 introductory textbook, *Data Analysis: A Model Comparison Approach to
 Regression, ANOVA, and Beyond* [(book
 website)](http://www.dataanalysisbook.com/index.html).\* These tables
