@@ -2,15 +2,21 @@
 % Please edit documentation in R/supernova.R
 \name{supernova}
 \alias{supernova}
+\alias{supernova.lm}
+\alias{supernova.lmerMod}
 \alias{superanova}
 \title{supernova}
 \usage{
-supernova(fit, type = 3)
+supernova(fit, type = 3, verbose = TRUE)
 
-superanova(fit, type = 3)
+\method{supernova}{lm}(fit, type = 3, verbose = TRUE)
+
+\method{supernova}{lmerMod}(fit, type = 3, verbose = FALSE)
+
+superanova(fit, type = 3, verbose = TRUE)
 }
 \arguments{
-\item{fit}{A fitted \code{\link{lm}} object}
+\item{fit}{A model fit by \code{\link{lm}} or \code{\link[lme4]{lmer}}}
 
 \item{type}{The type of sums of squares to calculate:
 \itemize{
@@ -18,13 +24,17 @@ superanova(fit, type = 3)
   \item \code{2}, \code{II}, and \code{hierarchical} compute Type II SS.
   \item \code{3}, \code{III}, and \code{orthogonal} compute Type III SS.
 }}
+
+\item{verbose}{If \code{FALSE}, the \code{description} column is suppressed.
+Defaults to \code{TRUE}.}
 }
 \value{
 An object of the class \code{supernova}, which has a clean print
   method for displaying the ANOVA table in the console as well as a  named
   list:
   \item{tbl}{The ANOVA table as a \code{\link{data.frame}}}
-  \item{fit}{The original \code{\link[stats]{lm}} object being tested}
+  \item{fit}{The original \code{\link[stats]{lm}} or \code{\link[lme4]{lmer}}
+    object being tested}
   \item{models}{Models created by \code{\link{generate_models}}}
 }
 \description{

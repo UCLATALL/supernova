@@ -1,7 +1,14 @@
-# Cache the car:Anova data so that we don't have to include the package just for
-# testing
+# Cache the car::Anova data and other data used to test the package  so that we
+# don't have to include those packages just for testing
+
+cache_dir <- "./tests/testthat/cache"
+if (!dir.exists(cache_dir)) dir.create(cache_dir)
 
 `%>%` <- magrittr::`%>%`
+
+
+# Independent designs -----------------------------------------------------
+
 Fingers <- supernova::Fingers
 
 as.character.call <- function(model) {
@@ -31,9 +38,6 @@ models <- list(
 ) %>%
   purrr::set_names(purrr::map(., ~as.character.call(.x)))
 
-cache_dir <- "./tests/testthat/cache"
-if (!dir.exists(cache_dir)) dir.create(cache_dir)
-
 models %>%
   purrr::map(anova) %>%
   readr::write_rds(file.path(cache_dir, "model_cache_type_1.Rds"))
@@ -45,3 +49,18 @@ models %>%
 models %>%
   purrr::map(car::Anova, type = 3) %>%
   readr::write_rds(file.path(cache_dir, "model_cache_type_3.Rds"))
+
+
+# Crossed designs ---------------------------------------------------------
+
+JMRData::ex11.9 %>%
+  tidyr::gather(condition, puzzles_completed, -subject) %>%
+  dplyr::mutate_at(vars(subject, condition), as.factor) %>%
+  readr::write_rds(file.path(cache_dir, "jmr_ex11.9.Rds"))
+
+JMRData::ex11.17 %>%
+  purrr::set_names(tolower(names(.))) %>%
+  tidyr::gather(condition, recall, -subject) %>%
+  tidyr::separate(condition, c("type", "time"), -1) %>%
+  dplyr::mutate_at(vars(subject, type, time), as.factor) %>%
+  readr::write_rds(file.path(cache_dir, "jmr_ex11.17.Rds"))
