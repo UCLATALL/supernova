@@ -21,7 +21,7 @@ Suggests:
     purrr,
     tidyr,
     rlang,
-    testthat
+    testthat (>= 2.1.0)
 Imports: 
     dplyr,
     lme4,

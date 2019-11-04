@@ -94,6 +94,37 @@ test_that("magrittr can pipe data to lm() to supernova", {
 
 # ANOVA values ------------------------------------------------------------
 
+test_that("sueprnova can test simple nested designs", {
+  model <- lme4::lmer(
+    value ~ instructions + (1|group),
+    data = get_data("jmr_ex11.1.Rds")
+  )
+
+  expect_equal(
+    supernova(model)$tbl %>% mutate_if(is.numeric, round, 2) %>% as.data.frame(),
+    tribble(
+      ~term,                       ~SS, ~df,   ~MS,       ~F,     ~PRE,       ~p,
+      "instructions"          ,  12.50,   1, 12.50,    4.686,     0.54,    0.096,
+      "instructions error"    ,  10.67,   4,  2.67, NA_real_, NA_real_, NA_real_,
+      "Total between subjects",  23.17,   5,  4.63, NA_real_, NA_real_, NA_real_,
+      "Total within subjects" ,   5.33,  12,  0.44, NA_real_, NA_real_, NA_real_,
+      "Total"                 ,  28.50,  17,  1.68, NA_real_, NA_real_, NA_real_
+    ) %>% mutate_if(is.numeric, round, digits = 2) %>% as.data.frame()
+  )
+})
+
+# |                     | b    | SS     | df | MS    | F     | PRE |
+# |---------------------|------|--------|----|-------|-------|-----|
+# | Between Subjects    |      |        |    |       |       |     |
+# |   Condition         |  .83 |  12.50 |  1 | 12.50 |  4.68 | .54 |
+# |     Error           |      |  10.67 |  4 |  2.67 |       |     |
+# | Total Between       |      |  23.17 |  5 |       |       |     |
+# |---------------------|------|--------|----|-------|-------|-----|
+# | Within Subjects     |      |        |    |       |       |     |
+# | Total Within        |      |   5.33 | 12 |  0.44 |       |     |
+# |---------------------|------|--------|----|-------|-------|-----|
+# | Total               |      |  28.50 | 17 |       |       |     |
+
 test_that("supernova can test simple crossed designs", {
   model <- lme4::lmer(
     puzzles_completed ~ condition + (1|subject),
@@ -121,8 +152,7 @@ test_that("supernova can test simple crossed designs", {
 # | Within Subjects  |      |        |    |      |      |     |
 # |   Treatment      | .375 |   2.25 |  1 | 2.25 | 5.73 | .45 |
 # |     Error        |      |   2.75 |  7 | 0.39 |      |     |
-# |   Total          |      |   5.00 |  8 | 0.63 |      |     | This is the correct value
-# |   Total          |      |   5.00 |  8 | 0.62 |      |     | This is the best I could do
+# |   Total          |      |   5.00 |  8 | 0.63 |      |     |
 # |------------------|------|--------|----|------|------|-----|
 # | Total            |      |  23.00 | 15 |      |      |     |
 
@@ -133,7 +163,7 @@ test_that("supernova can test multiple crossed designs", {
   )
 
   expect_equal(
-    supernova.lmerMod(model)$tbl %>% mutate_if(is.numeric, round, 2) %>% as.data.frame(),
+    supernova(model)$tbl %>% mutate_if(is.numeric, round, 2) %>% as.data.frame(),
     tribble(
       ~term,                       ~SS, ~df,   ~MS,       ~F,     ~PRE,       ~p,
       "Total between subjects", 131.00,   4, 32.75, NA_real_, NA_real_, NA_real_,
@@ -162,6 +192,8 @@ test_that("supernova can test multiple crossed designs", {
 # |   Time * List type  | -.30 |   1.87 |  2 |  0.93 |  9.35 | .70 | This is the correct value
 # |   Time * List type  | -.30 |   1.87 |  2 |  0.93 |  9.33 | .70 | This is the best I could do
 # |     Error           |      |   0.80 |  8 |  0.10 |       |     |
-# | Total within        |      | 101.17 | 25 |       |       |     |
+# |   Total             |      | 101.17 | 25 |       |       |     |
 # |---------------------|------|--------|----|-------|-------|-----|
 # | Total               |      | 232.17 | 29 |       |       |     |
+
+

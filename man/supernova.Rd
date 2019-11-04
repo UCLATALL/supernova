@@ -40,15 +40,19 @@ An object of the class \code{supernova}, which has a clean print
 \description{
 An alternative set of summary statistics for ANOVA. Sums of squares, degrees
 of freedom, mean squares, and F value are all computed with Type III sums of
-squares. This package adds proportional reduction in error, an explicit
-summary of the whole model, and separate formatting of p values and is
-intended to match the output used in Judd, McClelland, and Ryan (2017).
+squares, but for fully-between subjects designs you can set the type to I or
+II. This function adds to the output table the proportional reduction in
+error, an explicit summary of the whole model, separate formatting of p
+values, and is intended to match the output used in Judd, McClelland, and
+Ryan (2017).
 }
 \details{
 \code{superanova()} is an alias of \code{supernova()}
 }
 \examples{
 supernova(lm(Thumb ~ Weight, data = Fingers))
+format_p <- supernova(lm(Thumb ~ Weight, data = Fingers))
+print(format_p, pcut = 8)
 
 }
 \references{

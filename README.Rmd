@@ -33,7 +33,7 @@ In keeping with the approach in Judd, McClelland, and Ryan (2017), the ANOVA tab
 
 4. Finally, the `MS` (`SS / df`), `F` (`MSR / MSE`), and `p` columns are calculated from already-computed values in the table.
    
-In addition to the ANOVA table provided by `supernova()`, the `supernova` package provides some useful functions for extracting estimates from a linear model: `b0()`, `b1()`, `fVal()`, `PRE()`. These are especially useful in the context of creating bootstrapped sampling distributions as in the [Examples](#examples) below.
+In addition to the ANOVA table provided by `supernova()`, the `supernova` package provides some useful functions for extracting estimates from a linear model fit via `lm()`: `b0()`, `b1()`, `fVal()`, `PRE()`. These are especially useful in the context of creating bootstrapped sampling distributions as in the [Examples](#examples) below.
 
 ### Supported models
 
@@ -44,12 +44,11 @@ The following models are explicitly tested and supported by `supernova()`, _for 
 * multiple regression: `y ~ a + b`
 * interactive regression: `y ~ a * b`
 
-Additionally, a limited subset of within-subjects designs are supported. Importantly, the data should have come from a _crossed_, not nested, design. Concretely, this is when an observation about a participant is made for each of the independent variables---not multiple observations within a variable, but a single observation for each level of each independent variable.
+Additionally, a subset of within-subjects designs are supported. Importantly, only fully crossed (participants are observed in every condition) and simply nested models (participants have multiple scores in the same condition) have been tested. To accomodate these models `supernova()` can accept models fit via `lmer()` as in the [Examples](#examples) below.
 
 Anything not included above is not (yet) explicitly tested and may yield errors or incorrect statistics. This includes, but is not limited to
 
 * one-sample _t_-tests
-* nested observations
 * mixed designs
 
 
@@ -154,6 +153,26 @@ multiple_crossed %>%
 # using lmer() we can specify the non-independence
 multiple_crossed %>% 
   lmer(recall ~ type * time + (1|Subject) + (1|type:Subject) + (1|time:Subject), data = .) %>% 
+  supernova()
+```
+
+#### A one-way between-groups design (nested)
+
+In this example, each person in a group of three generates a rating. If we fit the data with `lm()` that would ignore the non-independence due to the people being in the same `group`. Compare this output with the foloowing output where the `group` is specified as a random factor.
+
+```{r}
+simple_nested <- JMRData::ex11.1 %>%
+  tidyr::gather(id, value, starts_with("score")) %>%
+  dplyr::mutate_at(vars(group, instructions, id), as.factor)
+
+# fitting this with lm would ignore the non-independence due to group
+simple_nested %>% 
+  lm(value ~ instructions, data = .) %>% 
+  supernova(verbose = FALSE)
+
+# using lmer() we can specify the non-independence
+simple_nested %>% 
+  lmer(value ~ instructions + (1|group), data = .) %>% 
   supernova()
 ```
 

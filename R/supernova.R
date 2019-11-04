@@ -2,9 +2,11 @@
 #'
 #' An alternative set of summary statistics for ANOVA. Sums of squares, degrees
 #' of freedom, mean squares, and F value are all computed with Type III sums of
-#' squares. This package adds proportional reduction in error, an explicit
-#' summary of the whole model, and separate formatting of p values and is
-#' intended to match the output used in Judd, McClelland, and Ryan (2017).
+#' squares, but for fully-between subjects designs you can set the type to I or
+#' II. This function adds to the output table the proportional reduction in
+#' error, an explicit summary of the whole model, separate formatting of p
+#' values, and is intended to match the output used in Judd, McClelland, and
+#' Ryan (2017).
 #'
 #' \code{superanova()} is an alias of \code{supernova()}
 #'
@@ -28,6 +30,8 @@
 #'
 #' @examples
 #' supernova(lm(Thumb ~ Weight, data = Fingers))
+#' format_p <- supernova(lm(Thumb ~ Weight, data = Fingers))
+#' print(format_p, pcut = 8)
 #'
 #' @importFrom stats anova as.formula drop1 pf
 #'
@@ -121,84 +125,100 @@ supernova.lmerMod <- function(fit, type = 3, verbose = FALSE) {
 
   model_full <- fit
   model_data <- model_full@frame
+  vars_all <- supernova::variables(model_full)
 
   # get formula with no random terms
   formula_complex <- formula(model_full)
   formula_simple <- lme4::nobars(formula_complex)
 
-  # determine within and between variables
-  bare_terms <- supernova::variables(formula_simple)
-  pred_terms <- bare_terms$predictor
-  rand_terms <- gsub(
-    "1 ?\\| ?", "",
-    as.character(lme4::findbars(formula_complex))
-  )
-  group_term <- rand_terms[which.min(nchar(rand_terms))]
-  within_terms <- sub_matches(rand_terms, paste0("(.*):", group_term), "\\1")
-  # add within interactions
-  within_terms <- grep(paste0(within_terms, collapse = "|"), pred_terms, value = TRUE)
-
-  # outcome_term <- bare_terms$outcome
-  # between_terms <- setdiff(pred_terms, within_terms)
-
-  # total line
+  # TOTAL
   model_lm <- lm(formula_simple, data = model_data)
-  anova_lm <- anova_tbl(model_lm)
   model_empty <- stats::update(model_lm, . ~ NULL)
   total <- anova_tbl(model_empty)
   total[["term"]] <- "Total"
 
-  # WITHIN
-  within_treatment <- dplyr::slice(anova_lm, -nrow(anova_lm))
-  within_treatment[["F"]] <- anova_tbl(model_full)[["F"]]
+  # DF
+  df_total_between <- length(unique(model_data[[vars_all[["group"]]]])) - 1
+  df_total_within <- total[["df"]] - df_total_between
 
-  if (nrow(within_treatment) == 0) {
-    within_error <- data.frame(match = character(0))
-  } else {
-    df_term_n <- length(unique(model_data[[group_term]])) - 1
-    within_error <- data.frame(
-      match = within_terms,
-      term = paste(within_terms, "error"),
-      df = within_treatment[["df"]] * df_term_n,
-      MS = within_treatment[["MS"]] / within_treatment[["F"]],
-      stringsAsFactors = FALSE
-    )
-    within_error[["SS"]] <- within_error[["MS"]] * within_error[["df"]]
+  # TREATMENT ROWS
+  anova_lm <- anova_tbl(model_lm) %>% dplyr::select(-dplyr::one_of("F"))
+  anova_lmer <- anova_tbl(model_full) %>% dplyr::select(dplyr::one_of(c("term", "F")))
+  treatment_rows <- dplyr::right_join(anova_lm, anova_lmer, by = "term")
+
+  get_partials <- function(treatment_rows, type) {
+    treatment <- treatment_rows[treatment_rows[["term"]] %in% vars_all[[type]]]
+    if (ncol(treatment) == 0) {
+      error <- data.frame(match = character(0))
+    } else {
+      part_total_df <- if (type == "within") df_total_within else df_total_between
+      error_df <- if (type == "between") {
+        part_total_df - sum(treatment[["df"]])
+      } else {
+        treatment[["df"]] * df_total_between
+      }
+      error <- data.frame(
+        match = vars_all[[type]],
+        term = paste(vars_all[[type]], "error"),
+        df = error_df,
+        MS = treatment[["MS"]] / treatment[["F"]],
+        stringsAsFactors = FALSE
+      )
+      error[["SS"]] <- error[["MS"]] * error[["df"]]
+    }
+    purrr::map_dfr(vars_all[[type]], function(x) {
+      part <- dplyr::bind_rows(
+        dplyr::filter_at(treatment, dplyr::vars("term"), ~ . == x),
+        dplyr::filter_at(error, dplyr::vars("match"), ~ . == x)
+      ) %>%
+        dplyr::select(-dplyr::one_of("match"))
+
+      part[, c("PRE", "p")] <- NA_real_
+      part[["PRE"]][[1]] <- part[["SS"]][[1]] / sum(part[["SS"]])
+      part[["p"]][[1]] <- pf(
+        part[["F"]][[1]],
+        part[["df"]][[1]],
+        part[["df"]][[2]],
+        lower.tail = FALSE
+      )
+      dplyr::select(part, dplyr::one_of("term", "SS", "df", "MS", "F", "PRE", "p"))
+    })
   }
-
-  within_partials <- purrr::map_dfr(within_terms, function(x) {
-    part <- dplyr::bind_rows(
-      dplyr::filter_at(within_treatment, dplyr::vars("term"), ~ . == x),
-      dplyr::filter_at(within_error, dplyr::vars("match"), ~ . == x)
-    ) %>%
-      dplyr::select(-dplyr::one_of("match"))
-
-    part[, c("PRE", "p")] <- NA_real_
-    part[["PRE"]][[1]] <- part[["SS"]][[1]] / sum(part[["SS"]])
-    part[["p"]][[1]] <- pf(part[["F"]][[1]], part[["df"]][[1]], part[["df"]][[2]], lower.tail = FALSE)
-    part
-  })
-
-  within_total <- data.frame(
-    term = "Total within subjects",
-    SS = sum(within_partials[["SS"]]),
-    df = sum(within_partials[["df"]]),
-    stringsAsFactors = FALSE
+  partials <- list(
+    within = get_partials(treatment_rows, "within"),
+    between = get_partials(treatment_rows, "between")
   )
 
-  # BETWEEN
-  between_total <- data.frame(
+  # PART TOTALS
+  get_partial_total_ss <- function(partials, type) {
+    other_type <- setdiff(c("between", "within"), type)
+    if (length(vars_all[[type]]) == 0) {
+      total[["SS"]] - sum(partials[[other_type]][["SS"]])
+    } else {
+      sum(partials[[type]][["SS"]])
+    }
+  }
+  within_total <- dplyr::tibble(
+    term = "Total within subjects",
+    SS = get_partial_total_ss(partials, "within"),
+    df = df_total_within
+  )
+  between_total <- dplyr::tibble(
     term = "Total between subjects",
-    SS = total[["SS"]] - within_total[["SS"]],
-    df = total[["df"]] - within_total[["df"]],
-    stringsAsFactors = FALSE
+    SS = get_partial_total_ss(partials, "between"),
+    df = df_total_between
   )
 
   # FULL TABLE
-  tbl <- dplyr::bind_rows(between_total, within_partials, within_total, total) %>%
+  tbl <- dplyr::bind_rows(
+    partials[["between"]], between_total,
+    partials[["within"]], within_total,
+    total
+  ) %>%
     dplyr::select_at(dplyr::vars("term", "SS", "df", "MS", "F", "PRE", "p")) %>%
     dplyr::mutate_at(dplyr::vars("df"), as.integer)
   tbl[["MS"]] <- tbl[["SS"]] / tbl[["df"]]
+  tbl <- tbl[tbl[["df"]] > 0, ] %>% as.data.frame()
 
   rl <- list(tbl = tbl, fit = fit, models = NULL)
   class(rl) <- "supernova"
@@ -228,6 +248,7 @@ print.supernova <- function(x, pcut = 4, ...) {
   # setup
   tbl <- x$tbl
 
+  # NUMBER FORMATTING
   # df to integer; SS, MS, F to 3 decimals; PRE to 4 decimals; p to pcut
   tbl[["df"]] <- format(as.integer(tbl[["df"]]))
   tbl[c("SS", "MS", "F")] <- purrr::map(c("SS", "MS", "F"),
@@ -238,41 +259,45 @@ print.supernova <- function(x, pcut = 4, ...) {
 
   # NAs to blank spots
   if (!is.null(tbl$description)) tbl$description[is.na(tbl$description)] <- ""
-  tbl <- data.frame(lapply(tbl, function(x) gsub("\\s*NA\\s*", "   ", x)),
-                  stringsAsFactors = FALSE)
-
-  # adjust term names for lmerMod
-  if (is_lmer_model) {
-    tbl <- insert_row(tbl, 1, rep("", 7))
-    tbl <- insert_row(tbl, 3, rep("", 7))
-    tbl[1:3, "term"] <- c("Between Subjects", "  Total", "Within Subjects")
-
-    total_wi_row <- nrow(tbl) - 1
-    within_rows <- seq(4, total_wi_row)
-    tbl[total_wi_row, "term"] <- "Total"
-    tbl[within_rows, "term"] <- paste0("  ", tbl[within_rows, "term"])
-    tbl[within_rows, "term"] <- stringr::str_replace(
-      tbl[within_rows, "term"],
-      "(.*) error$", "    Error"
-    )
-  }
+  tbl <- lapply(tbl, function(x) gsub("\\s*NA\\s*", "   ", x)) %>%
+    as.data.frame(stringsAsFactors = FALSE)
 
   # trim leading 0 from p
   tbl[["p"]] <- substring(tbl[["p"]], 2)
+
+  # TABLE FORMATTING
+  # add placeholders for null model
+  if (is_null_model) tbl[1:2, 3:8] <- "---"
+
+  # term names and horizontal rules
+  if (!is_lmer_model) {
+    tbl <- insert_rule(tbl, 1)
+    tbl <- insert_rule(tbl, nrow(tbl))
+  } else {
+    tbl <- insert_row(tbl, 1, c("Between Subjects", rep("", 6)))
+    tbl <- insert_row(tbl, grep("^Total between subjects", tbl$term) + 1,
+                      c("Within Subjects", rep("", 6)))
+    tbl[tbl$term == "Total between subjects", ][["term"]] <- "  Total"
+    tbl[tbl$term == "Total within subjects", ][["term"]] <- "  Total"
+
+    pred_terms <- variables(x$fit)$predictor
+    error_terms <- paste(pred_terms, "error")
+    tbl[["term"]] <- stringr::str_replace(
+      tbl[["term"]], paste0(error_terms, collapse = "|"), "    Error"
+    )
+    tbl[["term"]] <- stringr::str_replace(
+      tbl[["term"]], paste0("(", paste0(pred_terms, collapse = "|"), ")"), "  \\1"
+    )
+    tbl <- insert_rule(tbl, 1)
+    tbl <- insert_rule(tbl, grep("^  Total", tbl$term)[[1]] + 1)
+    tbl <- insert_rule(tbl, grep("^  Total", tbl$term)[[2]] + 1)
+  }
 
   # add spaces and a vertical bar to separate the terms & desc from values
   barHelp <- function(x, y) paste0(x, y, " |")
   bar_col <- if (verbose) "description" else "term"
   spaces_to_add <- max(nchar(tbl[[bar_col]])) - nchar(tbl[[bar_col]])
   tbl[[bar_col]] <- mapply(barHelp, tbl[[bar_col]], strrep(" ", spaces_to_add))
-
-  # add placeholders for null model
-  if (is_null_model) tbl[1:2, 3:8] <- "---"
-
-  # add horizontal rules at top and between sections
-  tbl <- insert_rule(tbl, 1)
-  tbl <- insert_rule(tbl, nrow(tbl))
-  if (is_lmer_model) tbl <- insert_rule(tbl, 4)
 
   # remove unnecessary column names
   names(tbl)[names(tbl) %in% c("term", "description")] <- ""

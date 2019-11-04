@@ -64,3 +64,10 @@ JMRData::ex11.17 %>%
   tidyr::separate(condition, c("type", "time"), -1) %>%
   dplyr::mutate_at(vars(subject, type, time), as.factor) %>%
   readr::write_rds(file.path(cache_dir, "jmr_ex11.17.Rds"))
+
+# Simple nested designs ---------------------------------------------------
+
+JMRData::ex11.1 %>%
+  tidyr::gather(id, value, starts_with("score")) %>%
+  dplyr::mutate_at(vars(group, instructions, id), as.factor) %>%
+  readr::write_rds(file.path(cache_dir, "jmr_ex11.1.Rds"))
