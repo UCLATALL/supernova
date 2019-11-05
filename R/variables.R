@@ -25,15 +25,21 @@ variables <- function(object) {
     vars_between <- vars_pred
   } else if ("lmerMod" %in% class(object)) {
     # need to determine which are within vs. between
-    data <- if (class(object) %in% "lmerMod") object@frame else object$frame
+    data <- object@frame
     nrow_group <- dplyr::distinct_at(data, dplyr::vars(vars_group)) %>% nrow()
     vars_pred_non_int <- grep("^[^:]+$", vars_pred, value = TRUE)
-    is_pred_between <- purrr::map_lgl(vars_pred_non_int, function(var) {
+    is_pred_between_simple <- purrr::map_lgl(vars_pred_non_int, function(var) {
       nrow_var <- dplyr::distinct_at(data, dplyr::vars(vars_group, var)) %>% nrow()
       nrow_var == nrow_group
     })
-    vars_between <- vars_pred[is_pred_between]
-    vars_within <- vars_pred[!is_pred_between]
+    vars_within_simple <- vars_pred_non_int[!is_pred_between_simple]
+    is_pred_within <- if (length(vars_within_simple) > 0) {
+      grepl(paste0(vars_within_simple, collapse = "|"), vars_pred)
+    } else {
+      FALSE
+    }
+    vars_within <- vars_pred[is_pred_within]
+    vars_between <- vars_pred[!is_pred_within]
   } else {
     # cannot determine which are within or between without more info
     vars_within <- character(0)
@@ -48,25 +54,3 @@ variables <- function(object) {
     between = vars_between
   )
 }
-
-# variables.lmer <- function(model) {
-#   # get formula with no random terms
-#   formula_complex <- formula(model)
-#   formula_simple <- lme4::nobars(formula_complex)
-#
-#   # determine within and between variables
-#   bare_terms <- variables.default(formula_simple)
-#   outcome_term <- bare_terms$outcome
-#   pred_terms <- bare_terms$predictor
-  # rand_terms <- gsub(
-  #   "1 ?\\| ?", "",
-  #   as.character(lme4::findbars(formula_complex))
-  # )
-#   group_term <- rand_terms[which.min(nchar(rand_terms))]
-#   within_terms <- sub_matches(rand_terms, paste0("(.*):", group_term), "\\1")
-#   if (length(within_terms) > 0) {
-#     # add within interactions
-#     within_terms <- grep(paste0(within_terms, collapse = "|"), pred_terms, value = TRUE)
-#   }
-#   between_terms <- setdiff(pred_terms, within_terms)
-# }

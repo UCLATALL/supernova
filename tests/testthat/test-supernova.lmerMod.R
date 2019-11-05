@@ -23,10 +23,25 @@ get_data <- function(name) {
   readRDS(file.path(prefix, "cache", name))
 }
 
-# jmr_ex11.9 <- readRDS("./tests/testthat/cache/jmr_ex11.9.Rds")
-# jmr_ex11.17 <- readRDS("./tests/testthat/cache/jmr_ex11.17.Rds")
-# jmr_ex11.9 <- readRDS("./cache/jmr_ex11.9.Rds")
-# jmr_ex11.17 <- readRDS("./cache/jmr_ex11.17.Rds")
+
+# Error tests -------------------------------------------------------------
+
+test_that("cannot compute SS types other than Type III for lmerMod", {
+  model <- lme4::lmer(
+    puzzles_completed ~ condition + (1|subject),
+    data = get_data("jmr_ex11.9.Rds")
+  )
+  expect_error(supernova(model, type = 1))
+  expect_error(supernova(model, type = 2))
+})
+
+test_that("there is no verbose print for lmerMod (warn and switch off)", {
+  model <- lme4::lmer(
+    puzzles_completed ~ condition + (1|subject),
+    data = get_data("jmr_ex11.9.Rds")
+  )
+  expect_warning(supernova(model, verbose = TRUE))
+})
 
 
 # Structure tests ---------------------------------------------------------
@@ -103,27 +118,15 @@ test_that("sueprnova can test simple nested designs", {
   expect_equal(
     supernova(model)$tbl %>% mutate_if(is.numeric, round, 2) %>% as.data.frame(),
     tribble(
-      ~term,                       ~SS, ~df,   ~MS,       ~F,     ~PRE,       ~p,
-      "instructions"          ,  12.50,   1, 12.50,    4.686,     0.54,    0.096,
-      "instructions error"    ,  10.67,   4,  2.67, NA_real_, NA_real_, NA_real_,
-      "Total between subjects",  23.17,   5,  4.63, NA_real_, NA_real_, NA_real_,
-      "Total within subjects" ,   5.33,  12,  0.44, NA_real_, NA_real_, NA_real_,
-      "Total"                 ,  28.50,  17,  1.68, NA_real_, NA_real_, NA_real_
+      ~term,                       ~SS, ~df,   ~MS,    ~F, ~PRE,    ~p,
+      "instructions"          ,  12.50,   1, 12.50, 4.686, 0.54, 0.096,
+      "Error between subjects",  10.67,   4,  2.67,    NA,   NA,    NA,
+      "Total between subjects",  23.17,   5,  4.63,    NA,   NA,    NA,
+      "Total within subjects" ,   5.33,  12,  0.44,    NA,   NA,    NA,
+      "Total"                 ,  28.50,  17,  1.68,    NA,   NA,    NA,
     ) %>% mutate_if(is.numeric, round, digits = 2) %>% as.data.frame()
   )
 })
-
-# |                     | b    | SS     | df | MS    | F     | PRE |
-# |---------------------|------|--------|----|-------|-------|-----|
-# | Between Subjects    |      |        |    |       |       |     |
-# |   Condition         |  .83 |  12.50 |  1 | 12.50 |  4.68 | .54 |
-# |     Error           |      |  10.67 |  4 |  2.67 |       |     |
-# | Total Between       |      |  23.17 |  5 |       |       |     |
-# |---------------------|------|--------|----|-------|-------|-----|
-# | Within Subjects     |      |        |    |       |       |     |
-# | Total Within        |      |   5.33 | 12 |  0.44 |       |     |
-# |---------------------|------|--------|----|-------|-------|-----|
-# | Total               |      |  28.50 | 17 |       |       |     |
 
 test_that("supernova can test simple crossed designs", {
   model <- lme4::lmer(
@@ -132,29 +135,18 @@ test_that("supernova can test simple crossed designs", {
   )
 
   expect_equal(
-    supernova(model)$tbl %>% mutate_if(is.numeric, round, 3) %>% as.data.frame(),
+    supernova(model)$tbl,
     tribble(
-      ~term,                      ~SS, ~df,   ~MS,       ~F,     ~PRE,       ~p,
-      "Total between subjects", 18.00,   7,  2.5714, NA_real_, NA_real_, NA_real_,
-      "condition",               2.25,   1,  2.2500,    5.727,  0.4500,    .04794,
-      "condition error",         2.75,   7,  0.3929, NA_real_, NA_real_, NA_real_,
-      "Total within subjects",   5.00,   8,  0.6250, NA_real_, NA_real_, NA_real_,
-      "Total",                  23.00,  15,  1.5333, NA_real_, NA_real_, NA_real_
-    ) %>% mutate_if(is.numeric, round, 3) %>% as.data.frame(),
+      ~term,                      ~SS, ~df,   ~MS,      ~F,   ~PRE,     ~p,
+      "Total between subjects", 18.00,   7,  2.5714,    NA,     NA,     NA,
+      "condition",               2.25,   1,  2.2500, 5.727, 0.4500, .04794,
+      "Error within subjects",   2.75,   7,  0.3929,    NA,     NA,     NA,
+      "Total within subjects",   5.00,   8,  0.6250,    NA,     NA,     NA,
+      "Total",                  23.00,  15,  1.5333,    NA,     NA,     NA,
+    ) %>% as.data.frame(),
+    tolerance = 0.001
   )
 })
-
-# |                  | b    |  SS    | df | MS   | F    | PRE |
-# |------------------|------|--------|----|------|------|-----|
-# | Between Subjects |      |        |    |      |      |     |
-# |   Total          |      |  18.00 |  7 | 2.57 |      |     |
-# |------------------|------|--------|----|------|------|-----|
-# | Within Subjects  |      |        |    |      |      |     |
-# |   Treatment      | .375 |   2.25 |  1 | 2.25 | 5.73 | .45 |
-# |     Error        |      |   2.75 |  7 | 0.39 |      |     |
-# |   Total          |      |   5.00 |  8 | 0.63 |      |     |
-# |------------------|------|--------|----|------|------|-----|
-# | Total            |      |  23.00 | 15 |      |      |     |
 
 test_that("supernova can test multiple crossed designs", {
   model <- lme4::lmer(
@@ -163,37 +155,48 @@ test_that("supernova can test multiple crossed designs", {
   )
 
   expect_equal(
-    supernova(model)$tbl %>% mutate_if(is.numeric, round, 2) %>% as.data.frame(),
+    supernova(model)$tbl,
     tribble(
-      ~term,                       ~SS, ~df,   ~MS,       ~F,     ~PRE,       ~p,
-      "Total between subjects", 131.00,   4, 32.75, NA_real_, NA_real_, NA_real_,
-      "time"                  ,  65.87,   2, 32.93,    29.94,     0.88,     .000,
-      "time error"            ,   8.80,   8,  1.10, NA_real_, NA_real_, NA_real_,
-      "type"                  ,  17.63,   1, 17.63,    11.38,     0.74,     .028,
-      "type error"            ,   6.20,   4,  1.55, NA_real_, NA_real_, NA_real_,
-      "time:type"             ,   1.87,   2,  0.93,     9.33,     0.70,     .008,
-      "time:type error"       ,   0.80,   8,  0.10, NA_real_, NA_real_, NA_real_,
-      "Total within subjects" , 101.17,  25,  4.05, NA_real_, NA_real_, NA_real_,
-      "Total"                 , 232.17,  29,  8.01, NA_real_, NA_real_, NA_real_
-    ) %>% mutate_if(is.numeric, round, digits = 2) %>% as.data.frame()
+      ~term,                       ~SS, ~df,   ~MS,    ~F, ~PRE,   ~p,
+      "Total between subjects", 131.00,   4, 32.75,    NA,   NA,   NA,
+      "time"                  ,  65.87,   2, 32.93, 29.94, 0.88, .000,
+      "time error"            ,   8.80,   8,  1.10,    NA,   NA,   NA,
+      "type"                  ,  17.63,   1, 17.63, 11.38, 0.74, .028,
+      "type error"            ,   6.20,   4,  1.55,    NA,   NA,   NA,
+      "time:type"             ,   1.87,   2,  0.93,  9.33, 0.70, .008,
+      "time:type error"       ,   0.80,   8,  0.10,    NA,   NA,   NA,
+      "Total within subjects" , 101.17,  25,  4.05,    NA,   NA,   NA,
+      "Total"                 , 232.17,  29,  8.01,    NA,   NA,   NA,
+    ) %>% as.data.frame(),
+    tolerance = 0.01
   )
 })
 
-# |                     | b    | SS     | df | MS    | F     | PRE |
-# |---------------------|------|--------|----|-------|-------|-----|
-# | Between Subjects    |      |        |    |       |       |     |
-# |   Total             |      | 131.00 |  4 | 32.75 |       |     |
-# |---------------------|------|--------|----|-------|-------|-----|
-# | Within Subjects     |      |        |    |       |       |     |
-# |   Time              | 1.80 |  65.87 |  2 | 32.93 | 29.94 | .88 |
-# |     Error           |      |   8.80 |  8 |  1.10 |       |     |
-# |   List type         |  .77 |  17.63 |  1 | 17.63 | 11.38 | .74 |
-# |     Error           |      |   6.20 |  4 |  1.55 |       |     |
-# |   Time * List type  | -.30 |   1.87 |  2 |  0.93 |  9.35 | .70 | This is the correct value
-# |   Time * List type  | -.30 |   1.87 |  2 |  0.93 |  9.33 | .70 | This is the best I could do
-# |     Error           |      |   0.80 |  8 |  0.10 |       |     |
-# |   Total             |      | 101.17 | 25 |       |       |     |
-# |---------------------|------|--------|----|-------|-------|-----|
-# | Total               |      | 232.17 | 29 |       |       |     |
+test_that("supernova can test mixed designs", {
+  model <- lme4::lmer(
+    rating ~ sex * yearsmarried * children + (1|couple),
+    data = get_data("jmr_ex11.22.Rds"),
+  )
 
+  expect_equal(
+    supernova(model)$tbl,
+    tribble(
+      ~term,                          ~SS, ~df,     ~MS,   ~F, ~PRE,   ~p,
+      "yearsmarried"             , 10.125,   1, 10.1250, 9.54, 0.44, .009,
+      "children"                 ,  0.500,   1,  0.5000, 0.48, 0.04, .506,
+      "yearsmarried:children"    , 10.125,   1, 10.1250, 9.54, 0.44, .009,
+      "Error between subjects"   , 12.750,  12,  1.0625,   NA,   NA,   NA,
+      "Total between subjects"   , 33.500,  15,  2.2333,   NA,   NA,   NA,
 
+      "sex"                      ,  3.125,   1,  3.1250, 8.82, 0.42, .012,
+      "sex:yearsmarried"         ,  2.000,   1,  2.0000, 5.66, 0.32, .035,
+      "sex:children"             ,  0.125,   1,  0.1250, 0.35, 0.03, .565,
+      "sex:yearsmarried:children",  0.505,   1,  0.5000, 1.42, 0.11, .256,
+      "Error within subjects"    ,  4.255,  12,  0.3542,   NA,   NA,   NA,
+      "Total within subjects"    , 10.000,  16,  0.6250,   NA,   NA,   NA,
+
+      "Total"                    , 43.500,  31,  1.40,   NA,   NA,   NA,
+    ) %>% as.data.frame(),
+    tolerance = 0.01
+  )
+})

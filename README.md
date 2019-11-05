@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# supernova <img src="man/figures/logo.png" width="120" align="right" />
+# supernova <img src="man/figures/logo.png" width="40%" align="right" />
 
 [![Travis build
 status](https://travis-ci.org/UCLATALL/supernova.svg?branch=master)](https://travis-ci.org/UCLATALL/supernova)
@@ -77,18 +77,16 @@ unbalanced data.
   - multiple regression: `y ~ a + b`
   - interactive regression: `y ~ a * b`
 
-Additionally, a subset of within-subjects designs are supported.
-Importantly, only fully crossed (participants are observed in every
-condition) and simply nested models (participants have multiple scores
-in the same condition) have been tested. To accomodate these models
-`supernova()` can accept models fit via `lmer()` as in the
-[Examples](#examples) below.
+Additionally, a subset of within-subjects designs are supported and
+explicitly tested. To accomodate these models `supernova()` can accept
+models fit via `lmer()` as in the [Examples](#examples) below. Only
+models like those included in those examples have been tested for
+within-subjects designs.
 
 Anything not included above is not (yet) explicitly tested and may yield
 errors or incorrect statistics. This includes, but is not limited to
 
   - one-sample *t*-tests
-  - mixed designs
 
 ## Installing
 
@@ -249,17 +247,17 @@ simple_crossed %>%
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: puzzles_completed ~ condition + (1 | subject)
 #>  
-#>                         SS df    MS     F    PRE     p
-#>  ---------------- | ------ -- ----- ----- ------ -----
-#>  Between Subjects |                                   
-#>    Total          | 18.000  7 2.571                   
-#>  ---------------- | ------ -- ----- ----- ------ -----
-#>  Within Subjects  |                                   
-#>    condition      |  2.250  1 2.250 5.727 0.4500 .0479
-#>      Error        |  2.750  7 0.393                   
-#>    Total          |  5.000  8 0.625                   
-#>  ---------------- | ------ -- ----- ----- ------ -----
-#>  Total            | 23.000 15 1.533
+#>                               SS df    MS     F    PRE     p
+#>  ---------------------- | ------ -- ----- ----- ------ -----
+#>  Between Subjects       |                                   
+#>  Total                  | 18.000  7 2.571                   
+#>  ---------------------- | ------ -- ----- ----- ------ -----
+#>  Within Subjects        |                                   
+#>    condition            |  2.250  1 2.250 5.727 0.4500 .0479
+#>  Error                  |  2.750  7 0.393                   
+#>  Total                  |  5.000  8 0.625                   
+#>  ---------------------- | ------ -- ----- ----- ------ -----
+#>  Total                  | 23.000 15 1.533
 ```
 
 #### A two-way within-subjects design (crossed)
@@ -292,21 +290,21 @@ multiple_crossed %>%
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: recall ~ type * time + (1 | Subject) + (1 | type:Subject) + (1 | time:Subject)
 #>  
-#>                          SS df     MS      F    PRE     p
-#>  ---------------- | ------- -- ------ ------ ------ -----
-#>  Between Subjects |                                      
-#>    Total          | 131.001  4 32.750                    
-#>  ---------------- | ------- -- ------ ------ ------ -----
-#>  Within Subjects  |                                      
-#>    type           |  17.633  1 17.633 11.377 0.7399 .0280
-#>      Error        |   6.200  4  1.550                    
-#>    time           |  65.867  2 32.933 29.940 0.8821 .0002
-#>      Error        |   8.800  8  1.100                    
-#>    type:time      |   1.867  2  0.933  9.333 0.7000 .0081
-#>      Error        |   0.800  8  0.100                    
-#>    Total          | 101.166 25  4.047                    
-#>  ---------------- | ------- -- ------ ------ ------ -----
-#>  Total            | 232.167 29  8.006
+#>                                SS df     MS      F    PRE     p
+#>  ---------------------- | ------- -- ------ ------ ------ -----
+#>  Between Subjects       |                                      
+#>  Total                  | 131.001  4 32.750                    
+#>  ---------------------- | ------- -- ------ ------ ------ -----
+#>  Within Subjects        |                                      
+#>    type                 |  17.633  1 17.633 11.377 0.7399 .0280
+#>      Error              |   6.200  4  1.550                    
+#>    time                 |  65.867  2 32.933 29.940 0.8821 .0002
+#>      Error              |   8.800  8  1.100                    
+#>    type:time            |   1.867  2  0.933  9.333 0.7000 .0081
+#>      Error              |   0.800  8  0.100                    
+#>  Total                  | 101.166 25  4.047                    
+#>  ---------------------- | ------- -- ------ ------ ------ -----
+#>  Total                  | 232.167 29  8.006
 ```
 
 #### A one-way between-groups design (nested)
@@ -342,17 +340,79 @@ simple_nested %>%
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: value ~ instructions + (1 | group)
 #>  
-#>                         SS df     MS     F    PRE     p
-#>  ---------------- | ------ -- ------ ----- ------ -----
-#>  Between Subjects |                                    
-#>    instructions   | 12.500  1 12.500 4.686 0.5395 .0964
-#>      Error        | 10.671  4  2.668                   
-#>    Total          | 23.171  5  4.634                   
-#>  ---------------- | ------ -- ------ ----- ------ -----
-#>  Within Subjects  |                                    
-#>    Total          |  5.329 12  0.444                   
-#>  ---------------- | ------ -- ------ ----- ------ -----
-#>  Total            | 28.500 17  1.676
+#>                               SS df     MS     F    PRE     p
+#>  ---------------------- | ------ -- ------ ----- ------ -----
+#>  Between Subjects       |                                    
+#>    instructions         | 12.500  1 12.500 4.686 0.5395 .0964
+#>  Error                  | 10.671  4  2.668                   
+#>  Total                  | 23.171  5  4.634                   
+#>  ---------------------- | ------ -- ------ ----- ------ -----
+#>  Within Subjects        |                                    
+#>  Total                  |  5.329 12  0.444                   
+#>  ---------------------- | ------ -- ------ ----- ------ -----
+#>  Total                  | 28.500 17  1.676
+```
+
+#### A three-way design with two between-groups variables and a nested variable
+
+In this example, each person in heterosexual marriage generates a rating
+of satisfaction. Additionally, these couples were chosen such that they
+either have children or not, and have been married 15 vs. 30 years. If
+we fit the data with `lm()` that would ignore the non-independence due
+to the people being in the same `couple`. Compare this output with the
+foloowing output where the `group` is specified as a random factor.
+
+``` r
+complex_nested <- JMRData::ex11.22 %>%
+  tidyr::gather(sex, rating, Male, Female) %>%
+  dplyr::mutate_at(dplyr::vars(couple, children, sex, yearsmarried), as.factor)
+
+# fitting this with lm would ignore the non-independence due to group
+complex_nested %>% 
+  lm(rating ~ sex * yearsmarried * children, data = .) %>% 
+  supernova(verbose = FALSE)
+#>  Analysis of Variance Table (Type III SS)
+#>  Model: rating ~ sex * yearsmarried * children
+#>  
+#>                                  SS df    MS      F    PRE     p
+#>  ------------------------- | ------ -- ----- ------ ------ -----
+#>  Model                     | 26.500  7 3.786  5.345 0.6092 .0009
+#>  sex                       |  0.000  1 0.000  0.000 0.0000 .0000
+#>  yearsmarried              |  1.125  1 1.125  1.588 0.0621 .2197
+#>  children                  |  2.000  1 2.000  2.824 0.1053 .1059
+#>  sex:yearsmarried          |  2.250  1 2.250  3.176 0.1169 .0874
+#>  sex:children              |  0.063  1 0.063  0.088 0.0037 .7690
+#>  yearsmarried:children     |  7.563  1 7.563 10.676 0.3079 .0033
+#>  sex:yearsmarried:children |  0.500  1 0.500  0.706 0.0286 .4091
+#>  Error                     | 17.000 24 0.708                    
+#>  ------------------------- | ------ -- ----- ------ ------ -----
+#>  Total                     | 43.500 31 1.403
+
+# using lmer() we can specify the non-independence
+complex_nested %>% 
+  lmer(rating ~ sex * yearsmarried * children + (1|couple), data = .) %>% 
+  supernova()
+#>  Analysis of Variance Table (Type III SS)
+#>  Model: rating ~ sex * yearsmarried * children + (1 | couple)
+#>  
+#>                                    SS df     MS     F    PRE     p
+#>  --------------------------- | ------ -- ------ ----- ------ -----
+#>  Between Subjects            |                                    
+#>    yearsmarried              | 10.125  1 10.125 9.529 0.4426 .0094
+#>    children                  |  0.500  1  0.500 0.471 0.0377 .5058
+#>    yearsmarried:children     | 10.125  1 10.125 9.529 0.4426 .0094
+#>  Error                       | 12.750 12  1.063                   
+#>  Total                       | 33.500 15  2.233                   
+#>  --------------------------- | ------ -- ------ ----- ------ -----
+#>  Within Subjects             |                                    
+#>    sex                       |  3.125  1  3.125 8.824 0.4237 .0117
+#>    sex:yearsmarried          |  2.000  1  2.000 5.647 0.3200 .0350
+#>    sex:children              |  0.125  1  0.125 0.353 0.0286 .5635
+#>    sex:yearsmarried:children |  0.500  1  0.500 1.412 0.1053 .2577
+#>  Error                       |  4.250 12  0.354                   
+#>  Total                       | 10.000 16  0.625                   
+#>  --------------------------- | ------ -- ------ ----- ------ -----
+#>  Total                       | 43.500 31  1.403
 ```
 
 ### Using Different SS Types
@@ -483,7 +543,7 @@ sd_of_b1 <- mosaic::do(1000) * b1(lm(mpg ~ hp, data = mosaic::resample(mtcars)))
 hist(sd_of_b1$b1)
 ```
 
-<img src="man/figures/README-samp_dist_of_b1-1.png" width="100%" />
+<img src="man/figures/README-samp_dist_of_b1-1.png" width="80%" />
 
 #### Bootstrapping the effect of one term from a multiple regression
 
@@ -500,7 +560,7 @@ sd_of_hp <- mosaic::do(1000) * {
 hist(sd_of_hp$result)
 ```
 
-<img src="man/figures/README-samp_dist_of_hp_coef-1.png" width="100%" />
+<img src="man/figures/README-samp_dist_of_hp_coef-1.png" width="80%" />
 
 # Contributing
 

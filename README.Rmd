@@ -9,7 +9,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.path = "man/figures/README-",
-  out.width = "100%"
+  out.width = "80%"
 )
 
 library(supernova)
@@ -17,7 +17,7 @@ library(mosaic)
 set.seed(123)
 ```
 
-# supernova <img src="man/figures/logo.png" width="120" align="right" />
+# supernova <img src="man/figures/logo.png" width="40%" align="right" />
 
 [![Travis build status](https://travis-ci.org/UCLATALL/supernova.svg?branch=master)](https://travis-ci.org/UCLATALL/supernova)
 [![Codecov test coverage](https://codecov.io/gh/UCLATALL/supernova/branch/master/graph/badge.svg)](https://codecov.io/gh/UCLATALL/supernova?branch=master)
@@ -41,19 +41,18 @@ In addition to the ANOVA table provided by `supernova()`, the `supernova` packag
 
 ### Supported models
 
-The following models are explicitly tested and supported by `supernova()`, _for independent samples (between-subjects) data only_. For these models, there is also support for datasets with missing or unbalanced data. 
+The following models are explicitly tested and supported by `supernova()`, _for independent samples (between-subjects) data only_. For these models, there is also support for datasets with missing or unbalanced data.
 
 * empty models: `y ~ NULL`
 * simple regression: `y ~ a`
 * multiple regression: `y ~ a + b`
 * interactive regression: `y ~ a * b`
 
-Additionally, a subset of within-subjects designs are supported. Importantly, only fully crossed (participants are observed in every condition) and simply nested models (participants have multiple scores in the same condition) have been tested. To accomodate these models `supernova()` can accept models fit via `lmer()` as in the [Examples](#examples) below.
+Additionally, a subset of within-subjects designs are supported and explicitly tested. To accomodate these models `supernova()` can accept models fit via `lmer()` as in the [Examples](#examples) below. Only models like those included in those examples have been tested for within-subjects designs.
 
 Anything not included above is not (yet) explicitly tested and may yield errors or incorrect statistics. This includes, but is not limited to
 
 * one-sample _t_-tests
-* mixed designs
 
 
 ## Installing
@@ -177,6 +176,26 @@ simple_nested %>%
 # using lmer() we can specify the non-independence
 simple_nested %>% 
   lmer(value ~ instructions + (1|group), data = .) %>% 
+  supernova()
+```
+
+#### A three-way design with two between-groups variables and a nested variable
+
+In this example, each person in heterosexual marriage generates a rating of satisfaction. Additionally, these couples were chosen such that they either have children or not, and have been married 15 vs. 30 years. If we fit the data with `lm()` that would ignore the non-independence due to the people being in the same `couple`. Compare this output with the foloowing output where the `group` is specified as a random factor.
+
+```{r}
+complex_nested <- JMRData::ex11.22 %>%
+  tidyr::gather(sex, rating, Male, Female) %>%
+  dplyr::mutate_at(dplyr::vars(couple, children, sex, yearsmarried), as.factor)
+
+# fitting this with lm would ignore the non-independence due to group
+complex_nested %>% 
+  lm(rating ~ sex * yearsmarried * children, data = .) %>% 
+  supernova(verbose = FALSE)
+
+# using lmer() we can specify the non-independence
+complex_nested %>% 
+  lmer(rating ~ sex * yearsmarried * children + (1|couple), data = .) %>% 
   supernova()
 ```
 

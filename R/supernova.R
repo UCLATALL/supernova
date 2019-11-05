@@ -123,9 +123,17 @@ supernova.lmerMod <- function(fit, type = 3, verbose = FALSE) {
          effects (e.g. repeated measures models).")
   }
 
+  if (verbose) {
+    warning("There is currently no verbose version of the supernova table for
+         lmer() models. Switching to non-verbose.")
+    verbose <- FALSE
+  }
+
   model_full <- fit
   model_data <- model_full@frame
   vars_all <- supernova::variables(model_full)
+  vars_within_simple <- grep("[:]", vars_all[["within"]], value = TRUE, invert = TRUE)
+  vars_between_simple <- grep("[:]", vars_all[["between"]], value = TRUE, invert = TRUE)
 
   # get formula with no random terms
   formula_complex <- formula(model_full)
@@ -144,57 +152,96 @@ supernova.lmerMod <- function(fit, type = 3, verbose = FALSE) {
   # TREATMENT ROWS
   anova_lm <- anova_tbl(model_lm) %>% dplyr::select(-dplyr::one_of("F"))
   anova_lmer <- anova_tbl(model_full) %>% dplyr::select(dplyr::one_of(c("term", "F")))
-  treatment_rows <- dplyr::right_join(anova_lm, anova_lmer, by = "term")
+  partial_rows <- dplyr::right_join(anova_lm, anova_lmer, by = "term")
 
-  get_partials <- function(treatment_rows, type) {
-    treatment <- treatment_rows[treatment_rows[["term"]] %in% vars_all[[type]]]
-    if (ncol(treatment) == 0) {
-      error <- data.frame(match = character(0))
-    } else {
-      part_total_df <- if (type == "within") df_total_within else df_total_between
-      error_df <- if (type == "between") {
-        part_total_df - sum(treatment[["df"]])
-      } else {
-        treatment[["df"]] * df_total_between
-      }
-      error <- data.frame(
-        match = vars_all[[type]],
-        term = paste(vars_all[[type]], "error"),
-        df = error_df,
-        MS = treatment[["MS"]] / treatment[["F"]],
-        stringsAsFactors = FALSE
-      )
-      error[["SS"]] <- error[["MS"]] * error[["df"]]
-    }
-    purrr::map_dfr(vars_all[[type]], function(x) {
+  # TREATMENT WITHIN
+  partial_within <- partial_rows[partial_rows[["term"]] %in% vars_all[["within"]],]
+  treatment_within <- if (length(vars_within_simple) == 0) {
+    # No within vars
+
+    data.frame()
+  } else if (length(vars_within_simple) == 1) {
+    # A single within var, only need one error term
+    df_error_within <- df_total_within - sum(partial_within[["df"]])
+    partial_within_error <- data.frame(
+      term = "Error within subjects",
+      df = df_error_within,
+      MS = partial_within[["MS"]][[1]] / partial_within[["F"]][[1]],
+      stringsAsFactors = FALSE
+    )
+    partial_within_error[["SS"]] <-
+      partial_within_error[["MS"]] * partial_within_error[["df"]]
+    partial_within[["PRE"]] <-
+      partial_within[["SS"]] / (partial_within_error[["SS"]] + partial_within[["SS"]])
+    partial_within[["p"]] <- pf(partial_within[["F"]], partial_within[["df"]],
+                                df_error_within, lower.tail = FALSE)
+
+    dplyr::bind_rows(partial_within, partial_within_error)
+  } else {
+    # Multiple within vars, need to compute separate error terms
+    df_error_within <- partial_within[["df"]] * df_total_between
+    partial_within_error <- data.frame(
+      match = vars_all[["within"]],
+      term = paste(vars_all[["within"]], "error"),
+      df = df_error_within,
+      MS = partial_within[["MS"]] / partial_within[["F"]],
+      stringsAsFactors = FALSE
+    )
+    partial_within_error[["SS"]] <-
+      partial_within_error[["MS"]] * partial_within_error[["df"]]
+
+    purrr::map_dfr(vars_all[["within"]], function(x) {
       part <- dplyr::bind_rows(
-        dplyr::filter_at(treatment, dplyr::vars("term"), ~ . == x),
-        dplyr::filter_at(error, dplyr::vars("match"), ~ . == x)
-      ) %>%
-        dplyr::select(-dplyr::one_of("match"))
+        dplyr::filter_at(partial_within, dplyr::vars("term"), ~ . == x),
+        dplyr::filter_at(partial_within_error, dplyr::vars("match"), ~ . == x)
+      ) %>% dplyr::select(-dplyr::one_of("match"))
 
       part[, c("PRE", "p")] <- NA_real_
       part[["PRE"]][[1]] <- part[["SS"]][[1]] / sum(part[["SS"]])
-      part[["p"]][[1]] <- pf(
-        part[["F"]][[1]],
-        part[["df"]][[1]],
-        part[["df"]][[2]],
-        lower.tail = FALSE
-      )
+      part[["p"]][[1]] <- pf(part[["F"]][[1]], part[["df"]][[1]], part[["df"]][[2]],
+                             lower.tail = FALSE)
       dplyr::select(part, dplyr::one_of("term", "SS", "df", "MS", "F", "PRE", "p"))
     })
   }
+
+  # TREATMENT BETWEEN
+  partial_between <- partial_rows[partial_rows[["term"]] %in% vars_all[["between"]],]
+  treatment_between <- if (length(vars_between_simple) == 0) {
+    # No between vars
+
+    data.frame()
+  } else {
+    # Between vars never need separate error terms
+    df_error_between <- df_total_between - sum(partial_between[["df"]])
+    partial_between_error <- data.frame(
+      term = "Error between subjects",
+      df = df_error_between,
+      MS = partial_between[["MS"]][[1]] / partial_between[["F"]][[1]],
+      stringsAsFactors = FALSE
+    )
+    partial_between_error[["SS"]] <-
+      partial_between_error[["MS"]] * partial_between_error[["df"]]
+    partial_between[["PRE"]] <-
+      partial_between[["SS"]] / (partial_between_error[["SS"]] + partial_between[["SS"]])
+    partial_between[["p"]] <- pf(partial_between[["F"]], partial_between[["df"]],
+                                 df_error_between, lower.tail = FALSE)
+
+    dplyr::bind_rows(partial_between, partial_between_error)
+  }
+
   partials <- list(
-    within = get_partials(treatment_rows, "within"),
-    between = get_partials(treatment_rows, "between")
+    within = treatment_within,
+    between = treatment_between
   )
 
   # PART TOTALS
   get_partial_total_ss <- function(partials, type) {
     other_type <- setdiff(c("between", "within"), type)
     if (length(vars_all[[type]]) == 0) {
+      # none of this type of variable, have to infer total
       total[["SS"]] - sum(partials[[other_type]][["SS"]])
     } else {
+      # total is the explicit sum of the partials
       sum(partials[[type]][["SS"]])
     }
   }
@@ -235,15 +282,9 @@ superanova <- supernova
 
 #' @export
 print.supernova <- function(x, pcut = 4, ...) {
-  verbose <- attr(x, "verbose")
+  is_verbose <- attr(x, "verbose") == TRUE
   is_lmer_model <- "lmerMod" %in% class(x$fit)
   is_null_model <- length(variables(x$fit)$predictor) == 0
-
-  if (is_lmer_model & verbose) {
-    warning("There is currently no verbose version of the supernova table for
-         lmer() models. Switching to non-verbose.")
-    attr(x, "verbose") <- FALSE
-  }
 
   # setup
   tbl <- x$tbl
@@ -277,8 +318,6 @@ print.supernova <- function(x, pcut = 4, ...) {
     tbl <- insert_row(tbl, 1, c("Between Subjects", rep("", 6)))
     tbl <- insert_row(tbl, grep("^Total between subjects", tbl$term) + 1,
                       c("Within Subjects", rep("", 6)))
-    tbl[tbl$term == "Total between subjects", ][["term"]] <- "  Total"
-    tbl[tbl$term == "Total within subjects", ][["term"]] <- "  Total"
 
     pred_terms <- variables(x$fit)$predictor
     error_terms <- paste(pred_terms, "error")
@@ -289,13 +328,15 @@ print.supernova <- function(x, pcut = 4, ...) {
       tbl[["term"]], paste0("(", paste0(pred_terms, collapse = "|"), ")"), "  \\1"
     )
     tbl <- insert_rule(tbl, 1)
-    tbl <- insert_rule(tbl, grep("^  Total", tbl$term)[[1]] + 1)
-    tbl <- insert_rule(tbl, grep("^  Total", tbl$term)[[2]] + 1)
+    tbl <- insert_rule(tbl, grep("Total between subjects", tbl$term) + 1)
+    tbl <- insert_rule(tbl, grep("Total within subjects", tbl$term) + 1)
+    tbl[["term"]] <- tbl[["term"]] %>%
+      stringr::str_replace("(Total|Error) (?:between|within) subjects", "\\1")
   }
 
   # add spaces and a vertical bar to separate the terms & desc from values
   barHelp <- function(x, y) paste0(x, y, " |")
-  bar_col <- if (verbose) "description" else "term"
+  bar_col <- if (!is_lmer_model & is_verbose) "description" else "term"
   spaces_to_add <- max(nchar(tbl[[bar_col]])) - nchar(tbl[[bar_col]])
   tbl[[bar_col]] <- mapply(barHelp, tbl[[bar_col]], strrep(" ", spaces_to_add))
 
@@ -303,7 +344,7 @@ print.supernova <- function(x, pcut = 4, ...) {
   names(tbl)[names(tbl) %in% c("term", "description")] <- ""
 
   # remove unnecessary columns
-  if (!verbose && !is_lmer_model) tbl[[2]] <- NULL
+  if (!is_verbose && !is_lmer_model) tbl[[2]] <- NULL
 
   # printing
   cat_line(" Analysis of Variance Table (Type ", attr(x, "type"), " SS)")
