@@ -1,7 +1,13 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# supernova <img src="man/figures/logo.png" width="40%" align="right" />
+# supernova <img src="man/figures/logo.png" width="120" align="right" />
+
+[![Travis build
+status](https://travis-ci.org/UCLATALL/supernova.svg?branch=master)](https://travis-ci.org/UCLATALL/supernova)
+[![Codecov test
+coverage](https://codecov.io/gh/UCLATALL/supernova/branch/master/graph/badge.svg)](https://codecov.io/gh/UCLATALL/supernova?branch=master)
+[![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/supernova)](https://cran.r-project.org/package=supernova)
 
 The goal of `supernova` is to create ANOVA tables in the format used by
 Judd, McClelland, and Ryan (2017, ISBN: 978-1138819832) in their
