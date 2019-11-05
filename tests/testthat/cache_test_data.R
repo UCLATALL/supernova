@@ -51,23 +51,32 @@ models %>%
   readr::write_rds(file.path(cache_dir, "model_cache_type_3.Rds"))
 
 
+# Simple nested designs ---------------------------------------------------
+
+JMRData::ex11.1 %>%
+  tidyr::gather(id, value, dplyr::starts_with("score")) %>%
+  dplyr::mutate_at(dplyr::vars(group, instructions, id), as.factor) %>%
+  readr::write_rds(file.path(cache_dir, "jmr_ex11.1.Rds"))
+
+
 # Crossed designs ---------------------------------------------------------
 
 JMRData::ex11.9 %>%
   tidyr::gather(condition, puzzles_completed, -subject) %>%
-  dplyr::mutate_at(vars(subject, condition), as.factor) %>%
+  dplyr::mutate_at(dplyr::vars(subject, condition), as.factor) %>%
   readr::write_rds(file.path(cache_dir, "jmr_ex11.9.Rds"))
 
 JMRData::ex11.17 %>%
   purrr::set_names(tolower(names(.))) %>%
   tidyr::gather(condition, recall, -subject) %>%
   tidyr::separate(condition, c("type", "time"), -1) %>%
-  dplyr::mutate_at(vars(subject, type, time), as.factor) %>%
+  dplyr::mutate_at(dplyr::vars(subject, type, time), as.factor) %>%
   readr::write_rds(file.path(cache_dir, "jmr_ex11.17.Rds"))
 
-# Simple nested designs ---------------------------------------------------
 
-JMRData::ex11.1 %>%
-  tidyr::gather(id, value, starts_with("score")) %>%
-  dplyr::mutate_at(vars(group, instructions, id), as.factor) %>%
-  readr::write_rds(file.path(cache_dir, "jmr_ex11.1.Rds"))
+# Mixed designs -----------------------------------------------------------
+
+JMRData::ex11.22 %>%
+  tidyr::gather(sex, rating, Male, Female) %>%
+  dplyr::mutate_at(dplyr::vars(couple, children, sex, yearsmarried), as.factor) %>%
+  readr::write_rds(file.path(cache_dir, "jmr_ex11.22.Rds"))

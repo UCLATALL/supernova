@@ -25,15 +25,21 @@ variables <- function(object) {
     vars_between <- vars_pred
   } else if ("lmerMod" %in% class(object)) {
     # need to determine which are within vs. between
-    data <- if (class(object) %in% "lmerMod") object@frame else object$frame
+    data <- object@frame
     nrow_group <- dplyr::distinct_at(data, dplyr::vars(vars_group)) %>% nrow()
     vars_pred_non_int <- grep("^[^:]+$", vars_pred, value = TRUE)
-    is_pred_between <- purrr::map_lgl(vars_pred_non_int, function(var) {
+    is_pred_between_simple <- purrr::map_lgl(vars_pred_non_int, function(var) {
       nrow_var <- dplyr::distinct_at(data, dplyr::vars(vars_group, var)) %>% nrow()
       nrow_var == nrow_group
     })
-    vars_between <- vars_pred[is_pred_between]
-    vars_within <- vars_pred[!is_pred_between]
+    vars_within_simple <- vars_pred_non_int[!is_pred_between_simple]
+    is_pred_within <- if (length(vars_within_simple) > 0) {
+      grepl(paste0(vars_within_simple, collapse = "|"), vars_pred)
+    } else {
+      FALSE
+    }
+    vars_within <- vars_pred[is_pred_within]
+    vars_between <- vars_pred[!is_pred_within]
   } else {
     # cannot determine which are within or between without more info
     vars_within <- character(0)

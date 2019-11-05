@@ -125,3 +125,23 @@ test_that("variables can extract from complex crossed model", {
     )
   )
 })
+
+test_that("variables can extract from mixed model", {
+  model <- lme4::lmer(
+    rating ~ sex * yearsmarried * children + (1|couple),
+    data = get_data("jmr_ex11.22.Rds"),
+  )
+  expect_identical(
+    variables(model),
+    list(
+      outcome = "rating",
+      predictor = c(
+        "sex", "yearsmarried", "children", "sex:yearsmarried", "sex:children",
+        "yearsmarried:children", "sex:yearsmarried:children"),
+      group = "couple",
+      within = c(
+        "sex", "sex:yearsmarried", "sex:children", "sex:yearsmarried:children"),
+      between = c("yearsmarried", "children", "yearsmarried:children")
+    )
+  )
+})
