@@ -24,6 +24,26 @@ get_data <- function(name) {
 }
 
 
+# Error tests -------------------------------------------------------------
+
+test_that("cannot compute SS types other than Type III for lmerMod", {
+  model <- lme4::lmer(
+    puzzles_completed ~ condition + (1|subject),
+    data = get_data("jmr_ex11.9.Rds")
+  )
+  expect_error(supernova(model, type = 1))
+  expect_error(supernova(model, type = 2))
+})
+
+test_that("there is no verbose print for lmerMod (warn and switch off)", {
+  model <- lme4::lmer(
+    puzzles_completed ~ condition + (1|subject),
+    data = get_data("jmr_ex11.9.Rds")
+  )
+  expect_warning(supernova(model, verbose = TRUE))
+})
+
+
 # Structure tests ---------------------------------------------------------
 
 test_that("supernova object has table, fit, and models", {

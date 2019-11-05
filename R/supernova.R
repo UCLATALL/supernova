@@ -123,6 +123,12 @@ supernova.lmerMod <- function(fit, type = 3, verbose = FALSE) {
          effects (e.g. repeated measures models).")
   }
 
+  if (verbose) {
+    warning("There is currently no verbose version of the supernova table for
+         lmer() models. Switching to non-verbose.")
+    verbose <- FALSE
+  }
+
   model_full <- fit
   model_data <- model_full@frame
   vars_all <- supernova::variables(model_full)
@@ -276,15 +282,9 @@ superanova <- supernova
 
 #' @export
 print.supernova <- function(x, pcut = 4, ...) {
-  verbose <- attr(x, "verbose")
+  is_verbose <- attr(x, "verbose") == TRUE
   is_lmer_model <- "lmerMod" %in% class(x$fit)
   is_null_model <- length(variables(x$fit)$predictor) == 0
-
-  if (is_lmer_model & verbose) {
-    warning("There is currently no verbose version of the supernova table for
-         lmer() models. Switching to non-verbose.")
-    attr(x, "verbose") <- FALSE
-  }
 
   # setup
   tbl <- x$tbl
@@ -336,7 +336,7 @@ print.supernova <- function(x, pcut = 4, ...) {
 
   # add spaces and a vertical bar to separate the terms & desc from values
   barHelp <- function(x, y) paste0(x, y, " |")
-  bar_col <- if (verbose) "description" else "term"
+  bar_col <- if (!is_lmer_model & is_verbose) "description" else "term"
   spaces_to_add <- max(nchar(tbl[[bar_col]])) - nchar(tbl[[bar_col]])
   tbl[[bar_col]] <- mapply(barHelp, tbl[[bar_col]], strrep(" ", spaces_to_add))
 
@@ -344,7 +344,7 @@ print.supernova <- function(x, pcut = 4, ...) {
   names(tbl)[names(tbl) %in% c("term", "description")] <- ""
 
   # remove unnecessary columns
-  if (!verbose && !is_lmer_model) tbl[[2]] <- NULL
+  if (!is_verbose && !is_lmer_model) tbl[[2]] <- NULL
 
   # printing
   cat_line(" Analysis of Variance Table (Type ", attr(x, "type"), " SS)")

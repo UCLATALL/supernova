@@ -54,25 +54,3 @@ variables <- function(object) {
     between = vars_between
   )
 }
-
-# variables.lmer <- function(model) {
-#   # get formula with no random terms
-#   formula_complex <- formula(model)
-#   formula_simple <- lme4::nobars(formula_complex)
-#
-#   # determine within and between variables
-#   bare_terms <- variables.default(formula_simple)
-#   outcome_term <- bare_terms$outcome
-#   pred_terms <- bare_terms$predictor
-  # rand_terms <- gsub(
-  #   "1 ?\\| ?", "",
-  #   as.character(lme4::findbars(formula_complex))
-  # )
-#   group_term <- rand_terms[which.min(nchar(rand_terms))]
-#   within_terms <- sub_matches(rand_terms, paste0("(.*):", group_term), "\\1")
-#   if (length(within_terms) > 0) {
-#     # add within interactions
-#     within_terms <- grep(paste0(within_terms, collapse = "|"), pred_terms, value = TRUE)
-#   }
-#   between_terms <- setdiff(pred_terms, within_terms)
-# }
