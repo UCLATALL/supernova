@@ -5,3 +5,5 @@ cache_test_data
 ^README\.Rmd$
 ^cran-comments\.md$
 ^CRAN-RELEASE$
+^\.travis\.yml$
+^codecov\.yml$

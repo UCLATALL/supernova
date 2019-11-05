@@ -2,29 +2,36 @@
 #'
 #' An alternative set of summary statistics for ANOVA. Sums of squares, degrees
 #' of freedom, mean squares, and F value are all computed with Type III sums of
-#' squares. This package adds proportional reduction in error, an explicit
-#' summary of the whole model, and separate formatting of p values and is
-#' intended to match the output used in Judd, McClelland, and Ryan (2017).
+#' squares, but for fully-between subjects designs you can set the type to I or
+#' II. This function adds to the output table the proportional reduction in
+#' error, an explicit summary of the whole model, separate formatting of p
+#' values, and is intended to match the output used in Judd, McClelland, and
+#' Ryan (2017).
 #'
 #' \code{superanova()} is an alias of \code{supernova()}
 #'
-#' @param fit A fitted \code{\link{lm}} object
+#' @param fit A model fit by \code{\link{lm}} or \code{\link[lme4]{lmer}}
 #' @param type The type of sums of squares to calculate:
 #'   \itemize{
 #'     \item \code{1}, \code{I}, and \code{sequential} compute Type I SS.
 #'     \item \code{2}, \code{II}, and \code{hierarchical} compute Type II SS.
 #'     \item \code{3}, \code{III}, and \code{orthogonal} compute Type III SS.
 #'   }
+#' @param verbose If \code{FALSE}, the \code{description} column is suppressed.
+#'   Defaults to \code{TRUE}.
 #'
 #' @return An object of the class \code{supernova}, which has a clean print
 #'   method for displaying the ANOVA table in the console as well as a  named
 #'   list:
 #'   \item{tbl}{The ANOVA table as a \code{\link{data.frame}}}
-#'   \item{fit}{The original \code{\link[stats]{lm}} object being tested}
+#'   \item{fit}{The original \code{\link[stats]{lm}} or \code{\link[lme4]{lmer}}
+#'     object being tested}
 #'   \item{models}{Models created by \code{\link{generate_models}}}
 #'
 #' @examples
 #' supernova(lm(Thumb ~ Weight, data = Fingers))
+#' format_p <- supernova(lm(Thumb ~ Weight, data = Fingers))
+#' print(format_p, pcut = 8)
 #'
 #' @importFrom stats anova as.formula drop1 pf
 #'
@@ -33,7 +40,14 @@
 #'   (3rd ed.). New York: Routledge. ISBN:879-1138819832
 #'
 #' @export
-supernova <- function(fit, type = 3) {
+supernova <- function(fit, type = 3, verbose = TRUE) {
+  UseMethod("supernova")
+}
+
+
+#' @export
+#' @rdname supernova
+supernova.lm <- function(fit, type = 3, verbose = TRUE) {
   type <- resolve_type(type)
   models <- suppressWarnings(generate_models(fit, type))
   predictors <- variables(fit)$predictor
@@ -96,62 +110,204 @@ supernova <- function(fit, type = 3) {
   rl <- list(tbl = tbl, fit = fit, models = models)
   class(rl) <- "supernova"
   attr(rl, "type") <- strrep("I", type)
+  attr(rl, "verbose") <- verbose
   return(rl)
 }
+
+
+#' @export
+#' @rdname supernova
+supernova.lmerMod <- function(fit, type = 3, verbose = FALSE) {
+  if (!tolower(type) %in% c(3, "iii", "orthogonal")) {
+    stop("Currently only Type III tests can be computed for models with random
+         effects (e.g. repeated measures models).")
+  }
+
+  model_full <- fit
+  model_data <- model_full@frame
+  vars_all <- supernova::variables(model_full)
+
+  # get formula with no random terms
+  formula_complex <- formula(model_full)
+  formula_simple <- lme4::nobars(formula_complex)
+
+  # TOTAL
+  model_lm <- lm(formula_simple, data = model_data)
+  model_empty <- stats::update(model_lm, . ~ NULL)
+  total <- anova_tbl(model_empty)
+  total[["term"]] <- "Total"
+
+  # DF
+  df_total_between <- length(unique(model_data[[vars_all[["group"]]]])) - 1
+  df_total_within <- total[["df"]] - df_total_between
+
+  # TREATMENT ROWS
+  anova_lm <- anova_tbl(model_lm) %>% dplyr::select(-dplyr::one_of("F"))
+  anova_lmer <- anova_tbl(model_full) %>% dplyr::select(dplyr::one_of(c("term", "F")))
+  treatment_rows <- dplyr::right_join(anova_lm, anova_lmer, by = "term")
+
+  get_partials <- function(treatment_rows, type) {
+    treatment <- treatment_rows[treatment_rows[["term"]] %in% vars_all[[type]]]
+    if (ncol(treatment) == 0) {
+      error <- data.frame(match = character(0))
+    } else {
+      part_total_df <- if (type == "within") df_total_within else df_total_between
+      error_df <- if (type == "between") {
+        part_total_df - sum(treatment[["df"]])
+      } else {
+        treatment[["df"]] * df_total_between
+      }
+      error <- data.frame(
+        match = vars_all[[type]],
+        term = paste(vars_all[[type]], "error"),
+        df = error_df,
+        MS = treatment[["MS"]] / treatment[["F"]],
+        stringsAsFactors = FALSE
+      )
+      error[["SS"]] <- error[["MS"]] * error[["df"]]
+    }
+    purrr::map_dfr(vars_all[[type]], function(x) {
+      part <- dplyr::bind_rows(
+        dplyr::filter_at(treatment, dplyr::vars("term"), ~ . == x),
+        dplyr::filter_at(error, dplyr::vars("match"), ~ . == x)
+      ) %>%
+        dplyr::select(-dplyr::one_of("match"))
+
+      part[, c("PRE", "p")] <- NA_real_
+      part[["PRE"]][[1]] <- part[["SS"]][[1]] / sum(part[["SS"]])
+      part[["p"]][[1]] <- pf(
+        part[["F"]][[1]],
+        part[["df"]][[1]],
+        part[["df"]][[2]],
+        lower.tail = FALSE
+      )
+      dplyr::select(part, dplyr::one_of("term", "SS", "df", "MS", "F", "PRE", "p"))
+    })
+  }
+  partials <- list(
+    within = get_partials(treatment_rows, "within"),
+    between = get_partials(treatment_rows, "between")
+  )
+
+  # PART TOTALS
+  get_partial_total_ss <- function(partials, type) {
+    other_type <- setdiff(c("between", "within"), type)
+    if (length(vars_all[[type]]) == 0) {
+      total[["SS"]] - sum(partials[[other_type]][["SS"]])
+    } else {
+      sum(partials[[type]][["SS"]])
+    }
+  }
+  within_total <- dplyr::tibble(
+    term = "Total within subjects",
+    SS = get_partial_total_ss(partials, "within"),
+    df = df_total_within
+  )
+  between_total <- dplyr::tibble(
+    term = "Total between subjects",
+    SS = get_partial_total_ss(partials, "between"),
+    df = df_total_between
+  )
+
+  # FULL TABLE
+  tbl <- dplyr::bind_rows(
+    partials[["between"]], between_total,
+    partials[["within"]], within_total,
+    total
+  ) %>%
+    dplyr::select_at(dplyr::vars("term", "SS", "df", "MS", "F", "PRE", "p")) %>%
+    dplyr::mutate_at(dplyr::vars("df"), as.integer)
+  tbl[["MS"]] <- tbl[["SS"]] / tbl[["df"]]
+  tbl <- tbl[tbl[["df"]] > 0, ] %>% as.data.frame()
+
+  rl <- list(tbl = tbl, fit = fit, models = NULL)
+  class(rl) <- "supernova"
+  attr(rl, "type") <- strrep("I", type)
+  attr(rl, "verbose") <- verbose
+  return(rl)
+}
+
 
 #' @export
 #' @rdname supernova
 superanova <- supernova
 
+
 #' @export
 print.supernova <- function(x, pcut = 4, ...) {
+  verbose <- attr(x, "verbose")
+  is_lmer_model <- "lmerMod" %in% class(x$fit)
+  is_null_model <- length(variables(x$fit)$predictor) == 0
+
+  if (is_lmer_model & verbose) {
+    warning("There is currently no verbose version of the supernova table for
+         lmer() models. Switching to non-verbose.")
+    attr(x, "verbose") <- FALSE
+  }
+
   # setup
   tbl <- x$tbl
 
+  # NUMBER FORMATTING
   # df to integer; SS, MS, F to 3 decimals; PRE to 4 decimals; p to pcut
-  tbl$df <- format(as.integer(tbl$df))
-  tbl[c("SS", "MS", "F")] <- format(round(tbl[c("SS", "MS", "F")], 3), nsmall = 3)
-  tbl$PRE <- format(round(tbl$PRE, 4), nsmall = 4, scientific = FALSE)
-  tbl$p <- format(round(tbl$p, pcut), nsmall = pcut, scientific = FALSE)
+  tbl[["df"]] <- format(as.integer(tbl[["df"]]))
+  tbl[c("SS", "MS", "F")] <- purrr::map(c("SS", "MS", "F"),
+    function(term) format(round(tbl[[term]], 3), nsmall = 3)
+  )
+  tbl[["PRE"]] <- format(round(tbl[["PRE"]], 4), nsmall = 4, scientific = FALSE)
+  tbl[["p"]] <- format(round(tbl[["p"]], pcut), nsmall = pcut, scientific = FALSE)
 
   # NAs to blank spots
-  tbl$description[is.na(tbl$description)] <- ""
-  tbl <- data.frame(lapply(tbl, function(x) gsub("\\s*NA\\s*", "   ", x)),
-                  stringsAsFactors = FALSE)
+  if (!is.null(tbl$description)) tbl$description[is.na(tbl$description)] <- ""
+  tbl <- lapply(tbl, function(x) gsub("\\s*NA\\s*", "   ", x)) %>%
+    as.data.frame(stringsAsFactors = FALSE)
 
   # trim leading 0 from p
-  tbl$p <- substring(tbl$p, 2)
+  tbl[["p"]] <- substring(tbl[["p"]], 2)
+
+  # TABLE FORMATTING
+  # add placeholders for null model
+  if (is_null_model) tbl[1:2, 3:8] <- "---"
+
+  # term names and horizontal rules
+  if (!is_lmer_model) {
+    tbl <- insert_rule(tbl, 1)
+    tbl <- insert_rule(tbl, nrow(tbl))
+  } else {
+    tbl <- insert_row(tbl, 1, c("Between Subjects", rep("", 6)))
+    tbl <- insert_row(tbl, grep("^Total between subjects", tbl$term) + 1,
+                      c("Within Subjects", rep("", 6)))
+    tbl[tbl$term == "Total between subjects", ][["term"]] <- "  Total"
+    tbl[tbl$term == "Total within subjects", ][["term"]] <- "  Total"
+
+    pred_terms <- variables(x$fit)$predictor
+    error_terms <- paste(pred_terms, "error")
+    tbl[["term"]] <- stringr::str_replace(
+      tbl[["term"]], paste0(error_terms, collapse = "|"), "    Error"
+    )
+    tbl[["term"]] <- stringr::str_replace(
+      tbl[["term"]], paste0("(", paste0(pred_terms, collapse = "|"), ")"), "  \\1"
+    )
+    tbl <- insert_rule(tbl, 1)
+    tbl <- insert_rule(tbl, grep("^  Total", tbl$term)[[1]] + 1)
+    tbl <- insert_rule(tbl, grep("^  Total", tbl$term)[[2]] + 1)
+  }
 
   # add spaces and a vertical bar to separate the terms & desc from values
   barHelp <- function(x, y) paste0(x, y, " |")
-  spaces_to_add <- max(nchar(tbl$description)) - nchar(tbl$description)
-  tbl$description <- mapply(barHelp, tbl$description, strrep(" ", spaces_to_add))
+  bar_col <- if (verbose) "description" else "term"
+  spaces_to_add <- max(nchar(tbl[[bar_col]])) - nchar(tbl[[bar_col]])
+  tbl[[bar_col]] <- mapply(barHelp, tbl[[bar_col]], strrep(" ", spaces_to_add))
 
   # remove unnecessary column names
-  names(tbl)[1:2] <- c("", "")
+  names(tbl)[names(tbl) %in% c("term", "description")] <- ""
 
-  # add placeholders for null model
-  if (length(variables(x$fit)$predictor) == 0) tbl[1:2, 3:8] <- "---"
-
-  # add horizontal separator under header and before total line
-  tbl <- insert_rule(tbl, 1)
-  tbl <- insert_rule(tbl, nrow(tbl))
+  # remove unnecessary columns
+  if (!verbose && !is_lmer_model) tbl[[2]] <- NULL
 
   # printing
   cat_line(" Analysis of Variance Table (Type ", attr(x, "type"), " SS)")
-  cat_line(" Model: ", deparse(formula(x$fit)))
+  cat_line(" Model: ", paste(trimws(deparse(formula(x$fit))), collapse = " "))
   cat_line(" ")
   print(tbl, row.names = FALSE)
-}
-
-# Insert a horizontal rule in table for pretty printing
-#
-# @param df        Original data.frame
-# @param insert_at The row in which to insert the new contents
-#
-# @return The original data.frame with the new row inserted.
-insert_rule <- function(df, insert_at) {
-  df[seq(insert_at + 1, nrow(df) + 1), ] <- df[seq(insert_at, nrow(df)), ]
-  df[insert_at, ] <- strrep("-", vapply(df, function(x) max(nchar(x)), 0))
-  return(df)
 }

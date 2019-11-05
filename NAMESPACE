@@ -2,6 +2,8 @@
 
 S3method(print,comparison_models)
 S3method(print,supernova)
+S3method(supernova,lm)
+S3method(supernova,lmerMod)
 export("%>%")
 export(PRE)
 export(SSE)
