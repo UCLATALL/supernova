@@ -21,7 +21,8 @@ Suggests:
     fivethirtyeight,
     purrr,
     rlang,
-    testthat
+    testthat (>= 2.1.0),
+    covr
 Imports: 
     magrittr,
     stringr
