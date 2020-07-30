@@ -29,7 +29,7 @@ The goal of `supernova` is to create ANOVA tables in the format used by Judd, Mc
 
 In keeping with the approach in Judd, McClelland, and Ryan (2017), the ANOVA tables in this package are calculated using a model comparison approach that should be understandable given a beginner's understanding of base R and the information from the book (so if you have these and don't understand what is going on in the code, let us know because we are missing the mark!). Here is an explanation of how the tables are calculated for fully independent predictor varibles (i.e. between-subjects designs):
 
-1. The "Total" row is calculated by updating the model passed to an empty model. For example, `lm(mpg ~ hp * disp, data = mtcars)` is updated to `(lm(mpg ~ NULL, data = mtcars))`. From this empty model, the sum of squares and df can be calculated. 
+1. The "Total" row is calculated by updating the model passed to an empty model. For example, `lm(mpg ~ hp * disp, data = mtcars)` is updated to `lm(mpg ~ NULL, data = mtcars)`. From this empty model, the sum of squares and df can be calculated. 
 
 2. If there is at least one predictor in the model, the overall model row and the error row are calculated. In the vernacular of the book, the compact model is represented by the updated empty model from 1 above, and the augmented model is the original model passed to ```supernova()```. From these models the SSE(A) is calculated by `sum(resid(null_model) ^ 2)`, the SSR is calculated by SSE(C) - SSE(A), the PRE for the overall model is extracted from the fit (`r.squared`), the df for the error row is extracted from the `lm()` fit (`df.residuals`).
 

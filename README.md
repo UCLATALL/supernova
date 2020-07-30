@@ -31,7 +31,7 @@ calculated for fully independent predictor varibles
 
 1.  The “Total” row is calculated by updating the model passed to an
     empty model. For example, `lm(mpg ~ hp * disp, data = mtcars)` is
-    updated to `(lm(mpg ~ NULL, data = mtcars))`. From this empty model,
+    updated to `lm(mpg ~ NULL, data = mtcars)`. From this empty model,
     the sum of squares and df can be calculated.
 
 2.  If there is at least one predictor in the model, the overall model
@@ -293,16 +293,16 @@ multiple_crossed %>%
 #>                                SS df     MS      F    PRE     p
 #>  ---------------------- | ------- -- ------ ------ ------ -----
 #>  Between Subjects       |                                      
-#>  Total                  | 131.001  4 32.750                    
+#>  Total                  | 131.000  4 32.750                    
 #>  ---------------------- | ------- -- ------ ------ ------ -----
 #>  Within Subjects        |                                      
-#>    type                 |  17.633  1 17.633 11.377 0.7399 .0280
+#>    type                 |  17.633  1 17.633 11.376 0.7399 .0280
 #>      Error              |   6.200  4  1.550                    
-#>    time                 |  65.867  2 32.933 29.940 0.8821 .0002
+#>    time                 |  65.867  2 32.933 29.939 0.8821 .0002
 #>      Error              |   8.800  8  1.100                    
 #>    type:time            |   1.867  2  0.933  9.333 0.7000 .0081
 #>      Error              |   0.800  8  0.100                    
-#>  Total                  | 101.166 25  4.047                    
+#>  Total                  | 101.167 25  4.047                    
 #>  ---------------------- | ------- -- ------ ------ ------ -----
 #>  Total                  | 232.167 29  8.006
 ```
@@ -343,12 +343,12 @@ simple_nested %>%
 #>                               SS df     MS     F    PRE     p
 #>  ---------------------- | ------ -- ------ ----- ------ -----
 #>  Between Subjects       |                                    
-#>    instructions         | 12.500  1 12.500 4.686 0.5395 .0964
-#>  Error                  | 10.671  4  2.668                   
-#>  Total                  | 23.171  5  4.634                   
+#>    instructions         | 12.500  1 12.500 4.687 0.5396 .0963
+#>  Error                  | 10.667  4  2.667                   
+#>  Total                  | 23.167  5  4.633                   
 #>  ---------------------- | ------ -- ------ ----- ------ -----
 #>  Within Subjects        |                                    
-#>  Total                  |  5.329 12  0.444                   
+#>  Total                  |  5.333 12  0.444                   
 #>  ---------------------- | ------ -- ------ ----- ------ -----
 #>  Total                  | 28.500 17  1.676
 ```
