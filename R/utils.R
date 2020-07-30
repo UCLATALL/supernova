@@ -7,6 +7,10 @@
 anova_tbl <- function(model) {
   tbl <- anova(model)
 
+  if (class(model) == 'lmerMod') {
+    names(tbl)[[1]] <- 'Df'
+  }
+
   out <- data.frame(
     term = row.names(tbl),
     SS = tbl[["Sum Sq"]],
@@ -15,9 +19,11 @@ anova_tbl <- function(model) {
     F = tbl[["F value"]],
     stringsAsFactors = FALSE
   )
+
   if (!is.null(tbl[["Pr(>F)"]])) {
     out[["p"]] <- tbl[["Pr(>F)"]]
   }
+
   out
 }
 
