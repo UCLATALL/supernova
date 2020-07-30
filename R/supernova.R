@@ -41,39 +41,39 @@
 #'
 #' @export
 supernova <- function(fit, type = 3, verbose = TRUE) {
-  UseMethod("supernova")
+  UseMethod("supernova", fit)
 }
 
 
 #' @export
 #' @rdname supernova
 supernova.lm <- function(fit, type = 3, verbose = TRUE) {
-  type <- resolve_type(type)
-  models <- suppressWarnings(generate_models(fit, type))
+  type       <- resolve_type(type)
+  models     <- suppressWarnings(generate_models(fit, type))
   predictors <- variables(fit)$predictor
-  fit_null <- update(fit, . ~ NULL)
+  fit_null   <- update(fit, . ~ NULL)
 
   # Helpful Table Values
   #
   # n_pred:     the number of predictors in the full model
   # n_rows:     the number of rows in the table
   # model_row:  index for the model row with full model regression statistics
-  # model_rows: indices for all rows that have an SS model/regression
+  # partial_rows: indices for all rows that have an SS model/regression
   # iv_rows:    indicees for all individual predictor rows
   # error_row:  index for the error row
-  n_pred <- length(predictors)
-  n_rows <- 3 + ifelse(n_pred < 2, 0, n_pred)
-  model_row  <- 1
-  model_rows <- 1:(n_rows - 2)
-  iv_rows    <- 1 + seq_along(predictors)
-  error_row  <- n_rows - 1
+  n_pred       <- length(predictors)
+  n_rows       <- 3 + {if (n_pred < 2) 0 else n_pred}
+  model_row    <- 1
+  partial_rows <- 1:(n_rows - 2)
+  iv_rows      <- 1 + seq_along(predictors)
+  error_row    <- n_rows - 1
 
   # TABLE SETUP
-  term <- c("Model", if (n_pred < 2) NULL else predictors, "Error", "Total")
-  desc <- pad(c("(error reduced)", "(from model)", "(empty model)"), term, 1)
-  tbl <- data.frame(term = term, description = desc, stringsAsFactors = FALSE)
-  tbl$SS = pad(SSE(fit_null), term, 0)
-  tbl$df = pad(fit_null$df.residual, term, 0)
+  term   <- c("Model", if (n_pred < 2) NULL else predictors, "Error", "Total")
+  desc   <- pad(c("(error reduced)", "(from model)", "(empty model)"), term, 1)
+  tbl    <- data.frame(term = term, description = desc, stringsAsFactors = FALSE)
+  tbl$SS <- pad(SSE(fit_null), term, 0)
+  tbl$df <- pad(fit_null$df.residual, term, 0)
   tbl[c("MS", "F", "PRE", "p")] <- NA_real_
 
   # SS, DF for 1+ PREDICTORS
@@ -103,9 +103,13 @@ supernova.lm <- function(fit, type = 3, verbose = TRUE) {
 
   # MS, F, PRE, p for ALL MODELS
   tbl$MS <- tbl$SS / tbl$df
-  tbl$F[model_rows] <- tbl[model_rows, "MS"] / tbl[error_row, "MS"]
-  tbl$PRE[model_rows] <- tbl[model_rows, "SS"] / (tbl[model_rows, "SS"] + SSE(fit))
-  tbl$p[model_rows] <- pf(tbl$F[model_rows], tbl$df[model_rows], tbl$df[[error_row]], lower.tail = FALSE)
+  tbl$F[partial_rows] <- tbl[partial_rows, "MS"] / tbl[error_row, "MS"]
+  tbl$PRE[partial_rows] <- tbl[partial_rows, "SS"] / (tbl[partial_rows, "SS"] + SSE(fit))
+  tbl$p[partial_rows] <- pf(
+    tbl$F[partial_rows],
+    tbl$df[partial_rows],
+    tbl$df[[error_row]],
+    lower.tail = FALSE)
 
   rl <- list(tbl = tbl, fit = fit, models = models)
   class(rl) <- "supernova"
