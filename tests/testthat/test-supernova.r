@@ -172,11 +172,17 @@ test_that("superanova is an alias of supernova", {
 test_that("supernova object has table, fit, and models", {
   fit <- lm(mpg ~ NULL, mtcars)
   obj <- supernova(fit, type = 3)
-  obj %>% expect_is("supernova")
-  obj$tbl %>% expect_is("data.frame")
+
+  obj %>%
+    expect_is("supernova")
+
+  obj$tbl %>%
+    expect_is("data.frame")
+
   obj$fit %>%
     expect_is("lm") %>%
     expect_identical(fit)
+
   obj$models %>%
     expect_is("comparison_models") %>%
     expect_identical(suppressWarnings(generate_models(fit, 3)))
@@ -196,7 +202,8 @@ test_that("supernova table structure is well-formed", {
 })
 
 test_that("magrittr can pipe lm() to supernova", {
-  expect_is(supernova(lm(mpg ~ NULL, mtcars)), "supernova")
+  lm(mpg ~ NULL, mtcars) %>% supernova() %>%
+    expect_is("supernova")
 })
 
 test_that("magrittr can pipe data to lm() to supernova", {
@@ -214,10 +221,13 @@ test_that("magrittr can pipe data to lm() to supernova", {
 
 test_that("supernova calcs. (quant. ~ NULL) ANOVA correctly", {
   model <- lm(Thumb ~ NULL, Fingers)
-  exp <- anova(model) %>%
+  expected <- anova(model) %>%
     mutate(F = NA_real_, PRE = NA_real_, p = NA_real_) %>%
     select(SS = `Sum Sq`, df = Df, MS = `Mean Sq`, F, PRE, p)
-  expect_table_data(supernova(model)$tbl %>% .[nrow(.), 3:8], exp)
+
+  supernova(model)$tbl %>%
+    .[nrow(.), 3:8] %>%
+    expect_table_data(expected)
 })
 
 models_to_test <- list(
@@ -272,7 +282,7 @@ test_that("supernova uses listwise deletion for missing data", {
   # one-way
   df_total <- sum(!is.na(df.missing$hp)) - 1
   supernova(lm(mpg ~ hp, df.missing)) %>%
-    expect_supernova()  %>%
+    expect_supernova() %>%
     # explicitly test correct df
     # this needs to be checked because otherwise the total row will show
     # nrow() - 1 for df instead of looking at only complete cases
@@ -288,22 +298,24 @@ test_that("supernova uses listwise deletion for missing data", {
 test_that("message is given for number of rows deleted due to missing cases", {
   df.missing <- get_data_with_missing()
 
-  expect_message(supernova(lm(mpg ~ hp, mtcars)), NA)
+  expect_message(
+    supernova(lm(mpg ~ hp, mtcars)),
+    NA)
   expect_message(
     supernova(lm(mpg ~ hp, df.missing)),
-    "Note: 1 case removed due to missing value(s). Row number: 1",
+    "Note: 1 case removed due to missing value(s).",
     fixed = TRUE)
   expect_message(
     supernova(lm(mpg ~ disp, df.missing)),
-    "Note: 2 cases removed due to missing value(s). Row numbers: 2, 3",
+    "Note: 2 cases removed due to missing value(s).",
     fixed = TRUE)
   expect_message(
     supernova(lm(mpg ~ hp * disp, df.missing)),
-    "Note: 3 cases removed due to missing value(s). Row numbers: 1, 2, 3",
+    "Note: 3 cases removed due to missing value(s).",
     fixed = TRUE)
 })
 
 test_that("supernova makes correct calculations for unbalanced data", {
-  expect_supernova(supernova(lm(uptake ~ Treatment, data = CO2[1:80,])))
-  expect_supernova(supernova(lm(uptake ~ Treatment * Type, data = CO2[1:80,])))
+  expect_supernova(supernova(lm(uptake ~ Treatment, data = CO2[1:80, ])))
+  expect_supernova(supernova(lm(uptake ~ Treatment * Type, data = CO2[1:80, ])))
 })

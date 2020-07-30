@@ -115,7 +115,7 @@ generate_models <- function(model, type) {
     # back-convert to original model fit if needed
     if ("lm" %in% class(model)) {
       models <- purrr::map(models, function(model_pair) {
-        purrr::map(model_pair, ~update(model, .x))
+        suppressMessages(purrr::map(model_pair, ~update(model, .x)))
       })
     }
   }

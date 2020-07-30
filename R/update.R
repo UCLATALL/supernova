@@ -24,8 +24,8 @@
 # null model Y ~ NULL, the full set of Y is used instead of only the values of
 # Y where there are values of X. This is not inherently a problem, however it
 # yields incorrect degrees of freedom and sum of squares for the total row in
-# an ANOVA because different datasets are being used for the total row and the
-# model and error rows. The present solution creates \code{NA} values listwise
+# an ANOVA because different data sets are being used for the total row and the
+# model and error rows. The present solution creates \code{NA} values list-wise
 # for all variables in the old model so that the new model does not use those
 # data.
 #
@@ -42,7 +42,7 @@ update <- function(old, new, ...) {
   vars <- all.vars(formula(old))
   data <- eval(old$call$data, environment(formula(old)))
 
-  # listwise delete values from all affected variables
+  # list-wise delete values from all affected variables
   na_rows <- sort(unlist(
     lapply(data[,vars], function(x) which(is.na(x))),
     use.names = FALSE
@@ -50,13 +50,10 @@ update <- function(old, new, ...) {
   data[na_rows, vars] <- NA
 
   # create warning message
-  if (length(na_rows) > 0) {
-    plural <- if (length(na_rows) > 1) "s" else ""
-    message(sprintf(
-      "Note: %s case%s removed due to missing value(s). Row number%s: %s",
-      length(na_rows), plural, plural, paste(na_rows, collapse = ", ")
-    ))
-  }
+  if (length(na_rows) > 0) message(sprintf(
+    "Note: %s %s removed due to missing value(s).",
+    length(na_rows), ngettext(length(na_rows), 'case', 'cases')
+  ))
 
   stats::update(old, new, data = data, ...)
 }
