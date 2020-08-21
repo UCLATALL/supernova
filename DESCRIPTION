@@ -1,8 +1,8 @@
 Package: supernova
 Type: Package
 Title: Judd, McClelland, & Ryan Formatting for ANOVA Output
-Version: 2.2.1
-Date: 2019-11-05
+Version: 2.2.2
+Date: 2020-08-21
 Authors@R: c(person("Adam", "Blake", email = "theadamattack@gmail.com", role = "aut"),
              person("Jeff", "Chrabaszcz", role = "aut"),
              person("Ji", "Son", email = "json2@calstatela.edu", role = "aut"),
@@ -28,6 +28,6 @@ Imports:
     lme4,
     magrittr,
     stringr
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1
 URL: https://github.com/UCLATALL/supernova
 BugReports: https://github.com/UCLATALL/supernova/issues
