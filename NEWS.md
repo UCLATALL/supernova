@@ -1,3 +1,19 @@
+# supernova 2.2.3
+
+* Remove dependency on `dplyr` because it changes too quickly and has too many other dependencies
+* Mild refactoring to improve code readability
+
+
+# supernova 2.2.2
+
+* Patch to keep up with changes to `lme4`
+
+
+# supernova 2.2.1
+
+* Add support for mixed models (as in nested and crossed). See the README for more information.
+
+
 # supernova 2.2.0
 
 Extend supernova to handle within (crossed) designs
@@ -11,7 +27,8 @@ Extend supernova to handle within (crossed) designs
 Minor changes:
 
 * Refactor utility functions into utils.R
-* Add internal documentaiton for utility functions
+* Add internal documentation for utility functions
+
 
 # supernova 2.1.1
 
