@@ -1,29 +1,24 @@
-Only comment by Uwe Ligges on previous submission:
+## Release summary
 
-> Found the following possibly invalid URLs:
->  URL: ISBN:978-1138819832
-> From: README.md
-> Message: Invalid URI scheme
->
-> Please do not use URL markup for ISBN numbers.
+This is a patch release that removes some dependencies.
 
-To fix, we made sure the ISBN is formatted as plaintext in the generated file.
 
 ## Test environments
 
-* local install, R 3.6.1
-* win-builder
-* r-hub
-  - Windows Server 2008 R2 SP1, R-devel, 32/64 bit
-  - Ubuntu Linux 16.04 LTS, R-release, GCC
-  - Fedora Linux, R-devel, clang, gfortran
+* local windows install, R 4.0.2
+* mac OS 10.15.4 (on github actions) R 4.0.3
+* ubuntu 16.04 (on github actions), R-devel, R 4.0.3, R 3.6.3
+* Microsoft Windows Server 2019 10.0.17763 (on github actions) R 4.0.3, R 3.6.3
+* win-builder (devel)
 
 
 ## R CMD check results
 
-0 errors | 0 warnings | 0 notes
+0 errors v | 0 warnings v | 0 notes v
+
+R CMD check succeeded
 
 
 ## Reverse dependencies
 
-No known reverse dependencies.
+No known reverse dependencies (no results from `devtools::revdep('supernova')`)
