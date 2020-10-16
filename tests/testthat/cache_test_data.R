@@ -55,7 +55,7 @@ models %>%
 
 JMRData::ex11.1 %>%
   tidyr::gather(id, value, dplyr::starts_with("score")) %>%
-  dplyr::mutate_at(dplyr::vars(group, instructions, id), as.factor) %>%
+  dplyr::mutate(dplyr::across(c(group, instructions, id), as.factor)) %>%
   readr::write_rds(file.path(cache_dir, "jmr_ex11.1.Rds"))
 
 
@@ -63,14 +63,14 @@ JMRData::ex11.1 %>%
 
 JMRData::ex11.9 %>%
   tidyr::gather(condition, puzzles_completed, -subject) %>%
-  dplyr::mutate_at(dplyr::vars(subject, condition), as.factor) %>%
+  dplyr::mutate(dplyr::across(c(subject, condition), as.factor)) %>%
   readr::write_rds(file.path(cache_dir, "jmr_ex11.9.Rds"))
 
 JMRData::ex11.17 %>%
   purrr::set_names(tolower(names(.))) %>%
   tidyr::gather(condition, recall, -subject) %>%
   tidyr::separate(condition, c("type", "time"), -1) %>%
-  dplyr::mutate_at(dplyr::vars(subject, type, time), as.factor) %>%
+  dplyr::mutate(dplyr::across(c(subject, type, time), as.factor)) %>%
   readr::write_rds(file.path(cache_dir, "jmr_ex11.17.Rds"))
 
 
@@ -78,5 +78,5 @@ JMRData::ex11.17 %>%
 
 JMRData::ex11.22 %>%
   tidyr::gather(sex, rating, Male, Female) %>%
-  dplyr::mutate_at(dplyr::vars(couple, children, sex, yearsmarried), as.factor) %>%
+  dplyr::mutate(dplyr::across(c(couple, children, sex, yearsmarried), as.factor)) %>%
   readr::write_rds(file.path(cache_dir, "jmr_ex11.22.Rds"))
