@@ -31,7 +31,7 @@ SSR(object, data = NULL, ...)
 \item{data}{If \code{object} is a formula, the data to fit the formula to as
 a \code{\link{data.frame}}.}
 
-\item{...}{Passthrough arguments to \code{\link{lm}}.}
+\item{...}{Additional arguments passed through to \code{\link{lm}}.}
 }
 \value{
 The value of the estimate as a single number.

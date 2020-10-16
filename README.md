@@ -30,7 +30,7 @@ approach that should be understandable given a beginner’s understanding
 of base R and the information from the book (so if you have these and
 don’t understand what is going on in the code, let us know because we
 are missing the mark!). Here is an explanation of how the tables are
-calculated for fully independent predictor varibles
+calculated for fully independent predictor variables
 (i.e. between-subjects designs):
 
 1.  The “Total” row is calculated by updating the model passed to an
@@ -82,7 +82,7 @@ unbalanced data.
 -   interactive regression: `y ~ a * b`
 
 Additionally, a subset of within-subjects designs are supported and
-explicitly tested. To accomodate these models `supernova()` can accept
+explicitly tested. To accommodate these models `supernova()` can accept
 models fit via `lmer()` as in the [Examples](#examples) below. Only
 models like those included in those examples have been tested for
 within-subjects designs.
@@ -344,7 +344,7 @@ of satisfaction. Additionally, these couples were chosen such that they
 either have children or not, and have been married 15 vs. 30 years. If
 we fit the data with `lm()` that would ignore the non-independence due
 to the people being in the same `couple`. Compare this output with the
-foloowing output where the `group` is specified as a random factor.
+following output where the `group` is specified as a random factor.
 
     complex_nested <- JMRData::ex11.22 %>%
       gather(sex, rating, Male, Female) %>%

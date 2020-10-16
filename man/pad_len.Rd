@@ -2,14 +2,14 @@
 % Please edit documentation in R/utils.R
 \name{pad_len}
 \alias{pad_len}
-\title{Pad x to length len}
+\title{Pad x to a given output length}
 \usage{
-pad_len(x, len, after = length(x), pad = NA)
+pad_len(x, output_length, after = length(x), pad = NA)
 }
 \arguments{
 \item{x}{The vector to pad.}
 
-\item{len}{The length to pad the vector to.}
+\item{output_length}{The length to pad the vector to.}
 
 \item{after}{A subscript, after which the padding is to be appended.}
 
@@ -19,6 +19,6 @@ pad_len(x, len, after = length(x), pad = NA)
 The padded vector.
 }
 \description{
-Pad x to length len
+Pad x to a given output length
 }
 \keyword{internal}

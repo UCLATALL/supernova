@@ -29,7 +29,7 @@ The goal of `supernova` is to create ANOVA tables in the format used by Judd, Mc
 
 *\* Note: we are NOT affiliated with the authors or their institution.*
 
-In keeping with the approach in Judd, McClelland, and Ryan (2017), the ANOVA tables in this package are calculated using a model comparison approach that should be understandable given a beginner's understanding of base R and the information from the book (so if you have these and don't understand what is going on in the code, let us know because we are missing the mark!). Here is an explanation of how the tables are calculated for fully independent predictor varibles (i.e. between-subjects designs):
+In keeping with the approach in Judd, McClelland, and Ryan (2017), the ANOVA tables in this package are calculated using a model comparison approach that should be understandable given a beginner's understanding of base R and the information from the book (so if you have these and don't understand what is going on in the code, let us know because we are missing the mark!). Here is an explanation of how the tables are calculated for fully independent predictor variables (i.e. between-subjects designs):
 
 1. The "Total" row is calculated by updating the model passed to an empty model. For example, `lm(mpg ~ hp * disp, data = mtcars)` is updated to `lm(mpg ~ NULL, data = mtcars)`. From this empty model, the sum of squares and df can be calculated. 
 
@@ -50,7 +50,7 @@ The following models are explicitly tested and supported by `supernova()`, _for 
 * multiple regression: `y ~ a + b`
 * interactive regression: `y ~ a * b`
 
-Additionally, a subset of within-subjects designs are supported and explicitly tested. To accomodate these models `supernova()` can accept models fit via `lmer()` as in the [Examples](#examples) below. Only models like those included in those examples have been tested for within-subjects designs.
+Additionally, a subset of within-subjects designs are supported and explicitly tested. To accommodate these models `supernova()` can accept models fit via `lmer()` as in the [Examples](#examples) below. Only models like those included in those examples have been tested for within-subjects designs.
 
 Anything not included above is not (yet) explicitly tested and may yield errors or incorrect statistics. This includes, but is not limited to
 
@@ -182,7 +182,7 @@ simple_nested %>%
 
 #### A three-way design with two between-groups variables and a nested variable
 
-In this example, each person in heterosexual marriage generates a rating of satisfaction. Additionally, these couples were chosen such that they either have children or not, and have been married 15 vs. 30 years. If we fit the data with `lm()` that would ignore the non-independence due to the people being in the same `couple`. Compare this output with the foloowing output where the `group` is specified as a random factor.
+In this example, each person in heterosexual marriage generates a rating of satisfaction. Additionally, these couples were chosen such that they either have children or not, and have been married 15 vs. 30 years. If we fit the data with `lm()` that would ignore the non-independence due to the people being in the same `couple`. Compare this output with the following output where the `group` is specified as a random factor.
 
 ```{r}
 complex_nested <- JMRData::ex11.22 %>%

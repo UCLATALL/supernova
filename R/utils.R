@@ -27,7 +27,7 @@ anova_tbl <- function(model) {
   out
 }
 
-#' Paste, Concatenate, add EOL and Print
+#' Paste, Concatenate, add End-Of-Line and Print
 #'
 #' @param ... Character vectors to paste together.
 #'
@@ -78,23 +78,23 @@ pad <- function(x, y, after = length(x), pad = NA) {
   pad_len(x, length(y), after, pad)
 }
 
-#' Pad x to length len
+#' Pad x to a given output length
 #'
 #' @param x The vector to pad.
-#' @param len The length to pad the vector to.
+#' @param output_length The length to pad the vector to.
 #' @param after A subscript, after which the padding is to be appended.
 #' @param pad The value to pad the vector with.
 #'
 #' @return The padded vector.
 #' @keywords internal
-pad_len <- function(x, len, after = length(x), pad = NA) {
-  if (length(x) > len) {
+pad_len <- function(x, output_length, after = length(x), pad = NA) {
+  if (length(x) > output_length) {
     warning("x cannot be padded. It is already longer than the desired length.")
   }
-  if (length(x) >= len) {
+  if (length(x) >= output_length) {
     return(x)
   }
-  append(x, rep(pad, times = len - length(x)), after = after)
+  append(x, rep(pad, times = output_length - length(x)), after = after)
 }
 
 #' Convert SS type parameter to the corresponding numeric value

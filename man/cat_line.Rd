@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{cat_line}
 \alias{cat_line}
-\title{Paste, Concatenate, add EOL and Print}
+\title{Paste, Concatenate, add End-Of-Line and Print}
 \usage{
 cat_line(...)
 }
@@ -13,6 +13,6 @@ cat_line(...)
 None (invisible \code{NULL}).
 }
 \description{
-Paste, Concatenate, add EOL and Print
+Paste, Concatenate, add End-Of-Line and Print
 }
 \keyword{internal}

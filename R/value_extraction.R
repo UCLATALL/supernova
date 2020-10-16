@@ -19,7 +19,7 @@
 #' @param object A \code{\link{lm}} object, or \code{\link{formula}}.
 #' @param data If \code{object} is a formula, the data to fit the formula to as
 #'   a \code{\link{data.frame}}.
-#' @param ... Passthrough arguments to \code{\link{lm}}.
+#' @param ... Additional arguments passed through to \code{\link{lm}}.
 #'
 #' @return The value of the estimate as a single number.
 #'
