@@ -23,7 +23,7 @@ get_data <- function(name) {
 
 get_expected <- function(name) {
   prefix <- if (interactive()) "./tests/testthat/" else "./"
-  read.csv(file.path(prefix, "expected", paste0(name, ".csv")))
+  read.csv(file.path(prefix, "expected", paste0(name, ".csv")), stringsAsFactors = FALSE)
 }
 
 fit_lmer <- function(formula, data) {
@@ -125,7 +125,7 @@ test_that("magrittr can pipe data to lm() to supernova", {
 
 # ANOVA values ------------------------------------------------------------
 
-test_that("sueprnova can test simple nested designs", {
+test_that("supernova can test simple nested designs", {
   model <- fit_lmer(
     value ~ instructions + (1 | group),
     data = get_data("jmr_ex11.1")
