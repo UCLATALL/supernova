@@ -1,6 +1,4 @@
 context("supernova: Values, crossed designs")
-library(dplyr)
-
 
 # Notes -------------------------------------------------------------------
 
@@ -23,23 +21,34 @@ get_data <- function(name) {
   readRDS(file.path(prefix, "cache", name))
 }
 
+fit_lmer <- function(formula, data) {
+  lme4::lmer(
+    formula,
+    data = data,
+    na.action = na.omit,
+    subset = NULL,
+    weights = NULL,
+    offset = NULL
+  )
+}
+
 
 # Error tests -------------------------------------------------------------
 
 test_that("cannot compute SS types other than Type III for lmerMod", {
-  model <- lme4::lmer(
+  model <- fit_lmer(
     puzzles_completed ~ condition + (1|subject),
-    data = get_data("jmr_ex11.9.Rds")
-  )
+    data = get_data("jmr_ex11.9.Rds"))
+
   expect_error(supernova(model, type = 1))
   expect_error(supernova(model, type = 2))
 })
 
 test_that("there is no verbose print for lmerMod (warn and switch off)", {
-  model <- lme4::lmer(
+  model <- fit_lmer(
     puzzles_completed ~ condition + (1|subject),
-    data = get_data("jmr_ex11.9.Rds")
-  )
+    data = get_data("jmr_ex11.9.Rds"))
+
   expect_warning(supernova(model, verbose = TRUE))
 })
 
@@ -47,10 +56,9 @@ test_that("there is no verbose print for lmerMod (warn and switch off)", {
 # Structure tests ---------------------------------------------------------
 
 test_that("supernova object has table, fit, and models", {
-  model <- lme4::lmer(
+  model <- fit_lmer(
     puzzles_completed ~ condition + (1|subject),
-    data = get_data("jmr_ex11.9.Rds")
-  )
+    data = get_data("jmr_ex11.9.Rds"))
 
   obj <- supernova(model, type = 3)
   obj %>%
@@ -67,10 +75,9 @@ test_that("supernova object has table, fit, and models", {
 })
 
 test_that("supernova table structure is well-formed", {
-  model <- lme4::lmer(
+  model <- fit_lmer(
     puzzles_completed ~ condition + (1|subject),
-    data = get_data("jmr_ex11.9.Rds")
-  )
+    data = get_data("jmr_ex11.9.Rds"))
 
   obj <- supernova(model) %>%
     .[["tbl"]] %>%
@@ -88,7 +95,7 @@ test_that("supernova table structure is well-formed", {
 })
 
 test_that("magrittr can pipe lmer() to supernova", {
-  lme4::lmer(
+  fit_lmer(
     puzzles_completed ~ condition + (1|subject),
     data = get_data("jmr_ex11.9.Rds")
   ) %>%
@@ -101,7 +108,7 @@ test_that("magrittr can pipe data to lm() to supernova", {
   # When stats::update() tries to get the call, the data object is just "."
   # supernova has to middle-man with supernova::update() to get this to work
   get_data("jmr_ex11.9.Rds") %>%
-    lme4::lmer(puzzles_completed ~ condition + (1|subject), data = .) %>%
+    fit_lmer(puzzles_completed ~ condition + (1|subject), data = .) %>%
     supernova() %>%
     expect_is("supernova")
 })
@@ -110,33 +117,32 @@ test_that("magrittr can pipe data to lm() to supernova", {
 # ANOVA values ------------------------------------------------------------
 
 test_that("sueprnova can test simple nested designs", {
-  model <- lme4::lmer(
+  model <- fit_lmer(
     value ~ instructions + (1|group),
-    data = get_data("jmr_ex11.1.Rds")
-  )
+    data = get_data("jmr_ex11.1.Rds"))
 
   expect_equal(
-    supernova(model)$tbl %>% mutate_if(is.numeric, round, 2) %>% as.data.frame(),
-    tribble(
+    supernova(model)$tbl,
+    tibble::tribble(
       ~term,                       ~SS, ~df,   ~MS,    ~F, ~PRE,    ~p,
       "instructions"          ,  12.50,   1, 12.50, 4.686, 0.54, 0.096,
       "Error between subjects",  10.67,   4,  2.67,    NA,   NA,    NA,
       "Total between subjects",  23.17,   5,  4.63,    NA,   NA,    NA,
       "Total within subjects" ,   5.33,  12,  0.44,    NA,   NA,    NA,
       "Total"                 ,  28.50,  17,  1.68,    NA,   NA,    NA,
-    ) %>% mutate_if(is.numeric, round, digits = 2) %>% as.data.frame()
+    ) %>% as.data.frame(),
+    tolerance = 0.01
   )
 })
 
 test_that("supernova can test simple crossed designs", {
-  model <- lme4::lmer(
+  model <- fit_lmer(
     puzzles_completed ~ condition + (1|subject),
-    data = get_data("jmr_ex11.9.Rds")
-  )
+    data = get_data("jmr_ex11.9.Rds"))
 
   expect_equal(
     supernova(model)$tbl,
-    tribble(
+    tibble::tribble(
       ~term,                      ~SS, ~df,   ~MS,      ~F,   ~PRE,     ~p,
       "Total between subjects", 18.00,   7,  2.5714,    NA,     NA,     NA,
       "condition",               2.25,   1,  2.2500, 5.727, 0.4500, .04794,
@@ -149,14 +155,13 @@ test_that("supernova can test simple crossed designs", {
 })
 
 test_that("supernova can test multiple crossed designs", {
-  model <- lme4::lmer(
+  model <- fit_lmer(
     recall ~ time * type + (1|subject) + (1|time:subject) + (1|type:subject),
-    data = get_data("jmr_ex11.17.Rds")
-  )
+    data = get_data("jmr_ex11.17.Rds"))
 
   expect_equal(
     supernova(model)$tbl,
-    tribble(
+    tibble::tribble(
       ~term,                       ~SS, ~df,   ~MS,    ~F, ~PRE,   ~p,
       "Total between subjects", 131.00,   4, 32.75,    NA,   NA,   NA,
       "time"                  ,  65.87,   2, 32.93, 29.94, 0.88, .000,
@@ -173,14 +178,13 @@ test_that("supernova can test multiple crossed designs", {
 })
 
 test_that("supernova can test mixed designs", {
-  model <- lme4::lmer(
+  model <- fit_lmer(
     rating ~ sex * yearsmarried * children + (1|couple),
-    data = get_data("jmr_ex11.22.Rds"),
-  )
+    data = get_data("jmr_ex11.22.Rds"))
 
   expect_equal(
     supernova(model)$tbl,
-    tribble(
+    tibble::tribble(
       ~term,                          ~SS, ~df,     ~MS,   ~F, ~PRE,   ~p,
       "yearsmarried"             , 10.125,   1, 10.1250, 9.54, 0.44, .009,
       "children"                 ,  0.500,   1,  0.5000, 0.48, 0.04, .506,

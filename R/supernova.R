@@ -154,15 +154,14 @@ supernova.lmerMod <- function(fit, type = 3, verbose = FALSE) {
   df_total_within <- total[["df"]] - df_total_between
 
   # TREATMENT ROWS
-  anova_lm <- anova_tbl(model_lm) %>% dplyr::select(-dplyr::one_of("F"))
-  anova_lmer <- anova_tbl(model_full) %>% dplyr::select(dplyr::one_of(c("term", "F")))
-  partial_rows <- dplyr::right_join(anova_lm, anova_lmer, by = "term")
+  anova_lm <- anova_tbl(model_lm) %>% select("F", FALSE)
+  anova_lmer <- anova_tbl(model_full) %>% select(c("term", "F"))
+  partial_rows <- merge_keep_order(anova_lmer, anova_lm, by = 'term', order_by = 'term')
 
   # TREATMENT WITHIN
   partial_within <- partial_rows[partial_rows[["term"]] %in% vars_all[["within"]],]
   treatment_within <- if (length(vars_within_simple) == 0) {
     # No within vars
-
     data.frame()
   } else if (length(vars_within_simple) == 1) {
     # A single within var, only need one error term
@@ -173,14 +172,10 @@ supernova.lmerMod <- function(fit, type = 3, verbose = FALSE) {
       MS = partial_within[["MS"]][[1]] / partial_within[["F"]][[1]],
       stringsAsFactors = FALSE
     )
-    partial_within_error[["SS"]] <-
-      partial_within_error[["MS"]] * partial_within_error[["df"]]
-    partial_within[["PRE"]] <-
-      partial_within[["SS"]] / (partial_within_error[["SS"]] + partial_within[["SS"]])
-    partial_within[["p"]] <- pf(partial_within[["F"]], partial_within[["df"]],
-                                df_error_within, lower.tail = FALSE)
-
-    dplyr::bind_rows(partial_within, partial_within_error)
+    partial_within_error[["SS"]] <- partial_within_error[["MS"]] * partial_within_error[["df"]]
+    partial_within[["PRE"]] <- partial_within[["SS"]] / (partial_within_error[["SS"]] + partial_within[["SS"]])
+    partial_within[["p"]] <- pf(partial_within[["F"]], partial_within[["df"]], df_error_within, lower.tail = FALSE)
+    vctrs::vec_c(partial_within, partial_within_error)
   } else {
     # Multiple within vars, need to compute separate error terms
     df_error_within <- partial_within[["df"]] * df_total_between
@@ -195,16 +190,15 @@ supernova.lmerMod <- function(fit, type = 3, verbose = FALSE) {
       partial_within_error[["MS"]] * partial_within_error[["df"]]
 
     purrr::map_dfr(vars_all[["within"]], function(x) {
-      part <- dplyr::bind_rows(
-        dplyr::filter_at(partial_within, dplyr::vars("term"), ~ . == x),
-        dplyr::filter_at(partial_within_error, dplyr::vars("match"), ~ . == x)
-      ) %>% dplyr::select(-dplyr::one_of("match"))
+      part <- vctrs::vec_c(
+        partial_within[which(partial_within$term == x), ],
+        partial_within_error[which(partial_within_error$match == x), ]
+      ) %>% select("match", keep = FALSE)
 
       part[, c("PRE", "p")] <- NA_real_
       part[["PRE"]][[1]] <- part[["SS"]][[1]] / sum(part[["SS"]])
-      part[["p"]][[1]] <- pf(part[["F"]][[1]], part[["df"]][[1]], part[["df"]][[2]],
-                             lower.tail = FALSE)
-      dplyr::select(part, dplyr::one_of("term", "SS", "df", "MS", "F", "PRE", "p"))
+      part[["p"]][[1]] <- pf(part[["F"]][[1]], part[["df"]][[1]], part[["df"]][[2]], lower.tail = FALSE)
+      part[c("term", "SS", "df", "MS", "F", "PRE", "p")]
     })
   }
 
@@ -223,14 +217,11 @@ supernova.lmerMod <- function(fit, type = 3, verbose = FALSE) {
       MS = partial_between[["MS"]][[1]] / partial_between[["F"]][[1]],
       stringsAsFactors = FALSE
     )
-    partial_between_error[["SS"]] <-
-      partial_between_error[["MS"]] * partial_between_error[["df"]]
-    partial_between[["PRE"]] <-
-      partial_between[["SS"]] / (partial_between_error[["SS"]] + partial_between[["SS"]])
-    partial_between[["p"]] <- pf(partial_between[["F"]], partial_between[["df"]],
-                                 df_error_between, lower.tail = FALSE)
+    partial_between_error[["SS"]] <- partial_between_error[["MS"]] * partial_between_error[["df"]]
+    partial_between[["PRE"]] <- partial_between[["SS"]] / (partial_between_error[["SS"]] + partial_between[["SS"]])
+    partial_between[["p"]] <- pf(partial_between[["F"]], partial_between[["df"]], df_error_between, lower.tail = FALSE)
 
-    dplyr::bind_rows(partial_between, partial_between_error)
+    vctrs::vec_c(partial_between, partial_between_error)
   }
 
   partials <- list(
@@ -249,25 +240,26 @@ supernova.lmerMod <- function(fit, type = 3, verbose = FALSE) {
       sum(partials[[type]][["SS"]])
     }
   }
-  within_total <- dplyr::tibble(
+  within_total <- data.frame(
     term = "Total within subjects",
     SS = get_partial_total_ss(partials, "within"),
-    df = df_total_within
+    df = df_total_within,
+    stringsAsFactors = FALSE
   )
-  between_total <- dplyr::tibble(
+  between_total <- data.frame(
     term = "Total between subjects",
     SS = get_partial_total_ss(partials, "between"),
-    df = df_total_between
+    df = df_total_between,
+    stringsAsFactors = FALSE
   )
 
   # FULL TABLE
-  tbl <- dplyr::bind_rows(
+  tbl <- vctrs::vec_c(
     partials[["between"]], between_total,
     partials[["within"]], within_total,
     total
-  ) %>%
-    dplyr::select_at(dplyr::vars("term", "SS", "df", "MS", "F", "PRE", "p")) %>%
-    dplyr::mutate_at(dplyr::vars("df"), as.integer)
+  )[c("term", "SS", "df", "MS", "F", "PRE", "p")]
+  tbl[["df"]] <- as.integer(tbl[["df"]])
   tbl[["MS"]] <- tbl[["SS"]] / tbl[["df"]]
   tbl <- tbl[tbl[["df"]] > 0, ] %>% as.data.frame()
 
@@ -355,4 +347,16 @@ print.supernova <- function(x, pcut = 4, ...) {
   cat_line(" Model: ", paste(trimws(deparse(formula(x$fit))), collapse = " "))
   cat_line(" ")
   print(tbl, row.names = FALSE)
+}
+
+
+select <- function(df, cols, keep = TRUE) {
+  if (keep) df[which(names(df) %in% cols)]
+  else df[-which(names(df) %in% cols)]
+}
+
+
+merge_keep_order <- function(left, right, by, order_by) {
+  merged <- merge(left, right, by = by)
+  merged[match(left[[order_by]], merged[[order_by]]), ]
 }

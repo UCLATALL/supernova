@@ -8,14 +8,17 @@
 #'   in the model.
 #' @export
 variables <- function(object) {
+  # extract the formulae
   model <- if ("supernova" %in% class(object)) object$fit else object
   formula_complex <- formula(model)
   formula_simple <- lme4::nobars(formula_complex)
 
+  # extract the variables
   vars_all <- all.vars(formula_simple)
   vars_pred <- labels(terms(formula_simple))
   vars_outcome <- setdiff(vars_all, vars_pred)
 
+  # find random terms (which are used to group cases)
   rand_terms <- gsub("1 ?\\| ?", "", as.character(lme4::findbars(formula_complex)))
   vars_group <- rand_terms[which.min(nchar(rand_terms))]
 
@@ -26,18 +29,22 @@ variables <- function(object) {
   } else if ("lmerMod" %in% class(object)) {
     # need to determine which are within vs. between
     data <- object@frame
-    nrow_group <- dplyr::distinct_at(data, dplyr::vars(vars_group)) %>% nrow()
+
     vars_pred_non_int <- grep("^[^:]+$", vars_pred, value = TRUE)
+    nrow_group <- vctrs::vec_unique_count(data[vars_group])
+
     is_pred_between_simple <- purrr::map_lgl(vars_pred_non_int, function(var) {
-      nrow_var <- dplyr::distinct_at(data, dplyr::vars(vars_group, var)) %>% nrow()
+      nrow_var <- vctrs::vec_unique_count(data[c(vars_group, var)])
       nrow_var == nrow_group
     })
+
     vars_within_simple <- vars_pred_non_int[!is_pred_between_simple]
     is_pred_within <- if (length(vars_within_simple) > 0) {
       grepl(paste0(vars_within_simple, collapse = "|"), vars_pred)
     } else {
       FALSE
     }
+
     vars_within <- vars_pred[is_pred_within]
     vars_between <- vars_pred[!is_pred_within]
   } else {

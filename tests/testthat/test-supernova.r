@@ -1,5 +1,4 @@
 context("supernova: Values, independent designs")
-library(dplyr)
 
 # Notes -------------------------------------------------------------------
 
@@ -28,15 +27,17 @@ get_partials <- function(model, type) {
 
   if (!exists("model_cache")) {
     model_cache <<- paste0("./cache/model_cache_type_", 1:3, ".Rds") %>%
-      purrr::map(readRDS)
+      lapply(readRDS)
   }
 
   cache_name <- formula_to_string(model$call)
 
-  model_cache[[type]][[cache_name]] %>%
-    select(SS = `Sum Sq`, df = Df, F = `F value`, p = `Pr(>F)`) %>%
-    mutate(term = rownames(.)) %>%
-    filter(term %in% ivs)
+  anova_tbl <- model_cache[[type]][[cache_name]] %>%
+    .[c('Sum Sq', 'Df', 'F value', 'Pr(>F)')] %>%
+    setNames(c('SS', 'df', 'F', 'p')) %>%
+    { .$term <- rownames(.); . }
+
+  anova_tbl[which(anova_tbl$term %in% ivs), ]
 }
 
 # This needs to match with df.missing in cache_test_data.R
@@ -65,7 +66,7 @@ expect_col_equal <- function(object, col_name, expected, ...) {
   comp <- compare(act$val, exp$val, ...)
   expect(comp$equal, sprintf(
     "%s not equal to %s.\n%s\nActual: %s\n", "Expected: %s",
-    act$lab, exp$lab, comp$message, tibble(act$val), tibble(exp$val)
+    act$lab, exp$lab, comp$message, tibble::tibble(act$val), tibble::tibble(exp$val)
   ))
   invisible(object)
 }
@@ -83,9 +84,7 @@ expect_col_equal <- function(object, col_name, expected, ...) {
 #' @return Invisibly returns the original `supernova` object for piping.
 expect_supernova <- function(object, type = 3, ...) {
   expect_model(object)
-  if (nrow(object$tbl) > 3) {
-    expect_partials(object, type, ...)
-  }
+  if (nrow(object$tbl) > 3) expect_partials(object, type, ...)
   invisible(object)
 }
 
@@ -105,17 +104,18 @@ expect_model <- function(object, ...) {
   p_value <- pf(f_stats[[1]], f_stats[[2]], f_stats[[3]], lower.tail = FALSE)
   pre <- summary(object$fit)[["r.squared"]]
 
-  exp <- tibble(
+  expected <- data.frame(
     SS = c(ssr(object$fit), sse(object$fit), sst(object$fit)),
     df = c(f_stats[[2]], f_stats[[3]], nrow(object$fit$model) - 1),
-    MS = SS / df,
     F = c(f_stats[[1]], NA_real_, NA_real_),
     PRE = c(pre, NA_real_, NA_real_),
     p = c(p_value, NA_real_, NA_real_)
-  ) %>% as.data.frame()
+  )
+  expected['MS'] <- expected['SS'] / expected['df']
+  expected <- expected[c('SS', 'df', 'MS', 'F', 'PRE', 'p')]
 
   act_model_rows <- object$tbl %>% .[c(1, nrow(.) - 1, nrow(.)), 3:8]
-  expect_table_data(act_model_rows, exp)
+  expect_table_data(act_model_rows, expected)
   invisible(object)
 }
 
@@ -132,10 +132,13 @@ expect_model <- function(object, ...) {
 #' @return Invisibly returns the original `supernova` object for piping.
 expect_partials <- function(object, type = 3, ...) {
   act_partial_rows <- object$tbl %>% .[2:(nrow(.) - 2), 3:8]
-  exp <- get_partials(object$fit, type = type) %>%
-    mutate(MS = SS / df, PRE = pre(SS, sse(object$fit))) %>%
-    select(SS, df, MS, F, PRE, p)
-  expect_table_data(act_partial_rows, exp)
+
+  expected <- get_partials(object$fit, type = type)
+  expected['MS'] <- expected['SS'] / expected['df']
+  expected['PRE'] <- pre(expected['SS'], sse(object$fit))
+  expected <- expected[c('SS', 'df', 'MS', 'F', 'PRE', 'p')]
+
+  expect_table_data(act_partial_rows, expected)
   invisible(object)
 }
 
@@ -221,9 +224,10 @@ test_that("magrittr can pipe data to lm() to supernova", {
 
 test_that("supernova calcs. (quant. ~ NULL) ANOVA correctly", {
   model <- lm(Thumb ~ NULL, Fingers)
-  expected <- anova(model) %>%
-    mutate(F = NA_real_, PRE = NA_real_, p = NA_real_) %>%
-    select(SS = `Sum Sq`, df = Df, MS = `Mean Sq`, F, PRE, p)
+  expected <- anova(model)
+  expected[c('SS', 'df', 'MS')] <- expected[c('Sum Sq', 'Df', 'Mean Sq')]
+  expected[c('F', 'PRE', 'p')] <- NA_real_
+  expected <- expected[c('SS', 'df', 'MS', 'F', 'PRE', 'p')]
 
   supernova(model)$tbl %>%
     .[nrow(.), 3:8] %>%
@@ -245,19 +249,20 @@ models_to_test <- list(
   `q ~ c * q * c` = lm(Thumb ~ RaceEthnic * Weight * Sex, Fingers)
 )
 
-test_that("supernova can calculate sequential (type 1) SS", {
-  purrr::map(models_to_test, ~expect_supernova(supernova(.x, type = 1), 1))
+test_that("supernova can calculate different SS types sequential (type 1) SS", {
+  anova_tester <- function(model, type) expect_supernova(supernova(model, type), type)
+
+  anova_tester_type_1 <- function(model) anova_tester(model, type = 1)
+  lapply(models_to_test, anova_tester_type_1)
+
+  anova_tester_type_2 <- function(model) anova_tester(model, type = 2)
+  lapply(models_to_test, anova_tester_type_2)
+
+  anova_tester_type_3 <- function(model) anova_tester(model, type = 3)
+  lapply(models_to_test, anova_tester_type_3)
 })
 
-test_that("supernova can calculate hierarchical (type 2) SS", {
-  purrr::map(models_to_test, ~expect_supernova(supernova(.x, type = 2), 2))
-})
-
-test_that("supernova can calculate orthogonal (type 3) SS", {
-  purrr::map(models_to_test[8], ~expect_supernova(supernova(.x, type = 3), 3))
-})
-
-test_that("supernova SS types can be numeric, numeral, character", {
+test_that("supernova SS types can be specified as numeric, numeral, character", {
   model <- models_to_test[[length(models_to_test)]]
   expect_identical(supernova(model, type = 1), supernova(model, type = "I"))
   expect_identical(supernova(model, type = 1), supernova(model, type = "sequential"))
@@ -289,10 +294,10 @@ test_that("supernova uses listwise deletion for missing data", {
     .$tbl %>% expect_col_equal("df", c(1, df_total - 1, df_total))
 
   # two-way
-  df_total <- nrow(na.omit(select(df.missing, mpg, hp, disp))) - 1
-  supernova(lm(mpg ~ hp * disp, df.missing)) %>%
-    expect_supernova() %>%
-    .$tbl %>% expect_col_equal("df", c(3, 1, 1, 1, df_total - 3, df_total))
+  df_total <- nrow(na.omit(df.missing[c('mpg', 'hp', 'disp')])) - 1
+  anova <- supernova(lm(mpg ~ hp * disp, df.missing))
+  expect_supernova(anova)
+  expect_col_equal(anova$tbl, "df", c(3, 1, 1, 1, df_total - 3, df_total))
 })
 
 test_that("message is given for number of rows deleted due to missing cases", {

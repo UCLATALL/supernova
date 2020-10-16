@@ -1,9 +1,25 @@
 context("supernova: Printing")
 
+# Helper functions --------------------------------------------------------
+
 get_data <- function(name) {
   prefix <- if (interactive()) "./tests/testthat/" else "./"
   readRDS(file.path(prefix, "cache", name))
 }
+
+fit_lmer <- function(formula, data) {
+  lme4::lmer(
+    formula,
+    data = data,
+    na.action = na.omit,
+    subset = NULL,
+    weights = NULL,
+    offset = NULL
+  )
+}
+
+
+# Tests -------------------------------------------------------------------
 
 test_that("supernova tables object has explanatory header for lm", {
   model <- lm(mpg ~ hp * disp, data = mtcars)
@@ -82,10 +98,10 @@ test_that("non-verbose tables do not have a description column", {
 })
 
 test_that("nested repeated measures tables are beautifully formatted", {
-  model <- lme4::lmer(
+  model <- fit_lmer(
     value ~ instructions + (1|group),
-    data = get_data("jmr_ex11.1.Rds")
-  )
+    data = get_data("jmr_ex11.1.Rds"))
+
   printed <- capture.output(supernova(model))
   expect_identical(printed, c(
     " Analysis of Variance Table (Type III SS)",
@@ -106,10 +122,10 @@ test_that("nested repeated measures tables are beautifully formatted", {
 })
 
 test_that("crossed repeated measures tables are beautifully formatted", {
-  model <- lme4::lmer(
+  model <- fit_lmer(
     rating ~ sex * yearsmarried * children + (1|couple),
-    data = get_data("jmr_ex11.22.Rds"),
-  )
+    data = get_data("jmr_ex11.22.Rds"))
+
   printed <- capture.output(supernova(model))
   expect_identical(printed, c(
     " Analysis of Variance Table (Type III SS)",

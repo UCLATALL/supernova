@@ -1,7 +1,5 @@
 context("Generate models for different SS types")
 
-library(dplyr)
-
 test_formula <- y ~ a * b * c
 test_terms <- c("Full Model", "a", "b", "c", "a:b", "a:c", "b:c", "a:b:c")
 
