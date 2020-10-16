@@ -4,7 +4,7 @@ context("supernova: Printing")
 
 get_data <- function(name) {
   prefix <- if (interactive()) "./tests/testthat/" else "./"
-  readRDS(file.path(prefix, "cache", name))
+  readRDS(file.path(prefix, "data", paste0(name, ".Rds")))
 }
 
 fit_lmer <- function(formula, data) {
@@ -100,7 +100,7 @@ test_that("non-verbose tables do not have a description column", {
 test_that("nested repeated measures tables are beautifully formatted", {
   model <- fit_lmer(
     value ~ instructions + (1 | group),
-    data = get_data("jmr_ex11.1.Rds")
+    data = get_data("jmr_ex11.1")
   )
 
   printed <- capture.output(supernova(model))
@@ -125,7 +125,7 @@ test_that("nested repeated measures tables are beautifully formatted", {
 test_that("crossed repeated measures tables are beautifully formatted", {
   model <- fit_lmer(
     rating ~ sex * yearsmarried * children + (1 | couple),
-    data = get_data("jmr_ex11.22.Rds")
+    data = get_data("jmr_ex11.22")
   )
 
   printed <- capture.output(supernova(model))

@@ -2,7 +2,7 @@ context("Variable extraction")
 
 get_data <- function(name) {
   prefix <- if (interactive()) "./tests/testthat/" else "./"
-  readRDS(file.path(prefix, "cache", name))
+  readRDS(file.path(prefix, "data", paste0(name, ".Rds")))
 }
 
 test_that("variables can extract from null model", {
@@ -78,7 +78,7 @@ test_that("variables can extract from multiple between model", {
 test_that("variables can extract from simple nested model", {
   model <- lme4::lmer(
     value ~ instructions + (1 | group),
-    data = get_data("jmr_ex11.1.Rds")
+    data = get_data("jmr_ex11.1")
   )
   expect_identical(
     variables(model),
@@ -95,7 +95,7 @@ test_that("variables can extract from simple nested model", {
 test_that("variables can extract from simple crossed model", {
   model <- lme4::lmer(
     puzzles_completed ~ condition + (1 | subject),
-    data = get_data("jmr_ex11.9.Rds")
+    data = get_data("jmr_ex11.9")
   )
   expect_identical(
     variables(model),
@@ -112,7 +112,7 @@ test_that("variables can extract from simple crossed model", {
 test_that("variables can extract from complex crossed model", {
   model <- lme4::lmer(
     recall ~ type * time + (1 | subject),
-    data = get_data("jmr_ex11.17.Rds")
+    data = get_data("jmr_ex11.17")
   )
   expect_identical(
     variables(model),
@@ -129,7 +129,7 @@ test_that("variables can extract from complex crossed model", {
 test_that("variables can extract from mixed model", {
   model <- lme4::lmer(
     rating ~ sex * yearsmarried * children + (1 | couple),
-    data = get_data("jmr_ex11.22.Rds"),
+    data = get_data("jmr_ex11.22"),
   )
   expect_identical(
     variables(model),
