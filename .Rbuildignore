@@ -7,3 +7,4 @@ cache_test_data
 ^CRAN-RELEASE$
 ^\.travis\.yml$
 ^codecov\.yml$
+^\.github$
