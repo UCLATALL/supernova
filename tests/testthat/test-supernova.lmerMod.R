@@ -37,8 +37,9 @@ fit_lmer <- function(formula, data) {
 
 test_that("cannot compute SS types other than Type III for lmerMod", {
   model <- fit_lmer(
-    puzzles_completed ~ condition + (1|subject),
-    data = get_data("jmr_ex11.9.Rds"))
+    puzzles_completed ~ condition + (1 | subject),
+    data = get_data("jmr_ex11.9.Rds")
+  )
 
   expect_error(supernova(model, type = 1))
   expect_error(supernova(model, type = 2))
@@ -46,8 +47,9 @@ test_that("cannot compute SS types other than Type III for lmerMod", {
 
 test_that("there is no verbose print for lmerMod (warn and switch off)", {
   model <- fit_lmer(
-    puzzles_completed ~ condition + (1|subject),
-    data = get_data("jmr_ex11.9.Rds"))
+    puzzles_completed ~ condition + (1 | subject),
+    data = get_data("jmr_ex11.9.Rds")
+  )
 
   expect_warning(supernova(model, verbose = TRUE))
 })
@@ -57,8 +59,9 @@ test_that("there is no verbose print for lmerMod (warn and switch off)", {
 
 test_that("supernova object has table, fit, and models", {
   model <- fit_lmer(
-    puzzles_completed ~ condition + (1|subject),
-    data = get_data("jmr_ex11.9.Rds"))
+    puzzles_completed ~ condition + (1 | subject),
+    data = get_data("jmr_ex11.9.Rds")
+  )
 
   obj <- supernova(model, type = 3)
   obj %>%
@@ -76,8 +79,9 @@ test_that("supernova object has table, fit, and models", {
 
 test_that("supernova table structure is well-formed", {
   model <- fit_lmer(
-    puzzles_completed ~ condition + (1|subject),
-    data = get_data("jmr_ex11.9.Rds"))
+    puzzles_completed ~ condition + (1 | subject),
+    data = get_data("jmr_ex11.9.Rds")
+  )
 
   obj <- supernova(model) %>%
     .[["tbl"]] %>%
@@ -96,7 +100,7 @@ test_that("supernova table structure is well-formed", {
 
 test_that("magrittr can pipe lmer() to supernova", {
   fit_lmer(
-    puzzles_completed ~ condition + (1|subject),
+    puzzles_completed ~ condition + (1 | subject),
     data = get_data("jmr_ex11.9.Rds")
   ) %>%
     supernova() %>%
@@ -108,7 +112,7 @@ test_that("magrittr can pipe data to lm() to supernova", {
   # When stats::update() tries to get the call, the data object is just "."
   # supernova has to middle-man with supernova::update() to get this to work
   get_data("jmr_ex11.9.Rds") %>%
-    fit_lmer(puzzles_completed ~ condition + (1|subject), data = .) %>%
+    fit_lmer(puzzles_completed ~ condition + (1 | subject), data = .) %>%
     supernova() %>%
     expect_is("supernova")
 })
@@ -118,8 +122,9 @@ test_that("magrittr can pipe data to lm() to supernova", {
 
 test_that("sueprnova can test simple nested designs", {
   model <- fit_lmer(
-    value ~ instructions + (1|group),
-    data = get_data("jmr_ex11.1.Rds"))
+    value ~ instructions + (1 | group),
+    data = get_data("jmr_ex11.1.Rds")
+  )
 
   expect_equal(
     supernova(model)$tbl,
@@ -137,8 +142,9 @@ test_that("sueprnova can test simple nested designs", {
 
 test_that("supernova can test simple crossed designs", {
   model <- fit_lmer(
-    puzzles_completed ~ condition + (1|subject),
-    data = get_data("jmr_ex11.9.Rds"))
+    puzzles_completed ~ condition + (1 | subject),
+    data = get_data("jmr_ex11.9.Rds")
+  )
 
   expect_equal(
     supernova(model)$tbl,
@@ -156,8 +162,9 @@ test_that("supernova can test simple crossed designs", {
 
 test_that("supernova can test multiple crossed designs", {
   model <- fit_lmer(
-    recall ~ time * type + (1|subject) + (1|time:subject) + (1|type:subject),
-    data = get_data("jmr_ex11.17.Rds"))
+    recall ~ time * type + (1 | subject) + (1 | time:subject) + (1 | type:subject),
+    data = get_data("jmr_ex11.17.Rds")
+  )
 
   expect_equal(
     supernova(model)$tbl,
@@ -179,8 +186,9 @@ test_that("supernova can test multiple crossed designs", {
 
 test_that("supernova can test mixed designs", {
   model <- fit_lmer(
-    rating ~ sex * yearsmarried * children + (1|couple),
-    data = get_data("jmr_ex11.22.Rds"))
+    rating ~ sex * yearsmarried * children + (1 | couple),
+    data = get_data("jmr_ex11.22.Rds")
+  )
 
   expect_equal(
     supernova(model)$tbl,

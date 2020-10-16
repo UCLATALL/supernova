@@ -2,8 +2,8 @@ context("Custom update function")
 
 get_data_with_missing <- function() {
   df.missing <- mtcars
-  df.missing[1,]$hp <- NA_real_
-  df.missing[2:3,]$disp <- NA_real_
+  df.missing[1, ]$hp <- NA_real_
+  df.missing[2:3, ]$disp <- NA_real_
   return(df.missing)
 }
 

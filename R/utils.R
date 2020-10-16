@@ -7,8 +7,8 @@
 anova_tbl <- function(model) {
   tbl <- anova(model)
 
-  if (class(model) == 'lmerMod') {
-    names(tbl)[[1]] <- 'Df'
+  if (class(model) == "lmerMod") {
+    names(tbl)[[1]] <- "Df"
   }
 
   out <- data.frame(
@@ -91,7 +91,9 @@ pad_len <- function(x, len, after = length(x), pad = NA) {
   if (length(x) > len) {
     warning("x cannot be padded. It is already longer than the desired length.")
   }
-  if (length(x) >= len) return(x)
+  if (length(x) >= len) {
+    return(x)
+  }
   append(x, rep(pad, times = len - length(x)), after = after)
 }
 
@@ -103,7 +105,13 @@ pad_len <- function(x, len, after = length(x), pad = NA) {
 #' @keywords internal
 resolve_type <- function(type) {
   clean_type <- trimws(tolower(type))
-  if (clean_type %in% c("1", "i", "sequential")) return(1)
-  if (clean_type %in% c("2", "ii", "hierarchical")) return(2)
-  if (clean_type %in% c("3", "iii", "orthogonal")) return(3)
+  if (clean_type %in% c("1", "i", "sequential")) {
+    return(1)
+  }
+  if (clean_type %in% c("2", "ii", "hierarchical")) {
+    return(2)
+  }
+  if (clean_type %in% c("3", "iii", "orthogonal")) {
+    return(3)
+  }
 }

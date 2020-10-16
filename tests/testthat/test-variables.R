@@ -77,7 +77,7 @@ test_that("variables can extract from multiple between model", {
 
 test_that("variables can extract from simple nested model", {
   model <- lme4::lmer(
-    value ~ instructions + (1|group),
+    value ~ instructions + (1 | group),
     data = get_data("jmr_ex11.1.Rds")
   )
   expect_identical(
@@ -94,7 +94,7 @@ test_that("variables can extract from simple nested model", {
 
 test_that("variables can extract from simple crossed model", {
   model <- lme4::lmer(
-    puzzles_completed ~ condition + (1|subject),
+    puzzles_completed ~ condition + (1 | subject),
     data = get_data("jmr_ex11.9.Rds")
   )
   expect_identical(
@@ -111,7 +111,7 @@ test_that("variables can extract from simple crossed model", {
 
 test_that("variables can extract from complex crossed model", {
   model <- lme4::lmer(
-    recall ~ type * time + (1|subject),
+    recall ~ type * time + (1 | subject),
     data = get_data("jmr_ex11.17.Rds")
   )
   expect_identical(
@@ -128,7 +128,7 @@ test_that("variables can extract from complex crossed model", {
 
 test_that("variables can extract from mixed model", {
   model <- lme4::lmer(
-    rating ~ sex * yearsmarried * children + (1|couple),
+    rating ~ sex * yearsmarried * children + (1 | couple),
     data = get_data("jmr_ex11.22.Rds"),
   )
   expect_identical(
@@ -137,10 +137,12 @@ test_that("variables can extract from mixed model", {
       outcome = "rating",
       predictor = c(
         "sex", "yearsmarried", "children", "sex:yearsmarried", "sex:children",
-        "yearsmarried:children", "sex:yearsmarried:children"),
+        "yearsmarried:children", "sex:yearsmarried:children"
+      ),
       group = "couple",
       within = c(
-        "sex", "sex:yearsmarried", "sex:children", "sex:yearsmarried:children"),
+        "sex", "sex:yearsmarried", "sex:children", "sex:yearsmarried:children"
+      ),
       between = c("yearsmarried", "children", "yearsmarried:children")
     )
   )

@@ -22,7 +22,7 @@ test_that("extracted values are correct", {
   expect_identical(b1(test_model), coefficients(test_model)[[2]])
   expect_identical(fVal(test_model), summary(test_model)$fstatistic[["value"]])
   expect_identical(PRE(test_model), summary(test_model)$r.squared)
-  expect_identical(SSE(test_model), sum(resid(test_model) ^ 2))
+  expect_identical(SSE(test_model), sum(resid(test_model)^2))
 
   ssr_expected <- sum((test_model$fitted.values - mean(test_model$model[[1]]))^2)
   expect_identical(SSR(test_model), ssr_expected)

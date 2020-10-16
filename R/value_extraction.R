@@ -58,14 +58,14 @@ PRE <- function(object, data = NULL, ...) {
 #' @export
 SSE <- function(object, data = NULL, ...) {
   fit <- convert_lm(object, data, ...)
-  sum(fit$residuals ^ 2)
+  sum(fit$residuals^2)
 }
 
 #' @rdname estimate_extraction
 #' @export
 SSM <- function(object, data = NULL, ...) {
   fit <- convert_lm(object, data, ...)
-  sum((fit$fitted.values - mean(fit$model[[1]])) ^ 2)
+  sum((fit$fitted.values - mean(fit$model[[1]]))^2)
 }
 
 #' @rdname estimate_extraction

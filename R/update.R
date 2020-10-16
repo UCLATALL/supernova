@@ -44,16 +44,18 @@ update <- function(old, new, ...) {
 
   # list-wise delete values from all affected variables
   na_rows <- sort(unlist(
-    lapply(data[,vars], function(x) which(is.na(x))),
+    lapply(data[, vars], function(x) which(is.na(x))),
     use.names = FALSE
   ))
   data[na_rows, vars] <- NA
 
   # create warning message
-  if (length(na_rows) > 0) message(sprintf(
-    "Note: %s %s removed due to missing value(s).",
-    length(na_rows), ngettext(length(na_rows), 'case', 'cases')
-  ))
+  if (length(na_rows) > 0) {
+    message(sprintf(
+      "Note: %s %s removed due to missing value(s).",
+      length(na_rows), ngettext(length(na_rows), "case", "cases")
+    ))
+  }
 
   stats::update(old, new, data = data, ...)
 }

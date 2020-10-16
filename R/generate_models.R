@@ -72,7 +72,6 @@
 #' # compute the SS for the Height term
 #' mod_Height <- anova(mods_2[["Height"]]$simple, mods_2[["Height"]]$complex)
 #' mod_Height[["Sum of Sq"]][[2]]
-#'
 #' @export
 generate_models <- function(model, type) {
   type <- resolve_type(type)
@@ -80,11 +79,13 @@ generate_models <- function(model, type) {
   outcome <- mod_vars$outcome
   terms <- mod_vars$predictor
 
-  if (type == 3) warning(
-    "The Type III models generated cannot be compared using anova().\n",
-    "  For model comparisons with Type III, use drop1() instead.\n",
-    "  Type ?generate_models() for more details.\n"
-  )
+  if (type == 3) {
+    warning(
+      "The Type III models generated cannot be compared using anova().\n",
+      "  For model comparisons with Type III, use drop1() instead.\n",
+      "  Type ?generate_models() for more details.\n"
+    )
+  }
 
   # generate comparison models for individual terms
   models <- purrr::imap(terms, function(term, term_index) {
@@ -93,7 +94,7 @@ generate_models <- function(model, type) {
       rhs <- strsplit(mod_vars$predictor, ":") %>%
         magrittr::set_names(mod_vars$predictor) %>%
         # remove terms other than the target term that contain the target term
-        purrr::discard(function(x) all(strsplit(term,  ":")[[1]] %in% x)) %>%
+        purrr::discard(function(x) all(strsplit(term, ":")[[1]] %in% x)) %>%
         names() %>%
         append(term, after = term_index - 1)
       complex <- to_formula(outcome, rhs)
@@ -115,7 +116,7 @@ generate_models <- function(model, type) {
     # back-convert to original model fit if needed
     if ("lm" %in% class(model)) {
       models <- purrr::map(models, function(model_pair) {
-        suppressMessages(purrr::map(model_pair, ~update(model, .x)))
+        suppressMessages(purrr::map(model_pair, ~ update(model, .x)))
       })
     }
   }
@@ -169,7 +170,9 @@ formula_string <- function(obj, part, term) {
   model <- attr(obj, "model")
   type <- resolve_type(attr(obj, "type"))
 
-  if (type == 1) return(deparse(formula(part)))
+  if (type == 1) {
+    return(deparse(formula(part)))
+  }
   if (type == 3 && formula(obj[[term]]$complex) == formula(part)) {
     return(deparse(expand_formula(model)))
   }

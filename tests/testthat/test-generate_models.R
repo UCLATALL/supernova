@@ -43,31 +43,31 @@ test_that("sequential models are returned for Type 1", {
     ),
     `a` = list(
       complex = y ~ a,
-      simple  = y ~ NULL
+      simple = y ~ NULL
     ),
     `b` = list(
       complex = y ~ a + b,
-      simple  = y ~ a
+      simple = y ~ a
     ),
     `c` = list(
       complex = y ~ a + b + c,
-      simple  = y ~ a + b
+      simple = y ~ a + b
     ),
     `a:b` = list(
       complex = y ~ a + b + c + a:b,
-      simple  = y ~ a + b + c
+      simple = y ~ a + b + c
     ),
     `a:c` = list(
       complex = y ~ a + b + c + a:b + a:c,
-      simple  = y ~ a + b + c + a:b
+      simple = y ~ a + b + c + a:b
     ),
     `b:c` = list(
       complex = y ~ a + b + c + a:b + a:c + b:c,
-      simple  = y ~ a + b + c + a:b + a:c
+      simple = y ~ a + b + c + a:b + a:c
     ),
     `a:b:c` = list(
       complex = y ~ a + b + c + a:b + a:c + b:c + a:b:c,
-      simple  = y ~ a + b + c + a:b + a:c + b:c
+      simple = y ~ a + b + c + a:b + a:c + b:c
     )
   )
   expect_equivalent(generate_models(test_formula, type = 1), expected)
@@ -80,32 +80,32 @@ test_that("hierarchical models are returned for Type 2", {
       simple = y ~ NULL
     ),
     `a` = list(
-      complex = y ~ a + b + c             + b:c,
-      simple  = y ~     b + c             + b:c
+      complex = y ~ a + b + c + b:c,
+      simple  = y ~ b + c + b:c
     ),
     `b` = list(
-      complex = y ~ a + b + c       + a:c,
-      simple  = y ~ a     + c       + a:c
+      complex = y ~ a + b + c + a:c,
+      simple  = y ~ a + c + a:c
     ),
     `c` = list(
       complex = y ~ a + b + c + a:b,
-      simple  = y ~ a + b     + a:b
+      simple  = y ~ a + b + a:b
     ),
     `a:b` = list(
       complex = y ~ a + b + c + a:b + a:c + b:c,
-      simple  = y ~ a + b + c       + a:c + b:c
+      simple  = y ~ a + b + c + a:c + b:c
     ),
     `a:c` = list(
       complex = y ~ a + b + c + a:b + a:c + b:c,
-      simple  = y ~ a + b + c + a:b       + b:c
+      simple  = y ~ a + b + c + a:b + b:c
     ),
     `b:c` = list(
       complex = y ~ a + b + c + a:b + a:c + b:c,
-      simple  = y ~ a + b + c + a:b + a:c
+      simple = y ~ a + b + c + a:b + a:c
     ),
     `a:b:c` = list(
       complex = y ~ a + b + c + a:b + a:c + b:c + a:b:c,
-      simple  = y ~ a + b + c + a:b + a:c + b:c
+      simple = y ~ a + b + c + a:b + a:c + b:c
     )
   )
   expect_equivalent(generate_models(test_formula, type = 2), expected)
@@ -119,31 +119,31 @@ test_that("orthogonal models are returned for Type 3", {
     ),
     `a` = list(
       complex = y ~ a + b + c + a:b + a:c + b:c + a:b:c,
-      simple  = y ~     b + c + a:b + a:c + b:c + a:b:c
+      simple  = y ~ b + c + a:b + a:c + b:c + a:b:c
     ),
     `b` = list(
       complex = y ~ a + b + c + a:b + a:c + b:c + a:b:c,
-      simple  = y ~ a     + c + a:b + a:c + b:c + a:b:c
+      simple  = y ~ a + c + a:b + a:c + b:c + a:b:c
     ),
     `c` = list(
       complex = y ~ a + b + c + a:b + a:c + b:c + a:b:c,
-      simple  = y ~ a + b     + a:b + a:c + b:c + a:b:c
+      simple  = y ~ a + b + a:b + a:c + b:c + a:b:c
     ),
     `a:b` = list(
       complex = y ~ a + b + c + a:b + a:c + b:c + a:b:c,
-      simple  = y ~ a + b + c       + a:c + b:c + a:b:c
+      simple  = y ~ a + b + c + a:c + b:c + a:b:c
     ),
     `a:c` = list(
       complex = y ~ a + b + c + a:b + a:c + b:c + a:b:c,
-      simple  = y ~ a + b + c + a:b       + b:c + a:b:c
+      simple  = y ~ a + b + c + a:b + b:c + a:b:c
     ),
     `b:c` = list(
       complex = y ~ a + b + c + a:b + a:c + b:c + a:b:c,
-      simple  = y ~ a + b + c + a:b + a:c       + a:b:c
+      simple  = y ~ a + b + c + a:b + a:c + a:b:c
     ),
     `a:b:c` = list(
       complex = y ~ a + b + c + a:b + a:c + b:c + a:b:c,
-      simple  = y ~ a + b + c + a:b + a:c + b:c
+      simple = y ~ a + b + c + a:b + a:c + b:c
     )
   )
   suppressWarnings(generate_models(test_formula, type = 3)) %>%
@@ -155,19 +155,19 @@ test_that("model class is preserved", {
   expected <- list(
     `Full Model` = list(
       complex = supernova:::update(model, mpg ~ hp + disp + hp:disp),
-      simple  = supernova:::update(model, mpg ~ NULL)
+      simple = supernova:::update(model, mpg ~ NULL)
     ),
     `hp` = list(
       complex = supernova:::update(model, mpg ~ hp),
-      simple  = supernova:::update(model, mpg ~ NULL)
+      simple = supernova:::update(model, mpg ~ NULL)
     ),
     `disp` = list(
       complex = supernova:::update(model, mpg ~ hp + disp),
-      simple  = supernova:::update(model, mpg ~ hp)
+      simple = supernova:::update(model, mpg ~ hp)
     ),
     `hp:disp` = list(
       complex = supernova:::update(model, mpg ~ hp + disp + hp:disp),
-      simple  = supernova:::update(model, mpg ~ hp + disp)
+      simple = supernova:::update(model, mpg ~ hp + disp)
     )
   )
   expect_equivalent(generate_models(model, type = 1), expected)
@@ -178,19 +178,19 @@ test_that("two-way models work", {
   expected <- list(
     `Full Model` = list(
       complex = supernova:::update(model, mpg ~ hp + disp + hp:disp),
-      simple  = supernova:::update(model, mpg ~ NULL)
+      simple = supernova:::update(model, mpg ~ NULL)
     ),
     `hp` = list(
       complex = supernova:::update(model, mpg ~ hp),
-      simple  = supernova:::update(model, mpg ~ NULL)
+      simple = supernova:::update(model, mpg ~ NULL)
     ),
     `disp` = list(
       complex = supernova:::update(model, mpg ~ hp + disp),
-      simple  = supernova:::update(model, mpg ~ hp)
+      simple = supernova:::update(model, mpg ~ hp)
     ),
     `hp:disp` = list(
       complex = supernova:::update(model, mpg ~ hp + disp + hp:disp),
-      simple  = supernova:::update(model, mpg ~ hp + disp)
+      simple = supernova:::update(model, mpg ~ hp + disp)
     )
   )
   expect_equivalent(generate_models(model, type = 1), expected)
@@ -201,11 +201,11 @@ test_that("one-way models work", {
   expected <- list(
     `Full Model` = list(
       complex = supernova:::update(model, mpg ~ hp),
-      simple  = supernova:::update(model, mpg ~ NULL)
+      simple = supernova:::update(model, mpg ~ NULL)
     ),
     `hp` = list(
       complex = supernova:::update(model, mpg ~ hp),
-      simple  = supernova:::update(model, mpg ~ NULL)
+      simple = supernova:::update(model, mpg ~ NULL)
     )
   )
   expect_equivalent(generate_models(model, type = 1), expected)

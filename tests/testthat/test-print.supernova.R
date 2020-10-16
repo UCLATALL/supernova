@@ -99,8 +99,9 @@ test_that("non-verbose tables do not have a description column", {
 
 test_that("nested repeated measures tables are beautifully formatted", {
   model <- fit_lmer(
-    value ~ instructions + (1|group),
-    data = get_data("jmr_ex11.1.Rds"))
+    value ~ instructions + (1 | group),
+    data = get_data("jmr_ex11.1.Rds")
+  )
 
   printed <- capture.output(supernova(model))
   expect_identical(printed, c(
@@ -123,8 +124,9 @@ test_that("nested repeated measures tables are beautifully formatted", {
 
 test_that("crossed repeated measures tables are beautifully formatted", {
   model <- fit_lmer(
-    rating ~ sex * yearsmarried * children + (1|couple),
-    data = get_data("jmr_ex11.22.Rds"))
+    rating ~ sex * yearsmarried * children + (1 | couple),
+    data = get_data("jmr_ex11.22.Rds")
+  )
 
   printed <- capture.output(supernova(model))
   expect_identical(printed, c(

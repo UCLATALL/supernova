@@ -32,7 +32,6 @@
 #' supernova(lm(Thumb ~ Weight, data = Fingers))
 #' format_p <- supernova(lm(Thumb ~ Weight, data = Fingers))
 #' print(format_p, pcut = 8)
-#'
 #' @importFrom stats anova as.formula drop1 pf
 #'
 #' @references Judd, C. M., McClelland, G. H., & Ryan, C. S. (2017). \emph{Data
@@ -48,10 +47,10 @@ supernova <- function(fit, type = 3, verbose = TRUE) {
 #' @export
 #' @rdname supernova
 supernova.lm <- function(fit, type = 3, verbose = TRUE) {
-  type       <- resolve_type(type)
-  models     <- suppressWarnings(generate_models(fit, type))
+  type <- resolve_type(type)
+  models <- suppressWarnings(generate_models(fit, type))
   predictors <- variables(fit)$predictor
-  fit_null   <- update(fit, . ~ NULL)
+  fit_null <- update(fit, . ~ NULL)
 
   # Helpful Table Values
   #
@@ -61,17 +60,19 @@ supernova.lm <- function(fit, type = 3, verbose = TRUE) {
   # partial_rows: indices for all rows that have an SS model/regression
   # iv_rows:    indicees for all individual predictor rows
   # error_row:  index for the error row
-  n_pred       <- length(predictors)
-  n_rows       <- 3 + {if (n_pred < 2) 0 else n_pred}
-  model_row    <- 1
+  n_pred <- length(predictors)
+  n_rows <- 3 + {
+    if (n_pred < 2) 0 else n_pred
+  }
+  model_row <- 1
   partial_rows <- 1:(n_rows - 2)
-  iv_rows      <- 1 + seq_along(predictors)
-  error_row    <- n_rows - 1
+  iv_rows <- 1 + seq_along(predictors)
+  error_row <- n_rows - 1
 
   # TABLE SETUP
-  term   <- c("Model", if (n_pred < 2) NULL else predictors, "Error", "Total")
-  desc   <- pad(c("(error reduced)", "(from model)", "(empty model)"), term, 1)
-  tbl    <- data.frame(term = term, description = desc, stringsAsFactors = FALSE)
+  term <- c("Model", if (n_pred < 2) NULL else predictors, "Error", "Total")
+  desc <- pad(c("(error reduced)", "(from model)", "(empty model)"), term, 1)
+  tbl <- data.frame(term = term, description = desc, stringsAsFactors = FALSE)
   tbl$SS <- pad(SSE(fit_null), term, 0)
   tbl$df <- pad(fit_null$df.residual, term, 0)
   tbl[c("MS", "F", "PRE", "p")] <- NA_real_
@@ -109,7 +110,8 @@ supernova.lm <- function(fit, type = 3, verbose = TRUE) {
     tbl$F[partial_rows],
     tbl$df[partial_rows],
     tbl$df[[error_row]],
-    lower.tail = FALSE)
+    lower.tail = FALSE
+  )
 
   rl <- list(tbl = tbl, fit = fit, models = models)
   class(rl) <- "supernova"
@@ -156,10 +158,10 @@ supernova.lmerMod <- function(fit, type = 3, verbose = FALSE) {
   # TREATMENT ROWS
   anova_lm <- anova_tbl(model_lm) %>% select("F", FALSE)
   anova_lmer <- anova_tbl(model_full) %>% select(c("term", "F"))
-  partial_rows <- merge_keep_order(anova_lmer, anova_lm, by = 'term', order_by = 'term')
+  partial_rows <- merge_keep_order(anova_lmer, anova_lm, by = "term", order_by = "term")
 
   # TREATMENT WITHIN
-  partial_within <- partial_rows[partial_rows[["term"]] %in% vars_all[["within"]],]
+  partial_within <- partial_rows[partial_rows[["term"]] %in% vars_all[["within"]], ]
   treatment_within <- if (length(vars_within_simple) == 0) {
     # No within vars
     data.frame()
@@ -203,7 +205,7 @@ supernova.lmerMod <- function(fit, type = 3, verbose = FALSE) {
   }
 
   # TREATMENT BETWEEN
-  partial_between <- partial_rows[partial_rows[["term"]] %in% vars_all[["between"]],]
+  partial_between <- partial_rows[partial_rows[["term"]] %in% vars_all[["between"]], ]
   treatment_between <- if (length(vars_between_simple) == 0) {
     # No between vars
 
@@ -288,7 +290,8 @@ print.supernova <- function(x, pcut = 4, ...) {
   # NUMBER FORMATTING
   # df to integer; SS, MS, F to 3 decimals; PRE to 4 decimals; p to pcut
   tbl[["df"]] <- format(as.integer(tbl[["df"]]))
-  tbl[c("SS", "MS", "F")] <- purrr::map(c("SS", "MS", "F"),
+  tbl[c("SS", "MS", "F")] <- purrr::map(
+    c("SS", "MS", "F"),
     function(term) format(round(tbl[[term]], 3), nsmall = 3)
   )
   tbl[["PRE"]] <- format(round(tbl[["PRE"]], 4), nsmall = 4, scientific = FALSE)
@@ -312,8 +315,10 @@ print.supernova <- function(x, pcut = 4, ...) {
     tbl <- insert_rule(tbl, nrow(tbl))
   } else {
     tbl <- insert_row(tbl, 1, c("Between Subjects", rep("", 6)))
-    tbl <- insert_row(tbl, grep("^Total between subjects", tbl$term) + 1,
-                      c("Within Subjects", rep("", 6)))
+    tbl <- insert_row(
+      tbl, grep("^Total between subjects", tbl$term) + 1,
+      c("Within Subjects", rep("", 6))
+    )
 
     pred_terms <- variables(x$fit)$predictor
     error_terms <- paste(pred_terms, "error")
@@ -351,8 +356,11 @@ print.supernova <- function(x, pcut = 4, ...) {
 
 
 select <- function(df, cols, keep = TRUE) {
-  if (keep) df[which(names(df) %in% cols)]
-  else df[-which(names(df) %in% cols)]
+  if (keep) {
+    df[which(names(df) %in% cols)]
+  } else {
+    df[-which(names(df) %in% cols)]
+  }
 }
 
 

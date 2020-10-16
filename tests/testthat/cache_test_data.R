@@ -16,8 +16,8 @@ as.character.call <- function(model) {
 }
 
 df.missing <- mtcars
-df.missing[1,]$hp <- NA_real_
-df.missing[2:3,]$disp <- NA_real_
+df.missing[1, ]$hp <- NA_real_
+df.missing[2:3, ]$disp <- NA_real_
 
 models <- list(
   lm(Thumb ~ Weight, Fingers),
@@ -33,10 +33,10 @@ models <- list(
   lm(Thumb ~ RaceEthnic * Weight * Sex, Fingers),
   lm(mpg ~ hp, df.missing),
   lm(mpg ~ hp * disp, df.missing),
-  lm(uptake ~ Treatment, data = CO2[1:80,]),
-  lm(uptake ~ Treatment * Type, data = CO2[1:80,])
+  lm(uptake ~ Treatment, data = CO2[1:80, ]),
+  lm(uptake ~ Treatment * Type, data = CO2[1:80, ])
 ) %>%
-  purrr::set_names(purrr::map(., ~as.character.call(.x)))
+  purrr::set_names(purrr::map(., ~ as.character.call(.x)))
 
 models %>%
   purrr::map(anova) %>%
