@@ -53,7 +53,6 @@ Ryan (2017).
 supernova(lm(Thumb ~ Weight, data = Fingers))
 format_p <- supernova(lm(Thumb ~ Weight, data = Fingers))
 print(format_p, pcut = 8)
-
 }
 \references{
 Judd, C. M., McClelland, G. H., & Ryan, C. S. (2017). \emph{Data

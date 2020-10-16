@@ -88,5 +88,4 @@ mods_2 <- generate_models(mod, type = 2)
 # compute the SS for the Height term
 mod_Height <- anova(mods_2[["Height"]]$simple, mods_2[["Height"]]$complex)
 mod_Height[["Sum of Sq"]][[2]]
-
 }
