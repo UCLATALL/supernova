@@ -15,16 +15,16 @@ Depends: R (>= 3.5.0)
 Suggests: 
     testthat (>= 2.1.0),
     covr,
-    rlang,
     tibble,
     tidyr,
-    car
-Imports: 
+    car,
+    lme4
+Imports:
+    rlang,
     magrittr,
     vctrs,
     stringr,
-    purrr,
-    lme4
+    purrr
 RoxygenNote: 7.1.1
 URL: https://github.com/UCLATALL/supernova
 BugReports: https://github.com/UCLATALL/supernova/issues

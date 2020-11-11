@@ -89,7 +89,7 @@ generate_models <- function(model, type) {
 
   # generate comparison models for individual terms
   models <- purrr::imap(terms, function(term, term_index) {
-    if (type == 1) complex <- to_formula(outcome, terms[1:term_index])
+    if (type == 1) complex <- frm_build(outcome, terms[1:term_index])
     if (type == 2) {
       rhs <- strsplit(mod_vars$predictor, ":") %>%
         magrittr::set_names(mod_vars$predictor) %>%
@@ -97,9 +97,9 @@ generate_models <- function(model, type) {
         purrr::discard(function(x) all(strsplit(term, ":")[[1]] %in% x)) %>%
         names() %>%
         append(term, after = term_index - 1)
-      complex <- to_formula(outcome, rhs)
+      complex <- frm_build(outcome, rhs)
     }
-    if (type == 3) complex <- to_formula(outcome, terms)
+    if (type == 3) complex <- frm_build(outcome, terms)
 
     list(complex = complex, simple = remove_term(complex, term))
   })
@@ -109,8 +109,8 @@ generate_models <- function(model, type) {
     models <- models %>%
       magrittr::set_names(terms) %>%
       append(list(`Full Model` = list(
-        complex = to_formula(outcome, terms),
-        simple = to_formula(outcome, "NULL")
+        complex = frm_build(outcome, terms),
+        simple = frm_build(outcome, "NULL")
       )), after = 0L)
 
     # back-convert to original model fit if needed
@@ -127,10 +127,11 @@ generate_models <- function(model, type) {
   models
 }
 
+
 #' @export
 print.comparison_models <- function(x, ...) {
   model <- attr(x, "model")
-  null_model <- to_formula(variables(model)$outcome, "NULL")
+  null_model <- frm_build(variables(model)$outcome, "NULL")
   cat_line("Comparison Models for Type ", attr(x, "type"), " SS")
   cat_line("Model: ", deparse(formula(model)))
   cat_line("")
@@ -149,23 +150,20 @@ print.comparison_models <- function(x, ...) {
 }
 
 
+
 # Helpers -----------------------------------------------------------------
 
-to_formula <- function(lhs, rhs) {
-  as.formula(paste(lhs, "~", paste(rhs, collapse = "+")))
-}
 
-expand_formula <- function(f) {
-  to_formula(variables(f)$outcome, variables(f)$predictor)
-}
-
+#' @keywords internal
 remove_term <- function(model, term) {
   vars <- variables(model)
   terms <- vars$predictor
   rhs <- if (length(terms) == 1) "NULL" else terms[!terms %in% term]
-  to_formula(vars$outcome, rhs)
+  frm_build(vars$outcome, rhs)
 }
 
+
+#' @keywords internal
 formula_string <- function(obj, part, term) {
   model <- attr(obj, "model")
   type <- resolve_type(attr(obj, "type"))
@@ -173,8 +171,9 @@ formula_string <- function(obj, part, term) {
   if (type == 1) {
     return(deparse(formula(part)))
   }
+
   if (type == 3 && formula(obj[[term]]$complex) == formula(part)) {
-    return(deparse(expand_formula(model)))
+    return(deparse(frm_expand(formula(model))))
   }
 
   # determine which variables were removed
@@ -195,7 +194,7 @@ formula_string <- function(obj, part, term) {
   }
 
   # perform replacements
-  deparse(expand_formula(model)) %>%
+  deparse(frm_expand(formula(model))) %>%
     # replace variables with spaces in full string
     stringr::str_replace_all(rem_pat, function(str) strrep(" ", nchar(str))) %>%
     # trim dangling spaces and plus signs from end

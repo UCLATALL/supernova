@@ -27,6 +27,7 @@ anova_tbl <- function(model) {
   out
 }
 
+
 #' Paste, Concatenate, add End-Of-Line and Print
 #'
 #' @param ... Character vectors to paste together.
@@ -36,6 +37,7 @@ anova_tbl <- function(model) {
 cat_line <- function(...) {
   cat(paste0(...), "\n", sep = "")
 }
+
 
 #' Insert a horizontal rule in a table for pretty printing
 #'
@@ -65,6 +67,7 @@ insert_row <- function(df, insert_at, contents) {
   df
 }
 
+
 #' Pad x to length of y
 #'
 #' @param x The vector to pad.
@@ -77,6 +80,7 @@ insert_row <- function(df, insert_at, contents) {
 pad <- function(x, y, after = length(x), pad = NA) {
   pad_len(x, length(y), after, pad)
 }
+
 
 #' Pad x to a given output length
 #'
@@ -96,6 +100,7 @@ pad_len <- function(x, output_length, after = length(x), pad = NA) {
   }
   append(x, rep(pad, times = output_length - length(x)), after = after)
 }
+
 
 #' Convert SS type parameter to the corresponding numeric value
 #'

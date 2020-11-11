@@ -143,7 +143,7 @@ supernova.lmerMod <- function(fit, type = 3, verbose = FALSE) {
 
   # get formula with no random terms
   formula_complex <- formula(model_full)
-  formula_simple <- lme4::nobars(formula_complex)
+  formula_simple <- frm_build(frm_outcome(formula_complex), frm_fixed_terms(formula_complex))
 
   # TOTAL
   model_lm <- lm(formula_simple, data = model_data)

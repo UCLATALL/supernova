@@ -1,63 +1,92 @@
-#' Extract the variables from a model
+#' Extract the variables from a model formula
 #'
-#' @param object An \code{\link{lm}} or \code{\link{supernova}} object
+#' @param object A \code{\link{formula}}, \code{\link{lm}} or \code{\link{supernova}} object
 #'
 #' @importFrom stats formula terms
 #'
-#' @return A list containing the \code{outcome} and \code{predictor} variables
-#'   in the model.
+#' @return A list containing the \code{outcome} and \code{predictor} variables in the model.
+#'
+#' @rdname variables
 #' @export
 variables <- function(object) {
-  # extract the formulae
-  model <- if ("supernova" %in% class(object)) object$fit else object
-  formula_complex <- formula(model)
-  formula_simple <- lme4::nobars(formula_complex)
+  UseMethod('variables', object)
+}
 
-  # extract the variables
-  vars_all <- all.vars(formula_simple)
-  vars_pred <- labels(terms(formula_simple))
-  vars_outcome <- setdiff(vars_all, vars_pred)
 
-  # find random terms (which are used to group cases)
-  rand_terms <- gsub("1 ?\\| ?", "", as.character(lme4::findbars(formula_complex)))
-  vars_group <- rand_terms[which.min(nchar(rand_terms))]
+#' @rdname variables
+#' @export
+variables.supernova <- function(object) {
+  variables(object[['fit']])
+}
 
-  if ("lm" %in% class(object)) {
-    # can't test within-ss designs using lm (unless you do some heavy lifting)
-    vars_within <- character(0)
-    vars_between <- vars_pred
-  } else if ("lmerMod" %in% class(object)) {
-    # need to determine which are within vs. between
-    data <- object@frame
 
-    vars_pred_non_int <- grep("^[^:]+$", vars_pred, value = TRUE)
-    nrow_group <- vctrs::vec_unique_count(data[vars_group])
-
-    is_pred_between_simple <- purrr::map_lgl(vars_pred_non_int, function(var) {
-      nrow_var <- vctrs::vec_unique_count(data[c(vars_group, var)])
-      nrow_var == nrow_group
-    })
-
-    vars_within_simple <- vars_pred_non_int[!is_pred_between_simple]
-    is_pred_within <- if (length(vars_within_simple) > 0) {
-      grepl(paste0(vars_within_simple, collapse = "|"), vars_pred)
-    } else {
-      FALSE
-    }
-
-    vars_within <- vars_pred[is_pred_within]
-    vars_between <- vars_pred[!is_pred_within]
-  } else {
-    # cannot determine which are within or between without more info
-    vars_within <- character(0)
-    vars_between <- character(0)
-  }
-
+#' @rdname variables
+#' @export
+variables.formula <- function(object) {
+  outcome <- frm_outcome(object)
+  predictor <- frm_terms(object)
   list(
-    outcome = vars_outcome,
-    predictor = vars_pred,
-    group = vars_group,
-    within = vars_within,
-    between = vars_between
+    outcome = outcome,
+    predictor = predictor,
+    group = character(0),
+    within = character(0),
+    between = character(0)
   )
+}
+
+
+#' @rdname variables
+#' @export
+variables.lm <- function(object) {
+  var_list <- variables.formula(formula(object))
+  var_list[['between']] <- var_list[['predictor']]
+  var_list
+}
+
+
+#' @rdname variables
+#' @export
+variables.lmerMod <- function(object) {
+  frm <- formula(object)
+  var_list <- variables.formula(frm)  # initialize output list
+
+  # terms = things specified in the model like (1 | group) and mpg:hp
+  # vars = variables that the model uses  like group, mpg, and hp
+  fixed_terms <- frm_fixed_terms(frm)
+  fixed_vars <- frm_fixed_vars(frm)
+  random_vars <- frm_random_vars(frm)
+
+  # currently we only support a single grouping variable, logically it must be the random variable
+  # with the shortest name --- all other valid random variables will be nested in some way and have
+  # (1 | a:b) syntax, where b is the group variable
+  group_var <- random_vars[which.min(nchar(random_vars))]
+
+  # need to check the data and number of groups to determine within and between below
+  data <- object@frame
+  nrow_group <- vctrs::vec_unique_count(data[group_var])
+
+  # between vars have different values within the same group
+  # the number of unique <between>-<group> pairs should be equal to all <between>-<group> pairs
+  between_vars <- fixed_vars[purrr::map_lgl(fixed_vars, function(possible_between) {
+    vctrs::vec_unique_count(data[c(group_var, possible_between)]) == nrow_group
+  })]
+
+  # within vars have the same values within the same group
+  # the number of unique <within>-<group> pairs should be greater than all <within>-<group> pairs
+  within_vars <- fixed_vars[purrr::map_lgl(fixed_vars, function(possible_within) {
+    vctrs::vec_unique_count(data[c(group_var, possible_within)]) > nrow_group
+  })]
+
+  # any interactive term with a within var is within, otherwise it's between
+  interaction_terms <- frm_interaction_terms(frm)
+  is_within <- purrr::map_lgl(interaction_terms, function(possible_within) {
+    vars_in_interaction <- stringr::str_split(possible_within, stringr::fixed(':'))[[1]]
+    any(vars_in_interaction %in% within_vars)
+  })
+
+  var_list[['predictor']] <- fixed_terms
+  var_list[['group']] <- group_var
+  var_list[['within']] <- c(within_vars, interaction_terms[is_within])
+  var_list[['between']] <- c(between_vars, interaction_terms[!is_within])
+  var_list
 }

@@ -2,17 +2,28 @@
 % Please edit documentation in R/variables.R
 \name{variables}
 \alias{variables}
-\title{Extract the variables from a model}
+\alias{variables.supernova}
+\alias{variables.formula}
+\alias{variables.lm}
+\alias{variables.lmerMod}
+\title{Extract the variables from a model formula}
 \usage{
 variables(object)
+
+\method{variables}{supernova}(object)
+
+\method{variables}{formula}(object)
+
+\method{variables}{lm}(object)
+
+\method{variables}{lmerMod}(object)
 }
 \arguments{
-\item{object}{An \code{\link{lm}} or \code{\link{supernova}} object}
+\item{object}{A \code{\link{formula}}, \code{\link{lm}} or \code{\link{supernova}} object}
 }
 \value{
-A list containing the \code{outcome} and \code{predictor} variables
-  in the model.
+A list containing the \code{outcome} and \code{predictor} variables in the model.
 }
 \description{
-Extract the variables from a model
+Extract the variables from a model formula
 }
