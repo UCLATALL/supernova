@@ -1,3 +1,5 @@
+# supernova 2.3.0
+
 # supernova 2.2.3
 
 * Remove dependency on `dplyr` because it changes too quickly and has too many other dependencies
