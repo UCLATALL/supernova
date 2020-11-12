@@ -2,6 +2,7 @@
 
 * Dependency on `lme4` is moved to Suggests. Models implementing `lmerMod` are handled via `supernova.lmerMod` and `variables.lmerMod` but use of the `lme4` package is limited to tests.
 * More robust and readable implementation of `variables()` using the new formula utility functions added. See `?formula_building`, `?formula_expansion`, and `?formula_extraction`.
+* Customize `print.lm()` to add the fitted equation at the end.
 
 
 # supernova 2.2.3
