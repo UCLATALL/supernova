@@ -1,15 +1,17 @@
 ## Release summary
 
-This is a patch release that removes some dependencies.
+This is a minor version release that makes dependency on lme4 optional and adds 
+a custom print function.
 
 
 ## Test environments
 
-* local windows install, R 4.0.2
-* mac OS 10.15.4 (on github actions) R 4.0.3
-* ubuntu 16.04 (on github actions), R-devel, R 4.0.3, R 3.6.3
-* Microsoft Windows Server 2019 10.0.17763 (on github actions) R 4.0.3, R 3.6.3
-* win-builder (devel)
+- local Windows install; R 4.0.3
+- Win Builder (devel)
+- GitHub Actions
+  * Mac OS X, 10.15.7; R 4.0.3
+  * Microsoft Windows Server 2019, 10.0.17763; R 4.0.3, R 3.6.3
+  * Ubuntu, 16.04.7; R-devel, R 4.0.3, R 3.6.3
 
 
 ## R CMD check results
