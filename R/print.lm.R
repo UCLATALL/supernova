@@ -1,4 +1,4 @@
-#' Print the output of lm() with fitted equation.
+#' Print the output of \code{lm()} with the fitted equation.
 #'
 #' @param x The fitted linear model to print.
 #' @param digits The minimal number of significant digits.

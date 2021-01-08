@@ -38,7 +38,7 @@ example, the formula \code{y ~ a * b + (1 | group)} has terms \code{a}, \code{b}
 \code{1 | group}. The same formula has vars \code{a}, \code{b}, and \code{group}.
 }
 \details{
-These tools are ONLY tested against models and formulae that are explictly supported. See the
+These tools are ONLY tested against models and formulae that are explicitly supported. See the
 README and test cases for more information.
 }
 \seealso{

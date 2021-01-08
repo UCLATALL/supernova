@@ -2,7 +2,7 @@
 % Please edit documentation in R/print.lm.R
 \name{print.lm}
 \alias{print.lm}
-\title{Print the output of lm() with fitted equation.}
+\title{Print the output of \code{lm()} with the fitted equation.}
 \usage{
 \method{print}{lm}(x, digits = max(3L, getOption("digits") - 3L), ...)
 }
@@ -17,5 +17,5 @@
 Invisibly return the fitted linear model.
 }
 \description{
-Print the output of lm() with fitted equation.
+Print the output of \code{lm()} with the fitted equation.
 }

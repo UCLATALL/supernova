@@ -36,7 +36,7 @@ frm_expand <- function(frm) {
 #' example, the formula \code{y ~ a * b + (1 | group)} has terms \code{a}, \code{b}, \code{a:b}, and
 #' \code{1 | group}. The same formula has vars \code{a}, \code{b}, and \code{group}.
 #'
-#' These tools are ONLY tested against models and formulae that are explictly supported. See the
+#' These tools are ONLY tested against models and formulae that are explicitly supported. See the
 #' README and test cases for more information.
 #'
 #' @param frm The formula to extract values from
