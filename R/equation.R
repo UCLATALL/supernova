@@ -5,7 +5,7 @@
 #'
 #' @return Invisibly return the fitted linear model.
 #' @export
-equation <- function(x, digits = max(3L, getOption("digits") - 3L), ...) {
+equation <- function(x, digits = max(3L, getOption("digits") - 3L)) {
   format_term <- function(value, name, digits) {
     sprintf("%s*%s", format(value, digits), name)
   }

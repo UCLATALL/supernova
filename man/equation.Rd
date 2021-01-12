@@ -4,7 +4,7 @@
 \alias{equation}
 \title{Print the output of \code{lm()} with the fitted equation.}
 \usage{
-equation(x, digits = max(3L, getOption("digits") - 3L), ...)
+equation(x, digits = max(3L, getOption("digits") - 3L))
 }
 \arguments{
 \item{x}{The fitted linear model to print.}
