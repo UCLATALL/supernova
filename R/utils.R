@@ -1,3 +1,8 @@
+
+# Notes ---------------------------------------------------------------------------------------
+# The functions in this file should be arranged alphabetically.
+
+
 #' ANOVA table with nicer column names.
 #'
 #' @param model A model fitted by \code{\link{lm}} or \code{\link[lme4]{lmer}}.
@@ -99,6 +104,19 @@ pad_len <- function(x, output_length, after = length(x), pad = NA) {
     return(x)
   }
   append(x, rep(pad, times = output_length - length(x)), after = after)
+}
+
+
+#' Paste together lines of text.
+#'
+#' The lines are joined together with a newline (`\n`) character.
+#'
+#' @param ... Vectors of lines of text.
+#'
+#' @return Check out the [paste] function for more information.
+#' @keywords internal
+paste_line <- function(...) {
+  paste(..., sep = "\n")
 }
 
 

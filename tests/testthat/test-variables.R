@@ -1,13 +1,3 @@
-context("Variable extraction")
-
-
-
-# Notes -------------------------------------------------------------------
-
-
-# No notes. Pretty straightforward.
-
-
 
 # Helper functions --------------------------------------------------------
 

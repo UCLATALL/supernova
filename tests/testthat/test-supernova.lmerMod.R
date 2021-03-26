@@ -1,17 +1,9 @@
-context("supernova: Values, crossed designs")
 
 # Notes -------------------------------------------------------------------
-
-# The datasets and expected values used here are taken from the textbook cited
-# in the package description (Judd, McClelland, & Ryan). The page numbers and
-# exhibit references correspond to the 2nd edition of the text. The datasets
-# can also be found in the JMRData package on the UCLATALL GitHub:
-#
-# devtools::install_github("UCLATALL/JMRData")
-
-
-# Custom expectations -----------------------------------------------------
-
+# The datasets and expected values used here are taken from the textbook cited in the package
+# description (Judd, McClelland, & Ryan). The page numbers and exhibit references correspond to the
+# 2nd edition of the text. The datasets can also be found in the JMRData package on the UCLATALL
+# GitHub.
 
 
 # Helper functions --------------------------------------------------------
@@ -69,38 +61,22 @@ test_that("supernova object has table, fit, and models", {
   )
 
   obj <- supernova(model, type = 3)
-  obj %>%
-    expect_is("supernova")
-  obj$tbl %>%
-    expect_is("data.frame")
-  obj$fit %>%
-    expect_is("lmerMod") %>%
-    expect_identical(model)
-  obj$models %>%
-    # expect_is("comparison_models") %>%
-    # expect_identical(suppressWarnings(generate_models(fit, 3)))
-    expect_null()
-})
 
-test_that("supernova table structure is well-formed", {
-  model <- fit_lmer(
-    puzzles_completed ~ condition + (1 | subject),
-    data = get_data("jmr_ex11.9")
-  )
+  obj %>% expect_s3_class("supernova")
 
-  obj <- supernova(model) %>%
-    .[["tbl"]] %>%
-    expect_is("data.frame") %>%
-    expect_named(c("term", "SS", "df", "MS", "F", "PRE", "p"))
+  obj$fit %>% expect_identical(model)
 
-  expect_is(obj[["term"]], "character")
-  # expect_is(obj[["description"]], "character")
-  expect_is(obj[["SS"]], "numeric")
-  expect_is(obj[["df"]], "integer")
-  expect_is(obj[["MS"]], "numeric")
-  expect_is(obj[["F"]], "numeric")
-  expect_is(obj[["PRE"]], "numeric")
-  expect_is(obj[["p"]], "numeric")
+  obj$models %>% expect_null()
+
+  obj$tbl %>% expect_vector(data.frame(
+    term = character(),
+    SS = double(),
+    df = integer(),
+    MS = double(),
+    `F` = double(),
+    PRE = double(),
+    p = double()
+  ))
 })
 
 test_that("magrittr can pipe lmer() to supernova", {
@@ -109,7 +85,7 @@ test_that("magrittr can pipe lmer() to supernova", {
     data = get_data("jmr_ex11.9")
   ) %>%
     supernova() %>%
-    expect_is("supernova")
+    expect_s3_class("supernova")
 })
 
 test_that("magrittr can pipe data to lm() to supernova", {
@@ -119,7 +95,7 @@ test_that("magrittr can pipe data to lm() to supernova", {
   get_data("jmr_ex11.9") %>%
     fit_lmer(puzzles_completed ~ condition + (1 | subject), data = .) %>%
     supernova() %>%
-    expect_is("supernova")
+    expect_s3_class("supernova")
 })
 
 

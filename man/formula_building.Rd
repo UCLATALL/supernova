@@ -4,16 +4,18 @@
 \alias{frm_build}
 \title{Build a formula from terms}
 \usage{
-frm_build(lhs, rhs)
+frm_build(lhs, rhs, env = parent.frame())
 }
 \arguments{
 \item{lhs}{The outcome term for the left-hand side.}
 
 \item{rhs}{The terms for the right-hand side.}
+
+\item{env}{The environment to assign to the formula (defaults to calling environment).}
 }
 \value{
 The right-hand side terms are joined with \code{+}. Then, the right-hand side is joined
-  to the left and returned as a \code{\link{formula}}.
+to the left and returned as a \link{formula}.
 }
 \description{
 Build a formula from terms

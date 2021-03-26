@@ -1,40 +1,38 @@
 # Cache the car::Anova data and other data used to test the package  so that we
 # don't have to include those packages just for testing
 
+library(magrittr)
+
 cache_dir <- "./tests/testthat/cache"
 data_dir <- "./tests/testthat/data"
 if (!dir.exists(cache_dir)) dir.create(cache_dir)
 if (!dir.exists(data_dir)) dir.create(data_dir)
 
-`%>%` <- magrittr::`%>%`
-
 
 # Independent designs -----------------------------------------------------
-
-Fingers <- supernova::Fingers
 
 as.character.call <- function(model) {
   Reduce(paste, deparse(model$call))
 }
 
-df.missing <- mtcars
-df.missing[1, ]$hp <- NA_real_
-df.missing[2:3, ]$disp <- NA_real_
+df_missing <- mtcars
+df_missing[1, ]$hp <- NA_real_
+df_missing[2:3, ]$disp <- NA_real_
 
 models <- list(
-  lm(Thumb ~ Weight, Fingers),
-  lm(Thumb ~ RaceEthnic, Fingers),
-  lm(Thumb ~ Weight + Height, Fingers),
-  lm(Thumb ~ RaceEthnic + Weight, Fingers),
-  lm(Thumb ~ RaceEthnic + Sex, Fingers),
-  lm(Thumb ~ RaceEthnic + Weight + Sex, Fingers),
-  lm(Thumb ~ Weight * Height, Fingers),
-  lm(Thumb ~ RaceEthnic * Weight, Fingers),
-  lm(Thumb ~ RaceEthnic * Sex, Fingers),
-  lm(Thumb ~ RaceEthnic + Weight * Sex, Fingers),
-  lm(Thumb ~ RaceEthnic * Weight * Sex, Fingers),
-  lm(mpg ~ hp, df.missing),
-  lm(mpg ~ hp * disp, df.missing),
+  lm(Thumb ~ Weight, supernova::Fingers),
+  lm(Thumb ~ RaceEthnic, supernova::Fingers),
+  lm(Thumb ~ Weight + Height, supernova::Fingers),
+  lm(Thumb ~ RaceEthnic + Weight, supernova::Fingers),
+  lm(Thumb ~ RaceEthnic + Sex, supernova::Fingers),
+  lm(Thumb ~ RaceEthnic + Weight + Sex, supernova::Fingers),
+  lm(Thumb ~ Weight * Height, supernova::Fingers),
+  lm(Thumb ~ RaceEthnic * Weight, supernova::Fingers),
+  lm(Thumb ~ RaceEthnic * Sex, supernova::Fingers),
+  lm(Thumb ~ RaceEthnic + Weight * Sex, supernova::Fingers),
+  lm(Thumb ~ RaceEthnic * Weight * Sex, supernova::Fingers),
+  lm(mpg ~ hp, df_missing),
+  lm(mpg ~ hp * disp, df_missing),
   lm(uptake ~ Treatment, data = CO2[1:80, ]),
   lm(uptake ~ Treatment * Type, data = CO2[1:80, ])
 ) %>%

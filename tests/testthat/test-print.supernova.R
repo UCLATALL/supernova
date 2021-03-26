@@ -1,5 +1,3 @@
-context("supernova: Printing")
-
 # Helper functions --------------------------------------------------------
 
 get_data <- function(name) {
@@ -24,10 +22,9 @@ fit_lmer <- function(formula, data) {
 test_that("supernova tables object has explanatory header for lm", {
   model <- lm(mpg ~ hp * disp, data = mtcars)
   printed <- capture.output(supernova(model, type = 1))
-  expect_identical(printed[1:3], c(
+  expect_identical(printed[1:2], c(
     " Analysis of Variance Table (Type I SS)",
-    " Model: mpg ~ hp * disp",
-    " "
+    " Model: mpg ~ hp * disp"
   ))
 
   printed <- capture.output(supernova(model, type = 2))
@@ -107,7 +104,7 @@ test_that("nested repeated measures tables are beautifully formatted", {
   expect_identical(printed, c(
     " Analysis of Variance Table (Type III SS)",
     " Model: value ~ instructions + (1 | group)",
-    " ",
+    "",
     "                              SS df     MS     F    PRE     p",
     " ---------------------- | ------ -- ------ ----- ------ -----",
     " Between Subjects       |                                    ",
@@ -132,7 +129,7 @@ test_that("crossed repeated measures tables are beautifully formatted", {
   expect_identical(printed, c(
     " Analysis of Variance Table (Type III SS)",
     " Model: rating ~ sex * yearsmarried * children + (1 | couple)",
-    " ",
+    "",
     "                                   SS df     MS     F    PRE     p",
     " --------------------------- | ------ -- ------ ----- ------ -----",
     " Between Subjects            |                                    ",

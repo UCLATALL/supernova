@@ -16,26 +16,20 @@ supernova(fit, type = 3, verbose = TRUE)
 superanova(fit, type = 3, verbose = TRUE)
 }
 \arguments{
-\item{fit}{A model fit by \code{\link{lm}} or \code{\link[lme4]{lmer}}}
+\item{fit}{A model fit by \code{\link[=lm]{lm()}} or \code{\link[lme4:lmer]{lme4::lmer()}}}
 
-\item{type}{The type of sums of squares to calculate:
-\itemize{
-  \item \code{1}, \code{I}, and \code{sequential} compute Type I SS.
-  \item \code{2}, \code{II}, and \code{hierarchical} compute Type II SS.
-  \item \code{3}, \code{III}, and \code{orthogonal} compute Type III SS.
-}}
+\item{type}{The type of sums of squares to calculate (see \code{\link[=generate_models]{generate_models()}}). Defaults to the
+widely used Type \code{III} SS.}
 
-\item{verbose}{If \code{FALSE}, the \code{description} column is suppressed.
-Defaults to \code{TRUE}.}
+\item{verbose}{If \code{FALSE}, the \code{description} column is suppressed.}
 }
 \value{
-An object of the class \code{supernova}, which has a clean print
-  method for displaying the ANOVA table in the console as well as a  named
-  list:
-  \item{tbl}{The ANOVA table as a \code{\link{data.frame}}}
-  \item{fit}{The original \code{\link[stats]{lm}} or \code{\link[lme4]{lmer}}
-    object being tested}
-  \item{models}{Models created by \code{\link{generate_models}}}
+An object of the class \code{supernova}, which has a clean print method for displaying the
+ANOVA table in the console as well as a named list:
+\item{tbl}{The ANOVA table as a \code{\link{data.frame}}}
+\item{fit}{The original \code{\link[stats]{lm}} or \code{\link[lme4]{lmer}}
+object being tested}
+\item{models}{Models created by \code{\link{generate_models}}}
 }
 \description{
 An alternative set of summary statistics for ANOVA. Sums of squares, degrees
@@ -56,6 +50,6 @@ print(format_p, pcut = 8)
 }
 \references{
 Judd, C. M., McClelland, G. H., & Ryan, C. S. (2017). \emph{Data
-  Analysis: A Model Comparison Approach to Regression, ANOVA, and Beyond}
-  (3rd ed.). New York: Routledge. ISBN:879-1138819832
+Analysis: A Model Comparison Approach to Regression, ANOVA, and Beyond}
+(3rd ed.). New York: Routledge. ISBN:879-1138819832
 }

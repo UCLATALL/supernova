@@ -8,21 +8,15 @@
 #' values, and is intended to match the output used in Judd, McClelland, and
 #' Ryan (2017).
 #'
-#' \code{superanova()} is an alias of \code{supernova()}
+#' `superanova()` is an alias of `supernova()`
 #'
-#' @param fit A model fit by \code{\link{lm}} or \code{\link[lme4]{lmer}}
-#' @param type The type of sums of squares to calculate:
-#'   \itemize{
-#'     \item \code{1}, \code{I}, and \code{sequential} compute Type I SS.
-#'     \item \code{2}, \code{II}, and \code{hierarchical} compute Type II SS.
-#'     \item \code{3}, \code{III}, and \code{orthogonal} compute Type III SS.
-#'   }
-#' @param verbose If \code{FALSE}, the \code{description} column is suppressed.
-#'   Defaults to \code{TRUE}.
+#' @param fit A model fit by [`lm()`] or [`lme4::lmer()`]
+#' @param type The type of sums of squares to calculate (see [`generate_models()`]). Defaults to the
+#'   widely used Type `III` SS.
+#' @param verbose If `FALSE`, the `description` column is suppressed.
 #'
-#' @return An object of the class \code{supernova}, which has a clean print
-#'   method for displaying the ANOVA table in the console as well as a  named
-#'   list:
+#' @return An object of the class `supernova`, which has a clean print method for displaying the
+#'   ANOVA table in the console as well as a named list:
 #'   \item{tbl}{The ANOVA table as a \code{\link{data.frame}}}
 #'   \item{fit}{The original \code{\link[stats]{lm}} or \code{\link[lme4]{lmer}}
 #'     object being tested}
@@ -48,83 +42,171 @@ supernova <- function(fit, type = 3, verbose = TRUE) {
 #' @rdname supernova
 supernova.lm <- function(fit, type = 3, verbose = TRUE) {
   type <- resolve_type(type)
-  models <- suppressWarnings(generate_models(fit, type))
-  predictors <- variables(fit)$predictor
-  fit_null <- update(fit, . ~ NULL)
+  models <- generate_models(fit, type)
 
-  # Helpful Table Values
-  #
-  # n_pred:     the number of predictors in the full model
-  # n_rows:     the number of rows in the table
-  # model_row:  index for the model row with full model regression statistics
-  # partial_rows: indices for all rows that have an SS model/regression
-  # iv_rows:    indicees for all individual predictor rows
-  # error_row:  index for the error row
-  n_pred <- length(predictors)
-  n_rows <- 3 + {
-    if (n_pred < 2) 0 else n_pred
-  }
-  model_row <- 1
-  partial_rows <- 1:(n_rows - 2)
-  iv_rows <- 1 + seq_along(predictors)
-  error_row <- n_rows - 1
+  is_null_model <- length(models) == 0
+  fit_null <- if (is_null_model) fit else models[[1]]$simple
 
-  # TABLE SETUP
-  term <- c("Model", if (n_pred < 2) NULL else predictors, "Error", "Total")
-  desc <- pad(c("(error reduced)", "(from model)", "(empty model)"), term, 1)
-  tbl <- data.frame(term = term, description = desc, stringsAsFactors = FALSE)
-  tbl$SS <- pad(SSE(fit_null), term, 0)
-  tbl$df <- pad(fit_null$df.residual, term, 0)
-  tbl[c("MS", "F", "PRE", "p")] <- NA_real_
+  if (is_null_model) {
+    tbl <- vctrs::vec_c(
+      row_blank("Model", "(error reduced)"),
+      row_blank("Error", "(from model)"),
+      row_error("Total", "(empty model)", fit_null)
+    )
+  } else if (length(models) == 2) {
+    tbl <- vctrs::vec_c(
+      row_term("Model", "(error reduced)", models, "Full Model"),
+      row_error("Error", "(from model)", fit),
+      row_error("Total", "(empty model)", fit_null)
+    )
+  } else {
+    # create a row for each individual term
+    partial_models <- models[-1]
+    partial_rows <- purrr::map(names(partial_models), function(term_name) {
+      row_term(term_name, NA_character_, models, term_name)
+    })
 
-  # SS, DF for 1+ PREDICTORS
-  if (n_pred > 0) {
-    tbl$SS[model_row] <- SSE(fit_null) - SSE(fit)
-    tbl$df[model_row] <- length(fit$coefficients) - 1
-    tbl$SS[error_row] <- SSE(fit)
-    tbl$df[error_row] <- fit$df.residual
+    tbl <- vctrs::vec_c(
+      row_term("Model", "(error reduced)", models, "Full Model"),
+      partial_rows %>% purrr::reduce(vctrs::vec_c),
+      row_error("Error", "(from model)", fit),
+      row_error("Total", "(empty model)", fit_null)
+    )
   }
 
-  # SS, DF for 2+ PREDICTORS
-  if (n_pred > 1) {
-    tbl$SS[iv_rows] <- if (type != 3) {
-      purrr::map_dbl(models[2:length(models)], function(model) {
-        anova(model$simple, model$complex)$`Sum of Sq`[[2]]
-      })
-    } else if (type == 3) {
-      # Type 3 SS cannot be calculated using model comparison with anova()
-      # anova() will automatically include lower-order terms when an interaction
-      # is present, making it impossible to test for the effect of a term in the
-      # presence of its interaction. drop1() fits the model using the low-level
-      # matrix representation and bypasses this
-      drop1(fit, . ~ .)$`Sum of Sq`[iv_rows]
-    }
-    tbl$df[iv_rows] <- anova(fit)$Df[iv_rows - 1]
-  }
-
-  # MS, F, PRE, p for ALL MODELS
-  tbl$MS <- tbl$SS / tbl$df
-  tbl$F[partial_rows] <- tbl[partial_rows, "MS"] / tbl[error_row, "MS"]
-  tbl$PRE[partial_rows] <- tbl[partial_rows, "SS"] / (tbl[partial_rows, "SS"] + SSE(fit))
-  tbl$p[partial_rows] <- pf(
-    tbl$F[partial_rows],
-    tbl$df[partial_rows],
-    tbl$df[[error_row]],
-    lower.tail = FALSE
-  )
-
-  rl <- list(tbl = tbl, fit = fit, models = models)
+  rl <- list(tbl = as.data.frame(tbl), fit = fit, models = models)
   class(rl) <- "supernova"
   attr(rl, "type") <- strrep("I", type)
   attr(rl, "verbose") <- verbose
   return(rl)
 }
 
+#' A template for a row in an ANOVA table.
+#'
+#' @param term The name of the term the row describes.
+#' @param description An optional, short description of the term (pedagogical).
+#' @param ss The sum of squares for the term (defaults to blank)
+#' @param df The degrees of freedom the term uses (defaults to blank).
+#' @param ms The mean square for the term (defaults to ss / df)
+#' @param f Fisher's F statistic for the term in the model (defaults to blank).
+#' @param pre The proportional reduction of error the term provides (defaults to blank).
+#' @param p The p-value of the F (and PRE) for the term in the model (defaults to blank).
+#'
+#' @returns A tibble_row of length 1 with all of the variables initialized.
+#'
+#' @keywords internal
+row_blank <- function(term = NA_character_, description = NA_character_,
+                      ss = NA_real_, df = NA_integer_, ms = ss / df,
+                      f = NA_real_, pre = NA_real_, p = NA_real_) {
+  vctrs::vec_assert(term, character(), 1, arg = "term")
+  vctrs::vec_assert(description, character(), 1, arg = "description")
+  vctrs::vec_assert(ss, double(), 1, arg = "ss")
+  vctrs::vec_assert(df, integer(), 1, arg = "df")
+  vctrs::vec_assert(ms, double(), 1, arg = "ms")
+  vctrs::vec_assert(f, double(), 1, arg = "f")
+  vctrs::vec_assert(pre, double(), 1, arg = "pre")
+  vctrs::vec_assert(p, double(), 1, arg = "p")
+
+  tibble::tibble_row(
+    term = term, description = description,
+    SS = ss, df = df, MS = ms,
+    `F` = f, PRE = pre, p = p
+  )
+}
+
+#' Compute and construct an ANOVA table row for a term.
+#'
+#' "Term" is loosely defined here and is probably better understood as "everything in the table that
+#' is not an error row.
+#'
+#' @param term The name of the term the row describes.
+#' @param description An optional, short description of the term (pedagogical).
+#' @param complex The complex model containing the term.
+#' @param simple The simple model (without the term) to compare it to.
+#'
+#' @return A tibble row with the properties initialized. The code has been written to be as simple
+#'   and understanding as possible. Please take a look at the source and offer any suggestions for
+#'   improvement!
+#'
+#' @keywords internal
+row_term <- function(name, description, models, term) {
+  full_model <- models[[1]]$complex
+  complex <- models[[term]]$complex
+  simple <- models[[term]]$simple
+  is_full_model <- term == "Full Model"
+
+  # compute the SS model using the comparison models from generate_models()
+  ss <- sum((complex$fitted.values - simple$fitted.values)^2)
+  df <- if (is_full_model) full_model$rank - 1L else df_term(term, complex$model)
+  ms <- ss / df
+
+  # always use the more complete SS error from the full model, never the partials
+  ss_error <- sum(full_model$residuals^2)
+  df_error <- nrow(full_model$model) - length(full_model$coefficients)
+  ms_error <- ss_error / df_error
+
+  f <- ms / ms_error
+  pre <- ss / (ss + ss_error)
+  p <- pf(f, df, df_error, lower.tail = FALSE)
+
+  row_blank(name, description, ss, df, ms, f, pre, p)
+}
+
+#' Compute and construct an ANOVA table row for an error term
+#'
+#' @param term The name of the term the row describes (e.g. Error or Total).
+#' @param description An optional, short description of the term (pedagogical).
+#' @param complex The model we are describing error from.
+#'
+#' @return A tibble row with the properties initialized. The code has been written to be as simple
+#'   and understanding as possible. Please take a look at the source and offer any suggestions for
+#'   improvement!
+#'
+#' @keywords internal
+row_error <- function(name, description, fit) {
+  ss <- sum(fit$residuals^2)
+  df <- nrow(fit$model) - length(fit$coefficients)
+  ms <- ss / df
+
+  row_blank(name, description, ss, df, ms)
+}
+
+#' Get the degrees of freedom a variable or term uses
+#'
+#' A term here is a predictor from a linear model (e.g. "weight" or "weight:height") whereas a
+#' variable is a column in a data frame (e.g. "weight" or "height").
+#'
+#' @param term,variable The term or variable to get the degrees of freedom for. It should match one
+#'   of the column names in `data`, or, if it is an interactive term (e.g. "weight:height"), all
+#'   components must be column names in `data`.
+#' @param data The data the term is from.
+#'
+#' @return The degrees of freedom used by the term or variable in the model (as an integer).
+#'
+#' @rdname df
+#' @keywords internal
+df_term <- function(term, data) {
+  # if the term is interactive, this splits out the variables and multiplies them
+  term_frm <- paste0("~", term) %>% as.formula()
+  term_vars <- frm_vars(term_frm)
+  purrr::map_int(term_vars, ~ df_variable(.x, data)) %>%
+    prod() %>%
+    as.integer()
+}
+
+#' @rdname df
+#' @keywords internal
+df_variable <- function(variable, data) {
+  vec <- data[[variable]]
+  n_param <- if (is.numeric(vec)) 2L else nlevels(factor(vec))
+  n_param - 1L
+}
+
 
 #' @export
 #' @rdname supernova
 supernova.lmerMod <- function(fit, type = 3, verbose = FALSE) {
-  if (!tolower(type) %in% c(3, "iii", "orthogonal")) {
+  if (resolve_type(type) != 3) {
     stop("Currently only Type III tests can be computed for models with random
          effects (e.g. repeated measures models).")
   }
@@ -142,21 +224,23 @@ supernova.lmerMod <- function(fit, type = 3, verbose = FALSE) {
   vars_between_simple <- grep("[:]", vars_all[["between"]], value = TRUE, invert = TRUE)
 
   # get formula with no random terms
-  formula_complex <- formula(model_full)
-  formula_simple <- frm_build(frm_outcome(formula_complex), frm_fixed_terms(formula_complex))
+  formula_complex <- as.formula(model_full)
+  formula_simple <- frm_build(
+    frm_outcome(formula_complex),
+    frm_fixed_terms(formula_complex)
+  )
 
   # TOTAL
-  model_lm <- lm(formula_simple, data = model_data)
-  model_empty <- stats::update(model_lm, . ~ NULL)
-  total <- anova_tbl(model_empty)
-  total[["term"]] <- "Total"
+  fit_lm <- lm(formula_simple, data = model_data)
+  fit_null <- stats::update(fit_lm, . ~ NULL)
+  total_row <- row_error("Total", description = NA_character_, fit = fit_null)
 
   # DF
   df_total_between <- length(unique(model_data[[vars_all[["group"]]]])) - 1
-  df_total_within <- total[["df"]] - df_total_between
+  df_total_within <- total_row[["df"]] - df_total_between
 
   # TREATMENT ROWS
-  anova_lm <- anova_tbl(model_lm) %>% select("F", FALSE)
+  anova_lm <- anova_tbl(fit_lm) %>% select("F", FALSE)
   anova_lmer <- anova_tbl(model_full) %>% select(c("term", "F"))
   partial_rows <- merge_keep_order(anova_lmer, anova_lm, by = "term", order_by = "term")
 
@@ -174,9 +258,12 @@ supernova.lmerMod <- function(fit, type = 3, verbose = FALSE) {
       MS = partial_within[["MS"]][[1]] / partial_within[["F"]][[1]],
       stringsAsFactors = FALSE
     )
-    partial_within_error[["SS"]] <- partial_within_error[["MS"]] * partial_within_error[["df"]]
-    partial_within[["PRE"]] <- partial_within[["SS"]] / (partial_within_error[["SS"]] + partial_within[["SS"]])
-    partial_within[["p"]] <- pf(partial_within[["F"]], partial_within[["df"]], df_error_within, lower.tail = FALSE)
+    partial_within_error[["SS"]] <-
+      partial_within_error[["MS"]] * partial_within_error[["df"]]
+    partial_within[["PRE"]] <-
+      partial_within[["SS"]] / (partial_within_error[["SS"]] + partial_within[["SS"]])
+    partial_within[["p"]] <-
+      pf(partial_within[["F"]], partial_within[["df"]], df_error_within, lower.tail = FALSE)
     vctrs::vec_c(partial_within, partial_within_error)
   } else {
     # Multiple within vars, need to compute separate error terms
@@ -199,7 +286,9 @@ supernova.lmerMod <- function(fit, type = 3, verbose = FALSE) {
 
       part[, c("PRE", "p")] <- NA_real_
       part[["PRE"]][[1]] <- part[["SS"]][[1]] / sum(part[["SS"]])
-      part[["p"]][[1]] <- pf(part[["F"]][[1]], part[["df"]][[1]], part[["df"]][[2]], lower.tail = FALSE)
+      part[["p"]][[1]] <- pf(part[["F"]][[1]], part[["df"]][[1]], part[["df"]][[2]],
+        lower.tail = FALSE
+      )
       part[c("term", "SS", "df", "MS", "F", "PRE", "p")]
     })
   }
@@ -219,9 +308,12 @@ supernova.lmerMod <- function(fit, type = 3, verbose = FALSE) {
       MS = partial_between[["MS"]][[1]] / partial_between[["F"]][[1]],
       stringsAsFactors = FALSE
     )
-    partial_between_error[["SS"]] <- partial_between_error[["MS"]] * partial_between_error[["df"]]
-    partial_between[["PRE"]] <- partial_between[["SS"]] / (partial_between_error[["SS"]] + partial_between[["SS"]])
-    partial_between[["p"]] <- pf(partial_between[["F"]], partial_between[["df"]], df_error_between, lower.tail = FALSE)
+    partial_between_error[["SS"]] <-
+      partial_between_error[["MS"]] * partial_between_error[["df"]]
+    partial_between[["PRE"]] <-
+      partial_between[["SS"]] / (partial_between_error[["SS"]] + partial_between[["SS"]])
+    partial_between[["p"]] <-
+      pf(partial_between[["F"]], partial_between[["df"]], df_error_between, lower.tail = FALSE)
 
     vctrs::vec_c(partial_between, partial_between_error)
   }
@@ -236,7 +328,7 @@ supernova.lmerMod <- function(fit, type = 3, verbose = FALSE) {
     other_type <- setdiff(c("between", "within"), type)
     if (length(vars_all[[type]]) == 0) {
       # none of this type of variable, have to infer total
-      total[["SS"]] - sum(partials[[other_type]][["SS"]])
+      total_row[["SS"]] - sum(partials[[other_type]][["SS"]])
     } else {
       # total is the explicit sum of the partials
       sum(partials[[type]][["SS"]])
@@ -259,7 +351,7 @@ supernova.lmerMod <- function(fit, type = 3, verbose = FALSE) {
   tbl <- vctrs::vec_c(
     partials[["between"]], between_total,
     partials[["within"]], within_total,
-    total
+    total_row
   )[c("term", "SS", "df", "MS", "F", "PRE", "p")]
   tbl[["df"]] <- as.integer(tbl[["df"]])
   tbl[["MS"]] <- tbl[["SS"]] / tbl[["df"]]
@@ -348,9 +440,9 @@ print.supernova <- function(x, pcut = 4, ...) {
   if (!is_verbose && !is_lmer_model) tbl[[2]] <- NULL
 
   # printing
-  cat_line(" Analysis of Variance Table (Type ", attr(x, "type"), " SS)")
-  cat_line(" Model: ", paste(trimws(deparse(formula(x$fit))), collapse = " "))
-  cat_line(" ")
+  cli::cat_line(" Analysis of Variance Table (Type ", attr(x, "type"), " SS)")
+  cli::cat_line(" Model: ", paste(trimws(deparse(formula(x$fit))), collapse = " "))
+  cli::cat_line()
   print(tbl, row.names = FALSE)
 }
 
