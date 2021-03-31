@@ -73,6 +73,20 @@ insert_row <- function(df, insert_at, contents) {
 }
 
 
+#' Find and return the lower triangle of a matrix
+#'
+#' Same as [`lower.tri()`] except it returns the values from the matrix (rather than a positional
+#' matrix that lets you look up the values).
+#'
+#' @inheritParams base::lower.tri
+#'
+#' @return The values in the lower triangluar part of the matrix.
+#' @keywords internal
+lower_tri <- function(x, diag = FALSE) {
+  x[lower.tri(x, diag)]
+}
+
+
 #' Pad x to length of y
 #'
 #' @param x The vector to pad.
@@ -117,6 +131,20 @@ pad_len <- function(x, output_length, after = length(x), pad = NA) {
 #' @keywords internal
 paste_line <- function(...) {
   paste(..., sep = "\n")
+}
+
+
+#' Rename a column in a data frame
+#'
+#' @param data A data frame to modify.
+#' @param col_name A character vector of columns to rename.
+#' @param replacement A character vector of replacement column names.
+#'
+#' @return Returns the renamed data frame.
+#' @keywords internal
+rename <- function(data, col_name, replacement) {
+  names(data)[match(col_name, names(data))] <- replacement
+  data
 }
 
 

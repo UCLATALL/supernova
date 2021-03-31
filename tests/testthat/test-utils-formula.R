@@ -22,13 +22,32 @@ test_that("frm_expand expands a formula with implicit terms into an explicit for
   expect_equal(frm_expand(y ~ a * b), y ~ a + b + a:b)
 })
 
-test_that("frm_remove removes the given term from the formula", {
+
+test_that("frm_remove_term removes the given term from the formula", {
   expect_equal(frm_remove_term(y ~ a * b, "a"), y ~ b + a:b)
 })
 
-test_that("frm_remove returns empty model if all right-hand terms are deleted", {
+test_that("frm_remove_term returns empty model if all right-hand terms are deleted", {
   expect_equal(frm_remove_term(y ~ a, "a"), y ~ NULL)
 })
+
+test_that("frm_remove_var is okay with terms that already don't exist", {
+  expect_equal(frm_remove_var(y ~ a, "b"), y ~ a)
+})
+
+test_that("frm_remove_var removes every term on the right-hand side containing the variable", {
+  expect_equal(frm_remove_var(y ~ a + a:b + c, "a"), y ~ c)
+})
+
+test_that("frm_remove_var properly handles name overlap", {
+  expect_equal(frm_remove_var(y ~ a + aa, "a"), y ~ aa)
+})
+
+test_that("frm_remove_ functions return the empty model when all right-hand terms are deleted", {
+  expect_equal(frm_remove_term(y ~ a, "a"), y ~ NULL)
+  expect_equal(frm_remove_var(y ~ a, "a"), y ~ NULL)
+})
+
 
 test_that("frm_outcome extracts the term from the left-hand side of the formula", {
   expect_equal(frm_outcome(y ~ a * b), "y")
