@@ -7,12 +7,10 @@ NULL
 
 
 #' @keywords internal
-new_number <- function(
-  x = numeric(),
-  digits = 3L,
-  scientific = FALSE,
-  leading_zero = TRUE
-) {
+new_number <- function(x = numeric(),
+                       digits = 3L,
+                       scientific = FALSE,
+                       leading_zero = TRUE) {
   vctrs::vec_assert(x, numeric())
   vctrs::vec_assert(digits, integer(), 1)
   vctrs::vec_assert(scientific, logical(), 1)
@@ -178,8 +176,7 @@ vec_arith.supernova_number.supernova_number <- function(op, x, y, ...) {
 #' @method vec_arith.supernova_number MISSING
 #' @export
 vec_arith.supernova_number.MISSING <- function(op, x, y, ...) {
-  switch(
-    op,
+  switch(op,
     `-` = x * -1,
     `+` = x,
     vctrs::stop_incompatible_op(op, x, y)

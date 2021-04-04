@@ -25,8 +25,7 @@
 pairwise_comparisons <- function(fit, correction = "Tukey", term = NULL, alpha = .05) {
   rlang::arg_match(correction, c("none", "Bonferroni", "Tukey"))
 
-  switch(
-    correction,
+  switch(correction,
     Tukey = pairwise_tukey(fit, term = term, alpha = alpha),
     none = pairwise_t(fit, term = term, alpha = alpha),
     Bonferroni = pairwise_bonferroni(fit, term = term, alpha = alpha)
@@ -88,7 +87,7 @@ pairwise_t <- function(fit, term = NULL, alpha = .05, correction = "none") {
       }
     })
 
-    fwer <- 1 - (1 - alpha / corr_val) ^ length(rows)
+    fwer <- 1 - (1 - alpha / corr_val)^length(rows)
     purrr::reduce(rows, vctrs::vec_c) %>%
       new_pairwise_comparisons_tbl(term, fit, fwer, correction)
   })
@@ -176,7 +175,8 @@ new_pairwise_comparisons_tbl <- function(tbl, term, fit, fwer, correction) {
   n_levels <- length(unique(c(tbl$group_1, tbl$group_2)))
 
   tibble::new_tibble(
-    tbl, nrow = nrow(tbl), class = class_name,
+    tbl,
+    nrow = nrow(tbl), class = class_name,
     fit = fit, term = term, correction = correction,
     n_levels = n_levels, alpha = fwer
   )
@@ -261,10 +261,12 @@ select_terms <- function(fit, term = NULL) {
   if (is.null(term)) {
     terms
   } else {
-    if (!(term %in% terms)) rlang::abort(sprintf(
-      "\n\nYou are trying to select `%s` which is not a valid term.\nValid terms: %s\n",
-      term, paste(terms, collapse = ", ")
-    ))
+    if (!(term %in% terms)) {
+      rlang::abort(sprintf(
+        "\n\nYou are trying to select `%s` which is not a valid term.\nValid terms: %s\n",
+        term, paste(terms, collapse = ", ")
+      ))
+    }
     term
   }
 }
@@ -279,9 +281,11 @@ select_terms <- function(fit, term = NULL) {
 #' @return A tibble with two columns, group 1 and group 2, where each row is a unique pair.
 #' @keywords internal
 level_pairs <- function(levels) {
-  create_row <- function(level) purrr::map(levels, ~list(level, .x)) %>%
-    vctrs::vec_rbind() %>%
-    suppressMessages()
+  create_row <- function(level) {
+    purrr::map(levels, ~ list(level, .x)) %>%
+      vctrs::vec_rbind() %>%
+      suppressMessages()
+  }
 
   purrr::map(levels, create_row) %>%
     purrr::reduce(vctrs::vec_c) %>%
@@ -297,8 +301,7 @@ print.pairwise_comparisons <- function(x, ..., n_per_table = Inf) {
   fit <- attr(x, "fit")
   dropped_vars <- setdiff(frm_vars(fit), find_categorical_vars(fit))
 
-  title <- switch(
-    attr(x, "correction"),
+  title <- switch(attr(x, "correction"),
     Tukey = "Tukey's Honestly Significant Differences",
     none = "Pairwise t-tests",
     bonferroni = "Pairwise t-tests with Bonferroni correction"
@@ -325,4 +328,42 @@ tbl_sum.pairwise_comparisons_tbl <- function(x, setup, ...) {
   cli::cli_text("{nrow(x)} comparison{?s} of ", attr(x, "n_levels"), " levels")
   cli::cli_text("Family-wise error-rate: ", round(attr(x, "alpha"), 3))
   cli::cat_line()
+}
+
+
+# Plotting ------------------------------------------------------------------------------------
+
+#' @export
+#' @importFrom ggplot2 autoplot
+#' @importFrom ggplot2 %+%
+#' @importFrom rlang .data
+autoplot.pairwise_comparisons <- function(x, ...) {
+  x <- x[!(names(x) %in% c("p_adj", "p_val"))]
+  p <- purrr::imap(x, function(tbl, term) {
+    tbl$term <- term
+    tbl$pair <- paste(tbl$group_1, tbl$group_2, sep = " - ")
+    conf <- format((1 - attr(tbl, "alpha")) * 100, digits = 3) %>% paste0("%")
+    ggplot2::ggplot(tbl) %+%
+      ggplot2::geom_point(ggplot2::aes(.data$diff, .data$pair)) %+%
+      ggplot2::geom_errorbarh(ggplot2::aes(
+        y = .data$pair,
+        xmin = .data$lower,
+        xmax = .data$upper
+      )) %+%
+      ggplot2::geom_vline(ggplot2::aes(xintercept = 0), linetype = "dashed") %+%
+      ggplot2::xlab(paste("Mean differences (with", conf, "conf. int.)")) %+%
+      ggplot2::ylab(NULL)
+  })
+}
+
+
+#' @export
+#' @importFrom ggplot2 scale_type
+scale_type.supernova_number <- function(x) "continuous"
+
+
+#' @export
+#' @importFrom ggplot2 autoplot
+plot.pairwise_comparisons <- function(x, ...) {
+  purrr::walk(autoplot(x, ...), print)
 }

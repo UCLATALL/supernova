@@ -38,6 +38,7 @@ Suggests:
     testthat (>= 2.1.0),
     tidyr
 Imports:
+    ggplot2,
     tibble,
     cli,
     magrittr,
