@@ -4,7 +4,7 @@
 \alias{new_pairwise_comparisons_tbl}
 \title{Constructor for pairwise comparison tables}
 \usage{
-new_pairwise_comparisons_tbl(tbl, term, fit, fwer, correction)
+new_pairwise_comparisons_tbl(tbl, term, fit, fwer, alpha, correction)
 }
 \arguments{
 \item{tbl}{A \code{\link{tibble}}-like object.}
@@ -14,6 +14,8 @@ new_pairwise_comparisons_tbl(tbl, term, fit, fwer, correction)
 \item{fit}{The linear model the term comes from.}
 
 \item{fwer}{The family-wise error-rate for the group of tests in the table.}
+
+\item{alpha}{The alpha to use when computing the family-wise error-rate.}
 
 \item{correction}{The type of alpha correction the tests in the table use.}
 }

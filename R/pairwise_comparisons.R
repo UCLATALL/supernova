@@ -89,7 +89,7 @@ pairwise_t <- function(fit, term = NULL, alpha = .05, correction = "none") {
 
     fwer <- 1 - (1 - alpha / corr_val)^length(rows)
     purrr::reduce(rows, vctrs::vec_c) %>%
-      new_pairwise_comparisons_tbl(term, fit, fwer, correction)
+      new_pairwise_comparisons_tbl(term, fit, fwer, alpha, correction)
   })
 
   structure(tests, class = "pairwise_comparisons", fit = fit, correction = correction)
@@ -152,7 +152,7 @@ pairwise_tukey <- function(fit, term = NULL, alpha = .05) {
     })
 
     purrr::reduce(rows, vctrs::vec_c) %>%
-      new_pairwise_comparisons_tbl(term, fit, alpha, correction)
+      new_pairwise_comparisons_tbl(term, fit, alpha, alpha, correction)
   })
 
   structure(tests, class = "pairwise_comparisons", fit = fit, correction = correction)
@@ -165,12 +165,13 @@ pairwise_tukey <- function(fit, term = NULL, alpha = .05) {
 #' @param term The term the table describes.
 #' @param fit The linear model the term comes from.
 #' @param fwer The family-wise error-rate for the group of tests in the table.
+#' @param alpha The alpha to use when computing the family-wise error-rate.
 #' @param correction The type of alpha correction the tests in the table use.
 #'
 #' @return A tibble subclassed as `pairwise_comparison_tbl`. These have custom printers and retain
 #'   their attributes when subsetted.
 #' @keywords internal
-new_pairwise_comparisons_tbl <- function(tbl, term, fit, fwer, correction) {
+new_pairwise_comparisons_tbl <- function(tbl, term, fit, fwer, alpha, correction) {
   class_name <- "pairwise_comparisons_tbl"
   n_levels <- length(unique(c(tbl$group_1, tbl$group_2)))
 
@@ -178,7 +179,7 @@ new_pairwise_comparisons_tbl <- function(tbl, term, fit, fwer, correction) {
     tbl,
     nrow = nrow(tbl), class = class_name,
     fit = fit, term = term, correction = correction,
-    n_levels = n_levels, alpha = fwer
+    n_levels = n_levels, alpha = alpha, fwer = fwer
   )
 }
 
@@ -326,7 +327,7 @@ print.pairwise_comparisons <- function(x, ..., n_per_table = Inf) {
 tbl_sum.pairwise_comparisons_tbl <- function(x, setup, ...) {
   cli::cli_h3(cli::style_bold(attr(x, "term")))
   cli::cli_text("{nrow(x)} comparison{?s} of ", attr(x, "n_levels"), " levels")
-  cli::cli_text("Family-wise error-rate: ", round(attr(x, "alpha"), 3))
+  cli::cli_text("Family-wise error-rate: ", round(attr(x, "fwer"), 3))
   cli::cat_line()
 }
 
@@ -342,7 +343,15 @@ autoplot.pairwise_comparisons <- function(x, ...) {
   p <- purrr::imap(x, function(tbl, term) {
     tbl$term <- term
     tbl$pair <- paste(tbl$group_1, tbl$group_2, sep = " - ")
-    conf <- format((1 - attr(tbl, "alpha")) * 100, digits = 3) %>% paste0("%")
+
+    x_axis_label <- if (attr(tbl, "correction") == "none") {
+      conf <- format((1 - attr(tbl, "alpha")) * 100, digits = 3) %>% paste0("%")
+      paste("Mean differences (with", conf, "uncorrected conf. int.)")
+    } else {
+      conf <- format((1 - attr(tbl, "fwer")) * 100, digits = 3) %>% paste0("%")
+      paste("Mean differences (with", conf, "conf. int.)")
+    }
+
     ggplot2::ggplot(tbl) %+%
       ggplot2::geom_point(ggplot2::aes(.data$diff, .data$pair)) %+%
       ggplot2::geom_errorbarh(ggplot2::aes(
@@ -351,9 +360,10 @@ autoplot.pairwise_comparisons <- function(x, ...) {
         xmax = .data$upper
       )) %+%
       ggplot2::geom_vline(ggplot2::aes(xintercept = 0), linetype = "dashed") %+%
-      ggplot2::xlab(paste("Mean differences (with", conf, "conf. int.)")) %+%
+      ggplot2::xlab(x_axis_label) %+%
       ggplot2::ylab(NULL)
   })
+  invisible(p)
 }
 
 

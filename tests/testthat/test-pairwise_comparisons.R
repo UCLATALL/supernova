@@ -28,7 +28,7 @@ test_that("pairwise_tukey outputs correct values for diff, lower, upper, and p",
   expected <- as.data.frame(TukeyHSD(aov(fit))[[1]])
   names(expected) <- names(actual)
 
-  ignorable <- c("row.names", "class", "fit", "term", "correction", "n_levels", "alpha")
+  ignorable <- c("row.names", "class", "fit", "term", "correction", "n_levels", "alpha", "fwer")
   expect_equal(actual, expected, ignore_attr = ignorable)
 })
 
@@ -64,4 +64,25 @@ test_that("pairwise_bonferroni outputs correct corrected p values for t tests wi
     as.double()
 
   expect_equal(actual, expected)
+})
+
+test_that("each type of comparisons object plots well", {
+  fit <- lm(Thumb ~ RaceEthnic, supernova::Fingers)
+
+  tukey <- ggplot2::autoplot(pairwise_tukey(fit))
+  vdiffr::expect_doppelganger("Tukey, one variable", tukey$RaceEthnic)
+
+  t <- ggplot2::autoplot(pairwise_t(fit))
+  vdiffr::expect_doppelganger("t-test, one variable", t$RaceEthnic)
+
+  bonf <- ggplot2::autoplot(pairwise_bonferroni(fit))
+  vdiffr::expect_doppelganger("Bonferroni, one variable", bonf$RaceEthnic)
+})
+
+test_that("a separate plot is created for each term in the model", {
+  fit <- lm(Thumb ~ Sex * RaceEthnic, supernova::Fingers)
+  plots <- ggplot2::autoplot(pairwise_tukey(fit))
+  vdiffr::expect_doppelganger("Multiple plots, Sex", plots$Sex)
+  vdiffr::expect_doppelganger("Multiple plots, RaceEthnic", plots$RaceEthnic)
+  vdiffr::expect_doppelganger("Multiple plots, Sex:RaceEthnic", plots$`Sex:RaceEthnic`)
 })

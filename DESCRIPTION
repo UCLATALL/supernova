@@ -36,6 +36,7 @@ Suggests:
     lintr,
     lme4,
     testthat (>= 2.1.0),
+    vdiffr,
     tidyr
 Imports:
     ggplot2,
