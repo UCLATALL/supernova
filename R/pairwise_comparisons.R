@@ -74,7 +74,7 @@ pairwise_t <- function(fit, term = NULL, alpha = .05, correction = "none") {
       tbl <- data.frame(
         group_1 = pair_1, group_2 = pair_2,
         diff = number(diff), pooled_se = number(pooled_se),
-        statistic = number(statistic),
+        t = number(statistic),
         lower = number(diff - margin), upper = number(diff + margin),
         p_val = number(p, 4, leading_zero = FALSE)
       )
@@ -145,7 +145,7 @@ pairwise_tukey <- function(fit, term = NULL, alpha = .05) {
       data.frame(
         group_1 = pair_1, group_2 = pair_2,
         diff = number(diff), pooled_se = number(pooled_se),
-        statistic = number(statistic),
+        q = number(statistic),
         lower = number(diff - margin), upper = number(diff + margin),
         p_adj = number(p, 4, leading_zero = FALSE)
       )
