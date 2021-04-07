@@ -20,9 +20,9 @@
 #'   only, as splitting on a continuous variable is generally uninformative), the table describes
 #'   all of the pairwise-comparisons possible.
 #'
-#' @rdname pairwise_comparisons
+#' @rdname pairwise
 #' @export
-pairwise_comparisons <- function(fit, correction = "Tukey", term = NULL, alpha = .05) {
+pairwise <- function(fit, correction = "Tukey", term = NULL, alpha = .05) {
   rlang::arg_match(correction, c("none", "Bonferroni", "Tukey"))
 
   switch(correction,
@@ -33,7 +33,7 @@ pairwise_comparisons <- function(fit, correction = "Tukey", term = NULL, alpha =
 }
 
 
-#' @rdname pairwise_comparisons
+#' @rdname pairwise
 #' @export
 pairwise_t <- function(fit, term = NULL, alpha = .05, correction = "none") {
   rlang::arg_match(correction, c("none", "bonferroni"))
@@ -89,21 +89,21 @@ pairwise_t <- function(fit, term = NULL, alpha = .05, correction = "none") {
 
     fwer <- 1 - (1 - alpha / corr_val)^length(rows)
     purrr::reduce(rows, vctrs::vec_c) %>%
-      new_pairwise_comparisons_tbl(term, fit, fwer, alpha, correction)
+      new_pairwise_tbl(term, fit, fwer, alpha, correction)
   })
 
-  structure(tests, class = "pairwise_comparisons", fit = fit, correction = correction)
+  structure(tests, class = "pairwise", fit = fit, correction = correction)
 }
 
 
-#' @rdname pairwise_comparisons
+#' @rdname pairwise
 #' @export
 pairwise_bonferroni <- function(fit, term = NULL, alpha = .05) {
   pairwise_t(fit, term, alpha, correction = "bonferroni")
 }
 
 
-#' @rdname pairwise_comparisons
+#' @rdname pairwise
 #' @export
 pairwise_tukey <- function(fit, term = NULL, alpha = .05) {
   correction <- "Tukey"
@@ -152,10 +152,10 @@ pairwise_tukey <- function(fit, term = NULL, alpha = .05) {
     })
 
     purrr::reduce(rows, vctrs::vec_c) %>%
-      new_pairwise_comparisons_tbl(term, fit, alpha, alpha, correction)
+      new_pairwise_tbl(term, fit, alpha, alpha, correction)
   })
 
-  structure(tests, class = "pairwise_comparisons", fit = fit, correction = correction)
+  structure(tests, class = "pairwise", fit = fit, correction = correction)
 }
 
 
@@ -171,8 +171,8 @@ pairwise_tukey <- function(fit, term = NULL, alpha = .05) {
 #' @return A tibble subclassed as `pairwise_comparison_tbl`. These have custom printers and retain
 #'   their attributes when subsetted.
 #' @keywords internal
-new_pairwise_comparisons_tbl <- function(tbl, term, fit, fwer, alpha, correction) {
-  class_name <- "pairwise_comparisons_tbl"
+new_pairwise_tbl <- function(tbl, term, fit, fwer, alpha, correction) {
+  class_name <- "pairwise_tbl"
   n_levels <- length(unique(c(tbl$group_1, tbl$group_2)))
 
   tibble::new_tibble(
@@ -298,7 +298,7 @@ level_pairs <- function(levels) {
 # Formatting ----------------------------------------------------------------------------------
 
 #' @export
-print.pairwise_comparisons <- function(x, ..., n_per_table = Inf) {
+print.pairwise <- function(x, ..., n_per_table = Inf) {
   fit <- attr(x, "fit")
   dropped_vars <- setdiff(frm_vars(fit), find_categorical_vars(fit))
 
@@ -324,7 +324,7 @@ print.pairwise_comparisons <- function(x, ..., n_per_table = Inf) {
 
 #' @export
 #' @importFrom pillar tbl_sum
-tbl_sum.pairwise_comparisons_tbl <- function(x, setup, ...) {
+tbl_sum.pairwise_tbl <- function(x, setup, ...) {
   cli::cli_h3(cli::style_bold(attr(x, "term")))
   cli::cli_text("{nrow(x)} comparison{?s} of ", attr(x, "n_levels"), " levels")
   cli::cli_text("Family-wise error-rate: ", round(attr(x, "fwer"), 3))
@@ -338,7 +338,7 @@ tbl_sum.pairwise_comparisons_tbl <- function(x, setup, ...) {
 #' @importFrom ggplot2 autoplot
 #' @importFrom ggplot2 %+%
 #' @importFrom rlang .data
-autoplot.pairwise_comparisons <- function(x, ...) {
+autoplot.pairwise <- function(x, ...) {
   x <- x[!(names(x) %in% c("p_adj", "p_val"))]
   p <- purrr::imap(x, function(tbl, term) {
     tbl$term <- term
@@ -374,6 +374,6 @@ scale_type.supernova_number <- function(x) "continuous"
 
 #' @export
 #' @importFrom ggplot2 autoplot
-plot.pairwise_comparisons <- function(x, ...) {
+plot.pairwise <- function(x, ...) {
   purrr::walk(autoplot(x, ...), print)
 }

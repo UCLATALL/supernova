@@ -1,23 +1,23 @@
 test_that("not specifying which term to break down will break down all categorical terms", {
   fit <- lm(Thumb ~ Sex * RaceEthnic, supernova::Fingers)
   cat_terms <- frm_terms(fit)
-  expect_named(pairwise_comparisons(fit, "Tukey"), cat_terms)
-  expect_named(pairwise_comparisons(fit, "none"), cat_terms)
+  expect_named(pairwise(fit, "Tukey"), cat_terms)
+  expect_named(pairwise(fit, "none"), cat_terms)
 })
 
 test_that("you can specify the specific term you want to analyze", {
   fit <- lm(Thumb ~ Sex * RaceEthnic, supernova::Fingers)
-  expect_named(pairwise_comparisons(fit, term = "Sex:RaceEthnic"), "Sex:RaceEthnic")
+  expect_named(pairwise(fit, term = "Sex:RaceEthnic"), "Sex:RaceEthnic")
 })
 
 test_that("there is an informative error if you try to select a non-existent term", {
   fit <- lm(Thumb ~ Sex * RaceEthnic, supernova::Fingers)
-  expect_snapshot_error(pairwise_comparisons(fit, "does-not-exist"))
+  expect_snapshot_error(pairwise(fit, "does-not-exist"))
 })
 
-test_that("pairwise_comparisons wraps pairwise_tukey", {
+test_that("pairwise wraps pairwise_tukey", {
   fit <- lm(Thumb ~ RaceEthnic, supernova::Fingers)
-  expect_equal(pairwise_comparisons(fit, "Tukey"), pairwise_tukey(fit))
+  expect_equal(pairwise(fit, "Tukey"), pairwise_tukey(fit))
 })
 
 test_that("pairwise_tukey outputs correct values for diff, lower, upper, and p", {
