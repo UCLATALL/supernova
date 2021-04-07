@@ -36,8 +36,10 @@ Suggests:
     lintr,
     lme4,
     testthat (>= 2.1.0),
+    vdiffr,
     tidyr
 Imports:
+    ggplot2,
     tibble,
     cli,
     magrittr,
@@ -45,7 +47,9 @@ Imports:
     rlang,
     stringr,
     vctrs,
-    withr
+    withr,
+    pillar,
+    methods
 RoxygenNote: 7.1.1
 URL: https://github.com/UCLATALL/supernova
 BugReports: https://github.com/UCLATALL/supernova/issues

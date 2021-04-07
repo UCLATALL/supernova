@@ -2,20 +2,23 @@
 % Please edit documentation in R/utils-formula.R
 \name{frm_remove_term}
 \alias{frm_remove_term}
-\title{Remove a term from the right-hand side of a formula}
+\alias{frm_remove_var}
+\title{Remove a term or variable from the right-hand side of a formula}
 \usage{
 frm_remove_term(frm, term)
+
+frm_remove_var(frm, var)
 }
 \arguments{
 \item{frm}{The formula to modify.}
 
-\item{term}{The term to drop.}
+\item{term, var}{The term or variable to drop.}
 }
 \value{
 The formula with the term removed.
 }
 \description{
-Remove a term from the right-hand side of a formula
+Remove a term or variable from the right-hand side of a formula
 }
 \seealso{
 formula_building formula_expansion formula_extraction

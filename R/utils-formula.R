@@ -5,7 +5,7 @@
 #' @return A character string of the formula.
 #' @keywords internal
 frm_string <- function(frm) {
-  deparse(as.formula(frm))
+  rlang::expr_deparse(as.formula(frm))
 }
 
 
@@ -42,13 +42,14 @@ frm_expand <- function(frm) {
 }
 
 
-#' Remove a term from the right-hand side of a formula
+#' Remove a term or variable from the right-hand side of a formula
 #'
 #' @param frm The formula to modify.
-#' @param term The term to drop.
+#' @param term,var The term or variable to drop.
 #'
 #' @return The formula with the term removed.
 #'
+#' @rdname frm_remove
 #' @keywords internal
 #' @seealso formula_building formula_expansion formula_extraction
 frm_remove_term <- function(frm, term) {
@@ -57,6 +58,26 @@ frm_remove_term <- function(frm, term) {
     rhs <- "NULL"
   }
   frm_build(frm_outcome(frm), rhs, environment(frm))
+}
+
+
+#' @rdname frm_remove
+#' @keywords internal
+frm_remove_var <- function(frm, var) {
+  frm <- as.formula(frm)
+
+  # find terms that var is in
+  factors <- attr(terms(frm), "factors")
+  if (var %in% rownames(factors)) {
+    var_in_term <- factors[var, ] > 0
+    to_remove <- colnames(factors)[var_in_term]
+  } else {
+    return(frm)
+  }
+
+  # construct new formula
+  remaining_terms <- setdiff(frm_terms(frm), to_remove)
+  frm_build(frm_outcome(frm), remaining_terms, environment(frm))
 }
 
 
@@ -89,7 +110,7 @@ frm_outcome <- function(frm) {
 #' @keywords internal
 frm_terms <- function(frm) {
   frm <- as.formula(frm)
-  labels(stats::terms.formula(frm))
+  labels(stats::terms(frm))
 }
 
 
@@ -97,7 +118,9 @@ frm_terms <- function(frm) {
 #' @keywords internal
 frm_interaction_terms <- function(frm) {
   frm <- as.formula(frm)
-  stringr::str_subset(frm_fixed_terms(frm), stringr::fixed(":"))
+  factors <- attr(stats::terms(frm), "factors")
+  multi_var_terms <- colSums(factors) > 1
+  colnames(factors)[multi_var_terms]
 }
 
 
@@ -113,7 +136,13 @@ frm_fixed_terms <- function(frm) {
 #' @keywords internal
 frm_random_terms <- function(frm) {
   frm <- as.formula(frm)
-  stringr::str_subset(frm_terms(frm), stringr::fixed("|"))
+
+  # there MIGHT be a random term, or it could just be a weird variable name like `a|b`
+  # only require lme4 if there is a possibility of a random term
+  possible_bars <- stringr::str_detect(frm_terms(frm), stringr::fixed("|"))
+  random_terms <- if (any(possible_bars)) lme4::findbars(frm) else list()
+
+  purrr::map_chr(random_terms, rlang::expr_deparse)
 }
 
 
@@ -121,7 +150,7 @@ frm_random_terms <- function(frm) {
 #' @keywords internal
 frm_vars <- function(frm) {
   frm <- as.formula(frm)
-  c(frm_fixed_vars(frm), frm_random_vars(frm))
+  all.vars(rlang::f_rhs(frm))
 }
 
 
@@ -129,7 +158,15 @@ frm_vars <- function(frm) {
 #' @keywords internal
 frm_random_vars <- function(frm) {
   frm <- as.formula(frm)
-  stringr::str_remove(frm_random_terms(frm), stringr::fixed("1 | "))
+
+  # there MIGHT be a random term, or it could just be a weird variable name like `a|b`
+  # only require lme4 if there is a possibility of a random term
+  possible_bars <- stringr::str_detect(frm_terms(frm), stringr::fixed("|"))
+  random_terms <- if (any(possible_bars)) lme4::findbars(frm) else list()
+
+  purrr::map(random_terms, all.vars) %>%
+    purrr::flatten_chr() %>%
+    unique()
 }
 
 
@@ -137,8 +174,11 @@ frm_random_vars <- function(frm) {
 #' @keywords internal
 frm_fixed_vars <- function(frm) {
   frm <- as.formula(frm)
-  frm_fixed_terms(frm) %>%
-    stringr::str_split(":") %>%
-    purrr::flatten_chr() %>%
-    unique()
+
+  # there MIGHT be a random term, or it could just be a weird variable name like `a|b`
+  # only require lme4 if there is a possibility of a random term
+  possible_bars <- stringr::str_detect(frm_terms(frm), stringr::fixed("|"))
+  frm <- if (any(possible_bars)) lme4::nobars(frm) else frm
+
+  frm_vars(frm)
 }

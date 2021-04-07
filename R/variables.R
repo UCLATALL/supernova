@@ -51,15 +51,15 @@ variables.lmerMod <- function(object) {
   var_list <- variables.formula(frm) # initialize output list
 
   # terms = things specified in the model like (1 | group) and mpg:hp
-  # vars = variables that the model uses  like group, mpg, and hp
   fixed_terms <- frm_fixed_terms(frm)
   fixed_vars <- frm_fixed_vars(frm)
-  random_vars <- frm_random_vars(frm)
+  random_terms <- frm_random_terms(frm)
 
   # currently we only support a single grouping variable, logically it must be the random variable
   # with the shortest name --- all other valid random variables will be nested in some way and have
   # (1 | a:b) syntax, where b is the group variable
-  group_var <- random_vars[which.min(nchar(random_vars))]
+  group_var <- random_terms[which.min(nchar(random_terms))] %>%
+    stringr::str_remove("^1 [|] ")
 
   # need to check the data and number of groups to determine within and between below
   data <- object@frame

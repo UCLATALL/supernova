@@ -93,7 +93,7 @@ generate_models.formula <- function(model, type = 3) {
     build_formulae_type_3(frm)
   )
 
-  if (!purrr::is_empty(models)) {
+  if (!vctrs::vec_is_empty(models)) {
     # prepend full model comparison
     models <- append(models, build_formulae_full_model(frm), after = 0L)
   }
@@ -269,7 +269,7 @@ print.comparison_models <- function(x, ...) {
   full_model <- attr(x, "model")
   x <- generate_models.formula(as.formula(full_model))
 
-  if (purrr::is_empty(x)) {
+  if (vctrs::vec_is_empty(x)) {
     cli::cli_alert("No comparisons for empty model.")
   } else {
     cli::cli_h1("Comparison Models for Type {attr(x, 'type')} SS")
