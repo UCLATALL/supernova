@@ -344,12 +344,13 @@ autoplot.pairwise <- function(x, ...) {
     tbl$term <- term
     tbl$pair <- paste(tbl$group_1, tbl$group_2, sep = " - ")
 
-    x_axis_label <- if (attr(tbl, "correction") == "none") {
+    correction <- attr(tbl, "correction")
+    x_axis_label <- if (correction == "none") {
       conf <- format((1 - attr(tbl, "alpha")) * 100, digits = 3) %>% paste0("%")
-      paste("Mean differences (with", conf, "uncorrected conf. int.)")
+      paste(conf, "CI (per test; uncorrected)")
     } else {
       conf <- format((1 - attr(tbl, "fwer")) * 100, digits = 3) %>% paste0("%")
-      paste("Mean differences (with", conf, "conf. int.)")
+      paste(conf, "CI with", stringr::str_to_title(correction), "correction")
     }
 
     ggplot2::ggplot(tbl) %+%

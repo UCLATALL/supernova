@@ -306,6 +306,6 @@
 <g clip-path='url(#cpMC4wMHw3MjAuMDB8NTc2LjAwfDAuMDA=)'><text x='425.80' y='556.11' style='font-size: 8.80px; fill: #4D4D4D; font-family: Liberation Sans;' textLength='4.89px' lengthAdjust='spacingAndGlyphs'>0</text></g>
 <g clip-path='url(#cpMC4wMHw3MjAuMDB8NTc2LjAwfDAuMDA=)'><text x='525.57' y='556.11' style='font-size: 8.80px; fill: #4D4D4D; font-family: Liberation Sans;' textLength='9.78px' lengthAdjust='spacingAndGlyphs'>10</text></g>
 <g clip-path='url(#cpMC4wMHw3MjAuMDB8NTc2LjAwfDAuMDA=)'><text x='627.79' y='556.11' style='font-size: 8.80px; fill: #4D4D4D; font-family: Liberation Sans;' textLength='9.78px' lengthAdjust='spacingAndGlyphs'>20</text></g>
-<g clip-path='url(#cpMC4wMHw3MjAuMDB8NTc2LjAwfDAuMDA=)'><text x='366.04' y='568.24' style='font-size: 11.00px; font-family: Liberation Sans;' textLength='183.95px' lengthAdjust='spacingAndGlyphs'>Mean differences (with 95% conf. int.)</text></g>
+<g clip-path='url(#cpMC4wMHw3MjAuMDB8NTc2LjAwfDAuMDA=)'><text x='386.75' y='568.24' style='font-size: 11.00px; font-family: Liberation Sans;' textLength='142.52px' lengthAdjust='spacingAndGlyphs'>95% CI with Tukey correction</text></g>
 <g clip-path='url(#cpMC4wMHw3MjAuMDB8NTc2LjAwfDAuMDA=)'><text x='201.50' y='14.56' style='font-size: 13.20px; font-family: Liberation Sans;' textLength='178.05px' lengthAdjust='spacingAndGlyphs'>Multiple plots, Sex:RaceEthnic</text></g>
 </svg>
