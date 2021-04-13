@@ -2,11 +2,9 @@
 
     Code
       supernova(lm(mpg ~ hp, df_missing))
-    Message <simpleMessage>
-      Missing cases detected.
-      Refitting to remove cases with missing values. The new model is
-      lm(formula = mpg ~ hp, data = listwise_delete(df_missing, c("mpg", "hp")))
-      1 case removed due to missing value(s).
+    Message <supernova_missing_values_message>
+      Refitting to remove 1 case with missing value(s)
+      i lm(formula = mpg ~ hp, data = listwise_delete(df_missing, c("mpg", "hp")))
     Output
        Analysis of Variance Table (Type III SS)
        Model: mpg ~ hp
@@ -22,11 +20,9 @@
 
     Code
       supernova(lm(mpg ~ disp, df_missing))
-    Message <simpleMessage>
-      Missing cases detected.
-      Refitting to remove cases with missing values. The new model is
-      lm(formula = mpg ~ disp, data = listwise_delete(df_missing, c("mpg", "disp")))
-      2 cases removed due to missing value(s).
+    Message <supernova_missing_values_message>
+      Refitting to remove 2 cases with missing value(s)
+      i lm(formula = mpg ~ disp, data = listwise_delete(df_missing, c("mpg", "disp")))
     Output
        Analysis of Variance Table (Type III SS)
        Model: mpg ~ disp
@@ -42,11 +38,9 @@
 
     Code
       supernova(lm(mpg ~ hp * disp, df_missing))
-    Message <simpleMessage>
-      Missing cases detected.
-      Refitting to remove cases with missing values. The new model is
-      lm(formula = mpg ~ hp * disp, data = listwise_delete(df_missing, c("mpg", "hp", "disp")))
-      3 cases removed due to missing value(s).
+    Message <supernova_missing_values_message>
+      Refitting to remove 3 cases with missing value(s)
+      i lm(formula = mpg ~ hp * disp, data = listwise_delete(df_missing, c("mpg", "hp", "disp")))
     Output
        Analysis of Variance Table (Type III SS)
        Model: mpg ~ hp * disp

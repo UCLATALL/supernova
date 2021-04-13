@@ -18,10 +18,16 @@ listwise_delete.data.frame <- function(obj, vars = names(obj)) {
   missing_rows_by_column <- purrr::map(obj[, vars], ~ which(is.na(.x)))
   na_rows <- unlist(missing_rows_by_column, use.names = FALSE)
   n_missing <- length(unique(na_rows))
+
   if (n_missing == 0) {
     return(obj)
   }
-  message(cli::pluralize("{n_missing} case{?s} removed due to missing value(s)."))
+
+  rlang::inform(
+    message = cli::pluralize("{n_missing} case{?s} removed due to missing value(s)."),
+    class = "supernova_missing_values_message"
+  )
+
   vctrs::vec_slice(obj, -na_rows)
 }
 
@@ -35,12 +41,21 @@ listwise_delete.lm <- function(obj, vars = all.vars(formula(obj))) {
   }
 
   call_string <- build_equivalent_call_string(obj, vars)
-  message(
-    "Refitting to remove cases with missing values. The new model is\n",
-    call_string, "\n"
+
+  rlang::inform(
+    message = c(
+      cli::pluralize("Refitting to remove {n_missing} case{?s} with missing value(s)"),
+      i = paste0(call_string, "\n")
+    ),
+    class = "supernova_missing_values_message"
   )
 
-  eval(str2lang(call_string), envir = environment(as.formula(obj)))
+  rlang::with_handlers(
+    eval(str2lang(call_string), envir = environment(as.formula(obj))),
+    supernova_missing_values_message = rlang::calling(function(cnd) {
+      rlang::cnd_muffle(cnd)
+    })
+  )
 }
 
 

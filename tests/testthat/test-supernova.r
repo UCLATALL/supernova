@@ -213,6 +213,12 @@ test_that("magrittr can pipe data to lm() to supernova", {
     expect_s3_class("supernova")
 })
 
+test_that("it can handle datasets with function name collisions", {
+  # subset is a base R function
+  subset <- mtcars
+  expect_error(supernova(lm(mpg ~ hp, data = subset)), NA)
+})
+
 
 # ANOVA values ------------------------------------------------------------
 

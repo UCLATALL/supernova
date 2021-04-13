@@ -2,7 +2,7 @@
 
     Code
       listwise_delete(df_missing)
-    Message <simpleMessage>
+    Message <supernova_missing_values_message>
       3 cases removed due to missing value(s).
     Output
                            mpg cyl  disp  hp drat    wt  qsec vs am gear carb
@@ -40,10 +40,9 @@
 
     Code
       listwise_delete(model)
-    Message <simpleMessage>
-      Refitting to remove cases with missing values. The new model is
-      lm(formula = mpg ~ hp * disp, data = listwise_delete(df_missing, c("mpg", "hp", "disp")))
-      3 cases removed due to missing value(s).
+    Message <supernova_missing_values_message>
+      Refitting to remove 3 cases with missing value(s)
+      i lm(formula = mpg ~ hp * disp, data = listwise_delete(df_missing, c("mpg", "hp", "disp")))
     Output
       
       Call:
@@ -59,10 +58,9 @@
 
     Code
       .
-    Message <simpleMessage>
-      Refitting to remove cases with missing values. The new model is
-      lm(formula = mpg ~ hp * disp, data = listwise_delete(., c("mpg", "hp", "disp")))
-      3 cases removed due to missing value(s).
+    Message <supernova_missing_values_message>
+      Refitting to remove 3 cases with missing value(s)
+      i lm(formula = mpg ~ hp * disp, data = listwise_delete(., c("mpg", "hp", "disp")))
     Output
       
       Call:
