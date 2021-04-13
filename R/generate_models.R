@@ -105,19 +105,14 @@ generate_models.formula <- function(model, type = 3) {
 #' @export
 generate_models.lm <- function(model, type = 3) {
   if (vctrs::vec_size(model$na.action)) {
-    message("Missing cases detected.")
     model <- listwise_delete(model)
   }
 
   # stats::update doesn't look for variables in the right place, so this function makes sure that
   # they are available
   update_in_env <- function(obj, frm, ...) {
-    suppressMessages({
-      withr::with_environment(
-        environment(formula(model)),
-        stats::update(obj, frm, ...)
-      )
-    })
+    code <- stats::update(obj, frm, ..., evaluate = FALSE)
+    suppressMessages(eval(code, environment(formula(model))))
   }
 
   if (type == 1 || type == 2) {
