@@ -308,7 +308,6 @@ level_pairs <- function(levels) {
 #' @export
 print.pairwise <- function(x, ..., n_per_table = Inf) {
   fit <- attr(x, "fit")
-  dropped_vars <- setdiff(frm_vars(fit), find_categorical_vars(fit))
 
   title <- switch(attr(x, "correction"),
     Tukey = "Tukey's Honestly Significant Differences",
@@ -319,12 +318,6 @@ print.pairwise <- function(x, ..., n_per_table = Inf) {
   cli::cli_h1(title)
   cli::cat_line()
   cli::cli_text("Model: ", deparse(formula(fit)))
-  if (length(dropped_vars) > 0) {
-    cli::cli_alert_warning(paste0(
-      "{length(dropped_vars)} non-categorical variable{?s} dropped: ",
-      paste(dropped_vars, collapse = ", ")
-    ))
-  }
 
   purrr::walk(x, print, n = n_per_table)
 }
