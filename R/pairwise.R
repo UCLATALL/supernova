@@ -38,6 +38,9 @@ pairwise <- function(fit, correction = "Tukey", term = NULL, alpha = .05) {
 pairwise_t <- function(fit, term = NULL, alpha = .05, correction = "none") {
   rlang::arg_match(correction, c("none", "bonferroni"))
   check_pairwise_args(fit, alpha)
+
+  # this categorical fit is used to work with other functions
+  # the MSE, df.residual, etc. are all from the full model
   categorical_fit <- refit_categorical(fit)
   terms <- select_terms(categorical_fit, term)
 
@@ -75,6 +78,7 @@ pairwise_t <- function(fit, term = NULL, alpha = .05, correction = "none") {
         group_1 = pair_1, group_2 = pair_2,
         diff = number(diff), pooled_se = number(pooled_se),
         t = number(statistic),
+        df = fit$df.residual,
         lower = number(diff - margin), upper = number(diff + margin),
         p_val = number(p, 4, leading_zero = FALSE)
       )
@@ -108,6 +112,9 @@ pairwise_bonferroni <- function(fit, term = NULL, alpha = .05) {
 pairwise_tukey <- function(fit, term = NULL, alpha = .05) {
   correction <- "Tukey"
   check_pairwise_args(fit, alpha)
+
+  # this categorical fit is used to work with other functions
+  # the MSE, df.residual, etc. are all from the full model
   categorical_fit <- refit_categorical(fit)
   terms <- select_terms(categorical_fit, term)
 
@@ -146,6 +153,7 @@ pairwise_tukey <- function(fit, term = NULL, alpha = .05) {
         group_1 = pair_1, group_2 = pair_2,
         diff = number(diff), pooled_se = number(pooled_se),
         q = number(statistic),
+        df = fit$df.residual,
         lower = number(diff - margin), upper = number(diff + margin),
         p_adj = number(p, 4, leading_zero = FALSE)
       )

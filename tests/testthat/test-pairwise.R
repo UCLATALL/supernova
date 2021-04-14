@@ -86,3 +86,10 @@ test_that("a separate plot is created for each term in the model", {
   vdiffr::expect_doppelganger("Multiple plots, RaceEthnic", plots$RaceEthnic)
   vdiffr::expect_doppelganger("Multiple plots, Sex:RaceEthnic", plots$`Sex:RaceEthnic`)
 })
+
+test_that("catch all other data here", {
+  fit <- lm(Thumb ~ RaceEthnic, supernova::Fingers)
+  expect_snapshot(pairwise_t(fit))
+  expect_snapshot(pairwise_bonferroni(fit))
+  expect_snapshot(pairwise_tukey(fit))
+})
