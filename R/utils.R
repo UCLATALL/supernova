@@ -166,3 +166,18 @@ resolve_type <- function(type) {
     return(3)
   }
 }
+
+
+#' Update a model in the environment the model was created in
+#'
+#' [`stats::update()`] will perform the update in [`parent.frame()`] by default, but this can cause
+#' problems when the update is called by another function (so the parent frame is no longer the
+#' environment the user is in).
+#'
+#' @inheritParams stats::update
+#'
+#' @return The updated model is returned.
+update_in_env <- function(object, formula., ...) {
+  code <- stats::update(object, formula., ..., evaluate = FALSE)
+  suppressMessages(eval(code, environment(formula(object))))
+}

@@ -19,15 +19,12 @@ pairwise_tukey(fit, term = NULL, alpha = 0.05)
 \item{fit}{A model fit by \code{\link[=lm]{lm()}} or \code{\link[=aov]{aov()}} (or similar).}
 
 \item{correction}{The type of correction (if any) to perform to maintain the family-wise
-error-rate specified by \code{alpha}:
-\itemize{
-\item \strong{Tukey}: computes Tukey's Honestly Significant Differences (see \code{\link[=TukeyHSD]{TukeyHSD()}})
-\item \strong{Bonferroni}: computes pairwise \emph{t}-tests and then apply a Bonferroni correction
-\item \strong{none}: computes pairwise \emph{t}-tests and reports the uncorrected statistics
-}}
+error-rate specified by \code{alpha}: - \strong{Tukey}: computes Tukey's Honestly Significant Differences
+(see \code{\link[=TukeyHSD]{TukeyHSD()}}) - \strong{Bonferroni}: computes pairwise \emph{t}-tests and then apply a Bonferroni
+correction - \strong{none}: computes pairwise \emph{t}-tests and reports the uncorrected statistics}
 
-\item{term}{If \code{NULL}, compute a set of tests for each categorical term in the model. Otherwise,
-only compute the tests for the given term.}
+\item{term}{If \code{NULL}, use each categorical term in the model. Otherwise, only use the given
+term.}
 
 \item{alpha}{The family-wise error-rate to restrict the tests to. If "none" is given for
 \code{correction}, this value is the value for each test (and is used to calculate the family-wise

@@ -7,7 +7,7 @@
 find_categorical_vars(fit)
 }
 \arguments{
-\item{fit}{A linear model (fit by \code{\link[=lm]{lm()}}) to refit.}
+\item{fit}{A model fit by \code{\link[=lm]{lm()}} or \code{\link[=aov]{aov()}} (or similar).}
 }
 \value{
 A character vector of the categorical variables in the model. Note these are not terms,

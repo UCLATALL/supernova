@@ -13,7 +13,7 @@ check_aov_compat(fit)
 check_not_empty(fit)
 }
 \arguments{
-\item{fit}{A linear model (fit by \code{\link[=lm]{lm()}}) to refit.}
+\item{fit}{A model fit by \code{\link[=lm]{lm()}} or \code{\link[=aov]{aov()}} (or similar).}
 
 \item{alpha}{A single double value indicating the alpha to use for the tests.}
 }

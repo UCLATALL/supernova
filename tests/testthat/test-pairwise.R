@@ -1,3 +1,6 @@
+
+# Common --------------------------------------------------------------------------------------
+
 test_that("not specifying which term to break down will break down all categorical terms", {
   fit <- lm(Thumb ~ Sex * RaceEthnic, supernova::Fingers)
   cat_terms <- frm_terms(fit)
@@ -15,6 +18,28 @@ test_that("there is an informative error if you try to select a non-existent ter
   expect_snapshot_error(pairwise(fit, "does-not-exist"))
 })
 
+test_that("pairwise can handle models with data names that mask function name", {
+  data <- vctrs::vec_c(
+    tibble::tibble(group = "A", value = rnorm(31)),
+    tibble::tibble(group = "B", value = rnorm(30))
+  )
+  fitted <- lm(value ~ group, data = data)
+  expect_error(pairwise(fitted), NA)
+})
+
+test_that("there are no errors with balanced data", {
+  # one of the underlying functions returns a single value for n when the counts are balanced
+  data <- vctrs::vec_c(
+    tibble::tibble(group_1 = "A", group_2 = rep(1:2, each = 15), value = rnorm(30)),
+    tibble::tibble(group_1 = "B", group_2 = rep(1:2, each = 15), value = rnorm(30))
+  )
+  fitted <- lm(value ~ group_1 * group_2, data = data)
+  expect_error(pairwise(fitted), NA)
+})
+
+
+# Tukey ---------------------------------------------------------------------------------------
+
 test_that("pairwise wraps pairwise_tukey", {
   fit <- lm(Thumb ~ RaceEthnic, supernova::Fingers)
   expect_equal(pairwise(fit, "Tukey"), pairwise_tukey(fit))
@@ -31,6 +56,9 @@ test_that("pairwise_tukey outputs correct values for diff, lower, upper, and p",
   ignorable <- c("row.names", "class", "fit", "term", "correction", "n_levels", "alpha", "fwer")
   expect_equal(actual, expected, ignore_attr = ignorable)
 })
+
+
+# t-tests -------------------------------------------------------------------------------------
 
 test_that("pairwise_t outputs correct p values for t tests with pooled sd", {
   fit <- lm(Thumb ~ RaceEthnic, supernova::Fingers)
@@ -66,6 +94,19 @@ test_that("pairwise_bonferroni outputs correct corrected p values for t tests wi
   expect_equal(actual, expected)
 })
 
+
+# Catch all -----------------------------------------------------------------------------------
+
+test_that("catch all other data here", {
+  fit <- lm(Thumb ~ RaceEthnic, supernova::Fingers)
+  expect_snapshot(pairwise_t(fit))
+  expect_snapshot(pairwise_bonferroni(fit))
+  expect_snapshot(pairwise_tukey(fit))
+})
+
+
+# Plots ---------------------------------------------------------------------------------------
+
 test_that("each type of comparisons object plots well", {
   fit <- lm(Thumb ~ RaceEthnic, supernova::Fingers)
 
@@ -85,11 +126,4 @@ test_that("a separate plot is created for each term in the model", {
   vdiffr::expect_doppelganger("Multiple plots, Sex", plots$Sex)
   vdiffr::expect_doppelganger("Multiple plots, RaceEthnic", plots$RaceEthnic)
   vdiffr::expect_doppelganger("Multiple plots, Sex:RaceEthnic", plots$`Sex:RaceEthnic`)
-})
-
-test_that("catch all other data here", {
-  fit <- lm(Thumb ~ RaceEthnic, supernova::Fingers)
-  expect_snapshot(pairwise_t(fit))
-  expect_snapshot(pairwise_bonferroni(fit))
-  expect_snapshot(pairwise_tukey(fit))
 })
