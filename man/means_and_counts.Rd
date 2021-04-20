@@ -13,7 +13,7 @@ means_and_counts(fit, term)
 term.}
 }
 \value{
-A \code{\link{tibble}} of the means and counts for each level of each term.
+A list of the means and counts for each level of each term.
 }
 \description{
 Get the means and counts for each categorical term in the model

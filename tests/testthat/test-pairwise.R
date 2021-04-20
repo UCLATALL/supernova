@@ -27,6 +27,16 @@ test_that("pairwise can handle models with data names that mask function name", 
   expect_error(pairwise(fitted), NA)
 })
 
+test_that("there are no errors with balanced data", {
+  # one of the underlying functions returns a single value for n when the counts are balanced
+  data <- vctrs::vec_c(
+    tibble::tibble(group_1 = "A", group_2 = rep(1:2, each = 15), value = rnorm(30)),
+    tibble::tibble(group_1 = "B", group_2 = rep(1:2, each = 15), value = rnorm(30))
+  )
+  fitted <- lm(value ~ group_1 * group_2, data = data)
+  expect_error(pairwise(fitted), NA)
+})
+
 
 # Tukey ---------------------------------------------------------------------------------------
 

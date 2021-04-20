@@ -39,7 +39,8 @@ pairwise_t <- function(fit, term = NULL, alpha = .05, correction = "none") {
   check_pairwise_args(fit, alpha)
 
   mse <- sum(fit$residuals^2) / fit$df.residual
-  tests <- purrr::pmap(means_and_counts(fit, term), function(means, counts, term) {
+  params <- means_and_counts(fit, term)
+  tests <- purrr::pmap(params, function(means, counts, term) {
     if (term %in% frm_interaction_terms(fit)) {
       simple_terms <- expand.grid(dimnames(means)) %>% purrr::pmap_chr(paste, sep = ":")
       means <- as.vector(means) %>% magrittr::set_names(simple_terms)
@@ -233,18 +234,25 @@ find_categorical_vars <- function(fit) {
 #' Get the means and counts for each categorical term in the model
 #'
 #' @inheritParams pairwise
-#' @return A [`tibble`] of the means and counts for each level of each term.
+#' @return A list of the means and counts for each level of each term.
 #' @keywords internal
 means_and_counts <- function(fit, term) {
   # model.tables only works with categorical vars
   categorical_fit <- refit_categorical(fit)
   terms <- select_terms(categorical_fit, term)
+
   model_tables <- stats::model.tables(stats::aov(categorical_fit), "means")
-  tibble::tibble(
-    means = model_tables$tables[terms],
-    counts = model_tables$n[terms],
-    term = terms
-  )
+  means <- model_tables$tables[terms]
+  counts <- model_tables$n[terms] %>%
+    purrr::imap(function(term_counts, index) {
+      if (length(term_counts) == 1) {
+        term_counts <- rep_len(term_counts, length(means[[index]]))
+        names(term_counts) <- names(means[[index]])
+      }
+      term_counts
+    })
+
+  list(means = means, counts = counts, term = terms)
 }
 
 
