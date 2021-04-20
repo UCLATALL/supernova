@@ -108,13 +108,6 @@ generate_models.lm <- function(model, type = 3) {
     model <- listwise_delete(model)
   }
 
-  # stats::update doesn't look for variables in the right place, so this function makes sure that
-  # they are available
-  update_in_env <- function(obj, frm, ...) {
-    code <- stats::update(obj, frm, ..., evaluate = FALSE)
-    suppressMessages(eval(code, environment(formula(model))))
-  }
-
   if (type == 1 || type == 2) {
     models <- generate_models.formula(formula(model), type = type)
     fits <- purrr::map(models, function(frm_pair) {

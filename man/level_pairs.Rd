@@ -11,7 +11,7 @@ level_pairs(levels)
 purpose of comparing levels of a factor to one another with multiple comparisons.}
 }
 \value{
-A tibble with two columns, group 1 and group 2, where each row is a unique pair.
+A \code{\link{tibble}} with two columns, group 1 and group 2, where each row is a unique pair.
 }
 \description{
 The output of this function should match the pairs you get when you run \code{\link{TukeyHSD}}.

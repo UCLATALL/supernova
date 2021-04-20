@@ -6,12 +6,11 @@
 #'
 #' @param fit A model fit by [`lm()`] or [`aov()`] (or similar).
 #' @param correction The type of correction (if any) to perform to maintain the family-wise
-#'   error-rate specified by `alpha`:
-#'   - **Tukey**: computes Tukey's Honestly Significant Differences (see [`TukeyHSD()`])
-#'   - **Bonferroni**: computes pairwise *t*-tests and then apply a Bonferroni correction
-#'   - **none**: computes pairwise *t*-tests and reports the uncorrected statistics
-#' @param term If `NULL`, compute a set of tests for each categorical term in the model. Otherwise,
-#'   only compute the tests for the given term.
+#'   error-rate specified by `alpha`: - **Tukey**: computes Tukey's Honestly Significant Differences
+#'   (see [`TukeyHSD()`]) - **Bonferroni**: computes pairwise *t*-tests and then apply a Bonferroni
+#'   correction - **none**: computes pairwise *t*-tests and reports the uncorrected statistics
+#' @param term If `NULL`, use each categorical term in the model. Otherwise, only use the given
+#'   term.
 #' @param alpha The family-wise error-rate to restrict the tests to. If "none" is given for
 #'   `correction`, this value is the value for each test (and is used to calculate the family-wise
 #'   error-rate for the group of tests).
@@ -39,21 +38,8 @@ pairwise_t <- function(fit, term = NULL, alpha = .05, correction = "none") {
   rlang::arg_match(correction, c("none", "bonferroni"))
   check_pairwise_args(fit, alpha)
 
-  # this categorical fit is used to work with other functions
-  # the MSE, df.residual, etc. are all from the full model
-  categorical_fit <- refit_categorical(fit)
-  terms <- select_terms(categorical_fit, term)
-
   mse <- sum(fit$residuals^2) / fit$df.residual
-
-  means_and_counts_by_term <- stats::model.tables(stats::aov(categorical_fit), "means")
-  params <- list(
-    means = means_and_counts_by_term$tables[terms],
-    counts = means_and_counts_by_term$n[terms],
-    term = terms
-  )
-
-  tests <- purrr::pmap(params, function(means, counts, term) {
+  tests <- purrr::pmap(means_and_counts(fit, term), function(means, counts, term) {
     if (term %in% frm_interaction_terms(fit)) {
       simple_terms <- expand.grid(dimnames(means)) %>% purrr::pmap_chr(paste, sep = ":")
       means <- as.vector(means) %>% magrittr::set_names(simple_terms)
@@ -113,21 +99,8 @@ pairwise_tukey <- function(fit, term = NULL, alpha = .05) {
   correction <- "Tukey"
   check_pairwise_args(fit, alpha)
 
-  # this categorical fit is used to work with other functions
-  # the MSE, df.residual, etc. are all from the full model
-  categorical_fit <- refit_categorical(fit)
-  terms <- select_terms(categorical_fit, term)
-
   mse <- sum(fit$residuals^2) / fit$df.residual
-
-  means_and_counts_by_term <- stats::model.tables(stats::aov(categorical_fit), "means")
-  params <- list(
-    means = means_and_counts_by_term$tables[terms],
-    counts = means_and_counts_by_term$n[terms],
-    term = terms
-  )
-
-  tests <- purrr::pmap(params, function(means, counts, term) {
+  tests <- purrr::pmap(means_and_counts(fit, term), function(means, counts, term) {
     if (term %in% frm_interaction_terms(fit)) {
       simple_terms <- expand.grid(dimnames(means)) %>% purrr::pmap_chr(paste, sep = ":")
       means <- as.vector(means) %>% magrittr::set_names(simple_terms)
@@ -176,7 +149,7 @@ pairwise_tukey <- function(fit, term = NULL, alpha = .05) {
 #' @param alpha The alpha to use when computing the family-wise error-rate.
 #' @param correction The type of alpha correction the tests in the table use.
 #'
-#' @return A tibble subclassed as `pairwise_comparison_tbl`. These have custom printers and retain
+#' @return A tibble sub-classed as `pairwise_comparison_tbl`. These have custom printers and retain
 #'   their attributes when subsetted.
 #' @keywords internal
 new_pairwise_tbl <- function(tbl, term, fit, fwer, alpha, correction) {
@@ -194,7 +167,7 @@ new_pairwise_tbl <- function(tbl, term, fit, fwer, alpha, correction) {
 
 #' Check that the arguments are compatible with the rest of the pairwise code.
 #'
-#' @param fit A linear model (fit by [`lm()`]) to refit.
+#' @inheritParams pairwise
 #' @param alpha A single double value indicating the alpha to use for the tests.
 #' @keywords internal
 check_pairwise_args <- function(fit, alpha) {
@@ -236,7 +209,8 @@ refit_categorical <- function(fit) {
 
   to_drop <- setdiff(frm_vars(fit), categorical_vars)
   drop_frm <- purrr::reduce(to_drop, frm_remove_var, .init = fit)
-  stats::update(fit, drop_frm)
+
+  update_in_env(fit, drop_frm)
 }
 
 
@@ -256,13 +230,29 @@ find_categorical_vars <- function(fit) {
 }
 
 
+#' Get the means and counts for each categorical term in the model
+#'
+#' @inheritParams pairwise
+#' @return A [`tibble`] of the means and counts for each level of each term.
+#' @keywords internal
+means_and_counts <- function(fit, term) {
+  # model.tables only works with categorical vars
+  categorical_fit <- refit_categorical(fit)
+  terms <- select_terms(categorical_fit, term)
+  model_tables <- stats::model.tables(stats::aov(categorical_fit), "means")
+  tibble::tibble(
+    means = model_tables$tables[terms],
+    counts = model_tables$n[terms],
+    term = terms
+  )
+}
+
+
 #' Select terms based on the user's `term` specification
 #'
 #' Before returning the selection, ensure that the term we are subsetting on exists.
 #'
-#' @param fit A linear model after updating to only include categorical terms.
-#' @param term The term to check for, if `NULL` return all valid terms.
-#'
+#' @inheritParams pairwise
 #' @return A character vector of terms to run analyses on.
 #' @keywords internal
 select_terms <- function(fit, term = NULL) {
@@ -287,7 +277,7 @@ select_terms <- function(fit, term = NULL) {
 #' @param levels The vector to get pairs for. It is called levels because it was written for the
 #'   purpose of comparing levels of a factor to one another with multiple comparisons.
 #'
-#' @return A tibble with two columns, group 1 and group 2, where each row is a unique pair.
+#' @return A [`tibble`] with two columns, group 1 and group 2, where each row is a unique pair.
 #' @keywords internal
 level_pairs <- function(levels) {
   create_row <- function(level) {

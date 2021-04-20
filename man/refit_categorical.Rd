@@ -7,7 +7,7 @@
 refit_categorical(fit)
 }
 \arguments{
-\item{fit}{A linear model (fit by \code{\link[=lm]{lm()}}) to refit.}
+\item{fit}{A model fit by \code{\link[=lm]{lm()}} or \code{\link[=aov]{aov()}} (or similar).}
 }
 \value{
 A linear model that only has categorical predictors.
