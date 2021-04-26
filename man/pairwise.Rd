@@ -7,7 +7,7 @@
 \alias{pairwise_tukey}
 \title{Compute all pairwise comparisons between category levels}
 \usage{
-pairwise(fit, correction = "Tukey", term = NULL, alpha = 0.05)
+pairwise(fit, correction = "Tukey", term = NULL, alpha = 0.05, plot = FALSE)
 
 pairwise_t(fit, term = NULL, alpha = 0.05, correction = "none")
 
@@ -29,6 +29,8 @@ term.}
 \item{alpha}{The family-wise error-rate to restrict the tests to. If "none" is given for
 \code{correction}, this value is the value for each test (and is used to calculate the family-wise
 error-rate for the group of tests).}
+
+\item{plot}{Setting plot to TRUE will automatically call \code{\link{plot}} on the returned object.}
 }
 \value{
 A list of tables organized by the terms in the model. For each term (categorical terms

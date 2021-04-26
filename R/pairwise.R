@@ -14,6 +14,7 @@
 #' @param alpha The family-wise error-rate to restrict the tests to. If "none" is given for
 #'   `correction`, this value is the value for each test (and is used to calculate the family-wise
 #'   error-rate for the group of tests).
+#' @param plot Setting plot to TRUE will automatically call [`plot`] on the returned object.
 #'
 #' @return A list of tables organized by the terms in the model. For each term (categorical terms
 #'   only, as splitting on a continuous variable is generally uninformative), the table describes
@@ -21,14 +22,20 @@
 #'
 #' @rdname pairwise
 #' @export
-pairwise <- function(fit, correction = "Tukey", term = NULL, alpha = .05) {
+pairwise <- function(fit, correction = "Tukey", term = NULL, alpha = .05, plot = FALSE) {
   rlang::arg_match(correction, c("none", "Bonferroni", "Tukey"))
 
-  switch(correction,
+  tbl <- switch(correction,
     Tukey = pairwise_tukey(fit, term = term, alpha = alpha),
     none = pairwise_t(fit, term = term, alpha = alpha),
     Bonferroni = pairwise_bonferroni(fit, term = term, alpha = alpha)
   )
+
+  if (plot) {
+    plot(tbl)
+  }
+
+  tbl
 }
 
 
