@@ -7,7 +7,14 @@
 \alias{pairwise_tukey}
 \title{Compute all pairwise comparisons between category levels}
 \usage{
-pairwise(fit, correction = "Tukey", term = NULL, alpha = 0.05, plot = FALSE)
+pairwise(
+  fit,
+  correction = "Tukey",
+  term = NULL,
+  alpha = 0.05,
+  var_equal = TRUE,
+  plot = FALSE
+)
 
 pairwise_t(fit, term = NULL, alpha = 0.05, correction = "none")
 
@@ -19,9 +26,10 @@ pairwise_tukey(fit, term = NULL, alpha = 0.05)
 \item{fit}{A model fit by \code{\link[=lm]{lm()}} or \code{\link[=aov]{aov()}} (or similar).}
 
 \item{correction}{The type of correction (if any) to perform to maintain the family-wise
-error-rate specified by \code{alpha}: - \strong{Tukey}: computes Tukey's Honestly Significant Differences
-(see \code{\link[=TukeyHSD]{TukeyHSD()}}) - \strong{Bonferroni}: computes pairwise \emph{t}-tests and then apply a Bonferroni
-correction - \strong{none}: computes pairwise \emph{t}-tests and reports the uncorrected statistics}
+error-rate specified by \code{alpha}:
+- \strong{Tukey}: computes Tukey's Honestly Significant Differences (see \code{\link[=TukeyHSD]{TukeyHSD()}})
+- \strong{Bonferroni}: computes pairwise \emph{t}-tests and then apply a Bonferroni correction
+- \strong{none}: computes pairwise \emph{t}-tests and reports the uncorrected statistics}
 
 \item{term}{If \code{NULL}, use each categorical term in the model. Otherwise, only use the given
 term.}
@@ -29,6 +37,10 @@ term.}
 \item{alpha}{The family-wise error-rate to restrict the tests to. If "none" is given for
 \code{correction}, this value is the value for each test (and is used to calculate the family-wise
 error-rate for the group of tests).}
+
+\item{var_equal}{If \code{TRUE} (default), treat the variances between each group as being equal,
+otherwise the Welch or Satterthwaite method is used to appropriately weight the variances.
+\strong{Note:}, currently only \code{TRUE} is supported. Alternative methods forthcoming.}
 
 \item{plot}{Setting plot to TRUE will automatically call \code{\link{plot}} on the returned object.}
 }
@@ -38,7 +50,52 @@ only, as splitting on a continuous variable is generally uninformative), the tab
 all of the pairwise-comparisons possible.
 }
 \description{
-Unlike \code{\link{pairwise.t.test}}, this function will return a more informative set of tables similar to
-\code{\link{TukeyHSD}}. However, the tables always include the pooled standard error for the estimate and
-the degrees of freedom for the test.
+This function is useful for generating and testing all pairwise comparisons of categorical terms
+in a linear model. This can be done in base R using functions like \code{\link{pairwise.t.test}} and
+\code{\link{TukeyHSD}}, but these functions are inconsistent both in their output format and their general
+approach to pairwise comparisons. \code{pairwise()} will return a consistent table format, and will
+make consistent decisions about how to calculate error terms and confidence intervals. See the
+\strong{Details} section low for more on how the models are tested (and why your output might not
+match other functions).
+}
+\details{
+For simple one-way models where a single categorical variable predicts and outcome. You will get
+output similar to other methods of computing pairwise comparisons. Essentially, the differences
+on the outcome between each of the groups defined by the categorical variable are compared with
+the requested test, and their confidence intervals and p-values are adjusted by the requested
+\code{correction}.
+
+However, when more than two variables are entered into the model, the outcome will diverge
+somewhat from other methods of computing pairwise comparisons. For traditional pairwise tests you
+need to estimate an error term, usually by pooling the standard deviation of the groups being
+compared. This means that when you have other predictors in the model, their presence is ignored
+when running these tests. For the functions in this package, we instead compute the pooled
+standard error by using the mean squared error (MSE) from the full model fit.
+
+Let's take a concrete example to explain that. If we are predicting \code{Thumb} length from \code{Sex}, we
+can create that linear model and get the pairwise comparisons like this:
+
+\code{pairwise(lm(Thumb ~ Sex, data = supernova::Fingers))}
+
+The output of this code will have one table showing the comparison of males and females on thumb
+length. The pooled standard error is the same as the square root of the MSE from the full model.
+
+In these data the \code{Sex} variable did not have any other values than \emph{male} and \emph{female}, but we
+can imagine situations where the data had other values like \emph{other} or more refined responses. In
+these cases, the pooled SD would be calculated by taking the MSE of the full model (not of each
+group) and then weighting it based on the size of the groups in question (divide by \emph{n}).
+
+To improve our model, we might add \code{Height} as quantitative predictor:
+
+\code{pairwise(lm(Thumb ~ Sex + Height, data = supernova::Fingers))}
+
+Note that the output still only has a table for \code{Sex}. This is because we can't do a pairwise
+comparison using \code{Height} because there are no groups to compare. Most functions will drop or not
+let you use this variable during pairwise comparisons. Instead, \code{pairwise()} uses the same
+approach as in the 3+ groups situation: we use the MSE for the full model and then weight it by
+the size of the groups being compared. Because we are using the MSE for the full model, the
+effect of \code{Height} is accounted for in the error term even though we are not explicitly comparing
+different heights. \strong{Importantly}, the interpretation of the outcome is different than in other
+traditional t-tests. Instead of saying, "there is a difference in thumb length based on the value
+of sex," we must add that this difference is found "after accounting for height."
 }

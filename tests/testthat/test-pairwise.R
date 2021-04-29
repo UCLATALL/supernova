@@ -45,6 +45,14 @@ test_that("pairwise wraps pairwise_tukey", {
   expect_equal(pairwise(fit, "Tukey"), pairwise_tukey(fit))
 })
 
+test_that("pairwise_tukey tests have family-wise error-rate at alpha rate", {
+  fit <- lm(Thumb ~ Sex * RaceEthnic, supernova::Fingers)
+  actual <- pairwise_tukey(fit, alpha = .01)
+  expect_equal(attr(actual[[1]], "fwer"), .01)
+  expect_equal(attr(actual[[2]], "fwer"), .01)
+  expect_equal(attr(actual[[3]], "fwer"), .01)
+})
+
 test_that("pairwise_tukey outputs correct values for diff, lower, upper, and p", {
   fit <- lm(Thumb ~ RaceEthnic * Sex, supernova::Fingers)
 
@@ -60,38 +68,20 @@ test_that("pairwise_tukey outputs correct values for diff, lower, upper, and p",
 
 # t-tests -------------------------------------------------------------------------------------
 
-test_that("pairwise_t outputs correct p values for t tests with pooled sd", {
-  fit <- lm(Thumb ~ RaceEthnic, supernova::Fingers)
-  expected <- pairwise.t.test(
-    Fingers$Thumb,
-    Fingers$RaceEthnic,
-    p.adjust.method = "none",
-    pool.sd = TRUE
-  ) %>%
-    magrittr::extract2("p.value") %>%
-    lower_tri(diag = TRUE)
+test_that("pairwise_t matches relevant values from pairwise_tukey", {
+  fit <- lm(Thumb ~ RaceEthnic * Sex, supernova::Fingers)
 
-  actual <- pairwise_t(fit)$RaceEthnic$p_val %>%
-    as.double()
-
-  expect_equal(actual, expected)
+  expected <- pairwise_tukey(fit)[[1]][, c("group_1", "group_2", "diff", "pooled_se", "df")]
+  actual <- pairwise_t(fit)[[1]][, c("group_1", "group_2", "diff", "pooled_se", "df")]
+  expect_equal(actual, expected, ignore_attr = c("correction", "fwer"))
 })
 
-test_that("pairwise_bonferroni outputs correct corrected p values for t tests with pooled sd", {
-  fit <- lm(Thumb ~ RaceEthnic, supernova::Fingers)
-  expected <- pairwise.t.test(
-    Fingers$Thumb,
-    Fingers$RaceEthnic,
-    p.adjust.method = "bonferroni",
-    pool.sd = TRUE
-  ) %>%
-    magrittr::extract2("p.value") %>%
-    lower_tri(diag = TRUE)
-
-  actual <- pairwise_bonferroni(fit)$RaceEthnic$p_adj %>%
-    as.double()
-
-  expect_equal(actual, expected)
+test_that("pairwise_t family-wise error-rate is larger than alpha when more than 2 tests", {
+  fit <- lm(Thumb ~ Sex * RaceEthnic, supernova::Fingers)
+  actual <- pairwise_t(fit, alpha = .01)
+  expect_equal(attr(actual[[1]], "fwer"), .01)
+  expect_gt(attr(actual[[2]], "fwer"), .01)
+  expect_gt(attr(actual[[3]], "fwer"), .01)
 })
 
 

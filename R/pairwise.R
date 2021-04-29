@@ -1,28 +1,77 @@
 #' Compute all pairwise comparisons between category levels
 #'
-#' Unlike [`pairwise.t.test`], this function will return a more informative set of tables similar to
-#' [`TukeyHSD`]. However, the tables always include the pooled standard error for the estimate and
-#' the degrees of freedom for the test.
+#' This function is useful for generating and testing all pairwise comparisons of categorical terms
+#' in a linear model. This can be done in base R using functions like [`pairwise.t.test`] and
+#' [`TukeyHSD`], but these functions are inconsistent both in their output format and their general
+#' approach to pairwise comparisons. `pairwise()` will return a consistent table format, and will
+#' make consistent decisions about how to calculate error terms and confidence intervals. See the
+#' **Details** section low for more on how the models are tested (and why your output might not
+#' match other functions).
+#'
+#' @details
+#' For simple one-way models where a single categorical variable predicts and outcome. You will get
+#' output similar to other methods of computing pairwise comparisons. Essentially, the differences
+#' on the outcome between each of the groups defined by the categorical variable are compared with
+#' the requested test, and their confidence intervals and p-values are adjusted by the requested
+#' `correction`.
+#'
+#' However, when more than two variables are entered into the model, the outcome will diverge
+#' somewhat from other methods of computing pairwise comparisons. For traditional pairwise tests you
+#' need to estimate an error term, usually by pooling the standard deviation of the groups being
+#' compared. This means that when you have other predictors in the model, their presence is ignored
+#' when running these tests. For the functions in this package, we instead compute the pooled
+#' standard error by using the mean squared error (MSE) from the full model fit.
+#'
+#' Let's take a concrete example to explain that. If we are predicting `Thumb` length from `Sex`, we
+#' can create that linear model and get the pairwise comparisons like this:
+#'
+#' `pairwise(lm(Thumb ~ Sex, data = supernova::Fingers))`
+#'
+#' The output of this code will have one table showing the comparison of males and females on thumb
+#' length. The pooled standard error is the same as the square root of the MSE from the full model.
+#'
+#' In these data the `Sex` variable did not have any other values than *male* and *female*, but we
+#' can imagine situations where the data had other values like *other* or more refined responses. In
+#' these cases, the pooled SD would be calculated by taking the MSE of the full model (not of each
+#' group) and then weighting it based on the size of the groups in question (divide by *n*).
+#'
+#' To improve our model, we might add `Height` as quantitative predictor:
+#'
+#' `pairwise(lm(Thumb ~ Sex + Height, data = supernova::Fingers))`
+#'
+#'
+#' Note that the output still only has a table for `Sex`. This is because we can't do a pairwise
+#' comparison using `Height` because there are no groups to compare. Most functions will drop or not
+#' let you use this variable during pairwise comparisons. Instead, `pairwise()` uses the same
+#' approach as in the 3+ groups situation: we use the MSE for the full model and then weight it by
+#' the size of the groups being compared. Because we are using the MSE for the full model, the
+#' effect of `Height` is accounted for in the error term even though we are not explicitly comparing
+#' different heights. **Importantly**, the interpretation of the outcome is different than in other
+#' traditional t-tests. Instead of saying, "there is a difference in thumb length based on the value
+#' of sex," we must add that this difference is found "after accounting for height."
 #'
 #' @param fit A model fit by [`lm()`] or [`aov()`] (or similar).
 #' @param correction The type of correction (if any) to perform to maintain the family-wise
-#'   error-rate specified by `alpha`: - **Tukey**: computes Tukey's Honestly Significant Differences
-#'   (see [`TukeyHSD()`]) - **Bonferroni**: computes pairwise *t*-tests and then apply a Bonferroni
-#'   correction - **none**: computes pairwise *t*-tests and reports the uncorrected statistics
+#'   error-rate specified by `alpha`:
+#'     - **Tukey**: computes Tukey's Honestly Significant Differences (see [`TukeyHSD()`])
+#'     - **Bonferroni**: computes pairwise *t*-tests and then apply a Bonferroni correction
+#'     - **none**: computes pairwise *t*-tests and reports the uncorrected statistics
 #' @param term If `NULL`, use each categorical term in the model. Otherwise, only use the given
 #'   term.
 #' @param alpha The family-wise error-rate to restrict the tests to. If "none" is given for
 #'   `correction`, this value is the value for each test (and is used to calculate the family-wise
 #'   error-rate for the group of tests).
+#' @param var_equal If `TRUE` (default), treat the variances between each group as being equal,
+#'   otherwise the Welch or Satterthwaite method is used to appropriately weight the variances.
+#'   **Note:**, currently only `TRUE` is supported. Alternative methods forthcoming.
 #' @param plot Setting plot to TRUE will automatically call [`plot`] on the returned object.
-#'
 #' @return A list of tables organized by the terms in the model. For each term (categorical terms
 #'   only, as splitting on a continuous variable is generally uninformative), the table describes
 #'   all of the pairwise-comparisons possible.
 #'
 #' @rdname pairwise
 #' @export
-pairwise <- function(fit, correction = "Tukey", term = NULL, alpha = .05, plot = FALSE) {
+pairwise <- function(fit, correction = "Tukey", term = NULL, alpha = .05, var_equal = TRUE, plot = FALSE) {
   rlang::arg_match(correction, c("none", "Bonferroni", "Tukey"))
 
   tbl <- switch(correction,
@@ -62,7 +111,7 @@ pairwise_t <- function(fit, term = NULL, alpha = .05, correction = "none") {
       pair_1 <- pair[[1]]
       pair_2 <- pair[[2]]
       diff <- means[[pair_1]] - means[[pair_2]]
-      pooled_se <- sqrt((mse / counts[[pair_1]]) + (mse / counts[[pair_2]]))
+      pooled_se <- sqrt((mse / 2) * (1 / counts[[pair_1]] + 1 / counts[[pair_2]]))
       statistic <- diff / pooled_se
       critical <- stats::qt(1 - alpha / corr_val, fit$df.residual, lower.tail = FALSE)
       p <- min(1, 2 * stats::pt(abs(statistic), fit$df.residual, lower.tail = FALSE) * corr_val)
@@ -118,16 +167,16 @@ pairwise_tukey <- function(fit, term = NULL, alpha = .05) {
       pairs <- level_pairs(names(means))
     }
 
-    # honestly everything above this point is the same as in pairwise_t
+
     rows <- purrr::map(pairs, function(pair) {
       pair_1 <- pair[[1]]
       pair_2 <- pair[[2]]
       diff <- means[[pair_1]] - means[[pair_2]]
-      pooled_se <- sqrt((mse / counts[[pair_1]]) + (mse / counts[[pair_2]]))
       pooled_se <- sqrt((mse / 2) * (1 / counts[[pair_1]] + 1 / counts[[pair_2]]))
+      statistic <- diff / pooled_se
+      # honestly everything above this point is the same as in pairwise_t
       critical <- stats::qtukey(1 - alpha, length(means), fit$df.residual)
       margin <- abs(critical) * pooled_se
-      statistic <- diff / pooled_se
       p <- stats::ptukey(abs(statistic), length(means), fit$df.residual, lower.tail = FALSE)
 
       data.frame(
