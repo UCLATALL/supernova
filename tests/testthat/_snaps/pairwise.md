@@ -9,13 +9,12 @@
     Message <cliMessage>
       
       -- Pairwise t-tests ------------------------------------------------------------
+      Model: Thumb ~ RaceEthnic
     Output
       
     Message <cliMessage>
-      Model: Thumb ~ RaceEthnic
-      
-      -- RaceEthnic 
-      10 comparisons of 5 levels
+      RaceEthnic
+      Levels: 5
       Family-wise error-rate: 0.401
     Output
       
@@ -39,13 +38,12 @@
     Message <cliMessage>
       
       -- Pairwise t-tests with Bonferroni correction ---------------------------------
+      Model: Thumb ~ RaceEthnic
     Output
       
     Message <cliMessage>
-      Model: Thumb ~ RaceEthnic
-      
-      -- RaceEthnic 
-      10 comparisons of 5 levels
+      RaceEthnic
+      Levels: 5
       Family-wise error-rate: 0.049
     Output
       
@@ -69,13 +67,12 @@
     Message <cliMessage>
       
       -- Tukey's Honestly Significant Differences ------------------------------------
+      Model: Thumb ~ RaceEthnic
     Output
       
     Message <cliMessage>
-      Model: Thumb ~ RaceEthnic
-      
-      -- RaceEthnic 
-      10 comparisons of 5 levels
+      RaceEthnic
+      Levels: 5
       Family-wise error-rate: 0.05
     Output
       

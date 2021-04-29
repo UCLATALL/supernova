@@ -321,7 +321,6 @@ print.pairwise <- function(x, ..., n_per_table = Inf) {
   )
 
   cli::cli_h1(title)
-  cli::cat_line()
   cli::cli_text("Model: ", deparse(formula(fit)))
 
   purrr::walk(x, print, n = n_per_table)
@@ -331,8 +330,9 @@ print.pairwise <- function(x, ..., n_per_table = Inf) {
 #' @export
 #' @importFrom pillar tbl_sum
 tbl_sum.pairwise_tbl <- function(x, setup, ...) {
-  cli::cli_h3(cli::style_bold(attr(x, "term")))
-  cli::cli_text("{nrow(x)} comparison{?s} of ", attr(x, "n_levels"), " levels")
+  cli::cat_line()
+  cli::cli_text(cli::style_bold(attr(x, "term")))
+  cli::cli_text("Levels: ", attr(x, "n_levels"))
   cli::cli_text("Family-wise error-rate: ", round(attr(x, "fwer"), 3))
   cli::cat_line()
 }
