@@ -24,7 +24,7 @@ row_blank(
 
 \item{df}{The degrees of freedom the term uses (defaults to blank).}
 
-\item{ms}{The mean square for the term (defaults to ss / df)}
+\item{ms}{The mean square for the term (defaults to \code{ss / df})}
 
 \item{f}{Fisher's F statistic for the term in the model (defaults to blank).}
 
@@ -33,7 +33,7 @@ row_blank(
 \item{p}{The p-value of the F (and PRE) for the term in the model (defaults to blank).}
 }
 \value{
-A tibble_row of length 1 with all of the variables initialized.
+A \code{\link{tibble_row}} of length 1 with all of the variables initialized.
 }
 \description{
 A template for a row in an ANOVA table.

@@ -7,7 +7,7 @@
 frm_string(frm)
 }
 \arguments{
-\item{frm}{The formula (or formula-coercible object).}
+\item{frm}{The formula (or something that can be coerced to a formula).}
 }
 \value{
 A character string of the formula.

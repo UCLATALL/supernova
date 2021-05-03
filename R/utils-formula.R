@@ -1,6 +1,6 @@
 #' Get the string representation of the formula.
 #'
-#' @param frm The formula (or formula-coercible object).
+#' @param frm The formula (or something that can be coerced to a formula).
 #'
 #' @return A character string of the formula.
 #' @keywords internal
