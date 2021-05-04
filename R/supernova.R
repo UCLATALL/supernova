@@ -87,12 +87,12 @@ supernova.lm <- function(fit, type = 3, verbose = TRUE) {
 #' @param description An optional, short description of the term (pedagogical).
 #' @param ss The sum of squares for the term (defaults to blank)
 #' @param df The degrees of freedom the term uses (defaults to blank).
-#' @param ms The mean square for the term (defaults to ss / df)
+#' @param ms The mean square for the term (defaults to `ss / df`)
 #' @param f Fisher's F statistic for the term in the model (defaults to blank).
 #' @param pre The proportional reduction of error the term provides (defaults to blank).
 #' @param p The p-value of the F (and PRE) for the term in the model (defaults to blank).
 #'
-#' @returns A tibble_row of length 1 with all of the variables initialized.
+#' @returns A [`tibble_row`] of length 1 with all of the variables initialized.
 #'
 #' @keywords internal
 row_blank <- function(term = NA_character_, description = NA_character_,
@@ -124,7 +124,7 @@ row_blank <- function(term = NA_character_, description = NA_character_,
 #' @param complex The complex model containing the term.
 #' @param simple The simple model (without the term) to compare it to.
 #'
-#' @return A tibble row with the properties initialized. The code has been written to be as simple
+#' @return A [`tibble_row`] with the properties initialized. The code has been written to be as simple
 #'   and understanding as possible. Please take a look at the source and offer any suggestions for
 #'   improvement!
 #'
@@ -158,9 +158,9 @@ row_term <- function(name, description, models, term) {
 #' @param description An optional, short description of the term (pedagogical).
 #' @param complex The model we are describing error from.
 #'
-#' @return A tibble row with the properties initialized. The code has been written to be as simple
-#'   and understanding as possible. Please take a look at the source and offer any suggestions for
-#'   improvement!
+#' @return A [`tibble_row`] with the properties initialized. The code has been written to be as
+#'   simple and understandable as possible. Please take a look at the source and offer any
+#'   suggestions for improvement!
 #'
 #' @keywords internal
 row_error <- function(name, description, fit) {

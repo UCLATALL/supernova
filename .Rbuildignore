@@ -9,3 +9,4 @@ cache_test_data
 ^codecov\.yml$
 ^\.github$
 ^\.lintr$
+^data-raw$

@@ -206,7 +206,7 @@ pairwise_tukey <- function(fit, term = NULL, alpha = .05) {
 #' @param alpha The alpha to use when computing the family-wise error-rate.
 #' @param correction The type of alpha correction the tests in the table use.
 #'
-#' @return A tibble sub-classed as `pairwise_comparison_tbl`. These have custom printers and retain
+#' @return A `tibble` sub-classed as `pairwise_comparison_tbl`. These have custom printers and retain
 #'   their attributes when subsetted.
 #' @keywords internal
 new_pairwise_tbl <- function(tbl, term, fit, fwer, alpha, correction) {

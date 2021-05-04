@@ -3,11 +3,11 @@
 \name{supernova-vctrs}
 \alias{supernova-vctrs}
 \alias{vec_arith.supernova_number}
-\title{Internal vctrs methods}
+\title{Internal \code{vctrs} methods}
 \usage{
 \method{vec_arith}{supernova_number}(op, x, y, ...)
 }
 \description{
-Internal vctrs methods
+Internal \code{vctrs} methods
 }
 \keyword{internal}

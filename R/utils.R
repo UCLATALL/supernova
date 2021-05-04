@@ -80,7 +80,7 @@ insert_row <- function(df, insert_at, contents) {
 #'
 #' @inheritParams base::lower.tri
 #'
-#' @return The values in the lower triangluar part of the matrix.
+#' @return The values in the lower triangular part of the matrix.
 #' @keywords internal
 lower_tri <- function(x, diag = FALSE) {
   x[lower.tri(x, diag)]

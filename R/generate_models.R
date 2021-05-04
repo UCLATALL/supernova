@@ -5,7 +5,7 @@
 #' each of these keys is a list with both the `complex` and `simple models` that can be compared to
 #' test the component. The `complex` models always include the target term, and the `simple` models
 #' are identical to the `complex` except the target term is removed. Thus, when the models are
-#' compared (e.g. using [anova], except for Type III; see details below), the resulting values will
+#' compared (e.g. using [`anova`], except for Type III; see details below), the resulting values will
 #' show the effect of adding the target term to the model. There are three generally used approaches
 #' to determining what the appropriate comparison models should be, called Type I, II, and III. See
 #' the sections below for more information on these types.

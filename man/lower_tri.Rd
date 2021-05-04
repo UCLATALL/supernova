@@ -14,7 +14,7 @@ lower_tri(x, diag = FALSE)
 \item{diag}{logical.  Should the diagonal be included?}
 }
 \value{
-The values in the lower triangluar part of the matrix.
+The values in the lower triangular part of the matrix.
 }
 \description{
 Same as \code{\link[=lower.tri]{lower.tri()}} except it returns the values from the matrix (rather than a positional
