@@ -1,3 +1,17 @@
+# supernova 2.4.0
+
+## New features
+
+There are four new pairwise comparisons functions:
+
+- `pairwise()`
+- `pairwise_t()`
+- `pairwise_bonferroni()`
+- `pairwise_tukey()`
+
+Each of these determines all the pairwise comparisons that can be made for a model (fit by `lm()`) and then computes the comparisons. For `pairwise_t()` no correction is made for multiple comparisons, but for the others, the named correction is made. These corrections can also be specified as arguments to the `pairwise()` wrapper function. Each function produces output that has customized printing, supports most (if not all) normal data frame actions, and a plotting function that graphs the mean differences and their confidence intervals.
+
+
 # supernova 2.3.0
 
 * Dependency on `lme4` is moved to Suggests. Models implementing `lmerMod` are handled via `supernova.lmerMod` and `variables.lmerMod` but use of the `lme4` package is limited to tests.

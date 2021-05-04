@@ -1,22 +1,18 @@
 ## Release summary
 
-This is a minor version release that makes dependency on lme4 optional and adds 
-a custom print function.
-
-The previous submission of this version of the package was rejected because it 
-augmented a generic (print.lm) and because the Date was incorrect in the DESCRIPTION.
-The change to the generic was moved to a separate function instead and the Date has
-been corrected.
+This release adds a simple interface for running pairwise t and Tukey tests on a linear model.
 
 
 ## Test environments
 
-- local Windows install; R 4.0.3
-- Win Builder (devel, oldrelease; release has a bug, denies all uploads)
+- Local install on macOS Big Sur 11.3; R 4.0.4
+- Win Builder via `devtools::check_win_devel()`
+- R-Hub via `devtools::check_rhub()` 
+  * (only note was about the Date field which is now updated)
 - GitHub Actions
-  * Mac OS X, 10.15.7; R 4.0.3
-  * Microsoft Windows Server 2019, 10.0.17763; R 4.0.3, R 3.6.3
-  * Ubuntu, 16.04.7; R-devel, R 4.0.3, R 3.6.3
+  * Mac OS X, 10.15.7; R 4.0.5
+  * Microsoft Windows Server 2019, 10.0.17763; R 4.0.5
+  * Ubuntu, 20.04; R-devel, R 4.0.5
 
 
 ## R CMD check results

@@ -1,3 +1,8 @@
+
+# Notes ---------------------------------------------------------------------------------------
+# The functions in this file should be arranged alphabetically.
+
+
 #' ANOVA table with nicer column names.
 #'
 #' @param model A model fitted by \code{\link{lm}} or \code{\link[lme4]{lmer}}.
@@ -68,6 +73,20 @@ insert_row <- function(df, insert_at, contents) {
 }
 
 
+#' Find and return the lower triangle of a matrix
+#'
+#' Same as [`lower.tri()`] except it returns the values from the matrix (rather than a positional
+#' matrix that lets you look up the values).
+#'
+#' @inheritParams base::lower.tri
+#'
+#' @return The values in the lower triangular part of the matrix.
+#' @keywords internal
+lower_tri <- function(x, diag = FALSE) {
+  x[lower.tri(x, diag)]
+}
+
+
 #' Pad x to length of y
 #'
 #' @param x The vector to pad.
@@ -102,6 +121,33 @@ pad_len <- function(x, output_length, after = length(x), pad = NA) {
 }
 
 
+#' Paste together lines of text.
+#'
+#' The lines are joined together with a newline (`\n`) character.
+#'
+#' @param ... Vectors of lines of text.
+#'
+#' @return Check out the [paste] function for more information.
+#' @keywords internal
+paste_line <- function(...) {
+  paste(..., sep = "\n")
+}
+
+
+#' Rename a column in a data frame
+#'
+#' @param data A data frame to modify.
+#' @param col_name A character vector of columns to rename.
+#' @param replacement A character vector of replacement column names.
+#'
+#' @return Returns the renamed data frame.
+#' @keywords internal
+rename <- function(data, col_name, replacement) {
+  names(data)[match(col_name, names(data))] <- replacement
+  data
+}
+
+
 #' Convert SS type parameter to the corresponding numeric value
 #'
 #' @param type The value to convert, either string or numeric.
@@ -119,4 +165,19 @@ resolve_type <- function(type) {
   if (clean_type %in% c("3", "iii", "orthogonal")) {
     return(3)
   }
+}
+
+
+#' Update a model in the environment the model was created in
+#'
+#' [`stats::update()`] will perform the update in [`parent.frame()`] by default, but this can cause
+#' problems when the update is called by another function (so the parent frame is no longer the
+#' environment the user is in).
+#'
+#' @inheritParams stats::update
+#'
+#' @return The updated model is returned.
+update_in_env <- function(object, formula., ...) {
+  code <- stats::update(object, formula., ..., evaluate = FALSE)
+  suppressMessages(eval(code, environment(formula(object))))
 }

@@ -1,8 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-supernova <img src='man/figures/logo.png' align="right" height="138" />
-=======================================================================
+# supernova <img src='man/figures/logo.png' align="right" height="138" />
 
 <!-- badges: start -->
 
@@ -62,13 +61,6 @@ calculated for fully independent predictor variables
 4.  Finally, the `MS` (`SS / df`), `F` (`MSR / MSE`), and `p` columns
     are calculated from already-computed values in the table.
 
-In addition to the ANOVA table provided by `supernova()`, the
-`supernova` package provides some useful functions for extracting
-estimates from a linear model fit via `lm()`: `b0()`, `b1()`, `fVal()`,
-`PRE()`. These are especially useful in the context of creating
-bootstrapped sampling distributions as in the [Examples](#examples)
-below.
-
 ### Supported models
 
 The following models are explicitly tested and supported by
@@ -92,8 +84,28 @@ errors or incorrect statistics. This includes, but is not limited to
 
 -   one-sample *t*-tests
 
-Installing
-----------
+### Other features
+
+In addition to the ANOVA table provided by `supernova()`, the
+`supernova` package provides some useful functions for teaching ANOVA
+and pairwise comparisons:
+
+**Generate models**: Generate the models that were compared to create
+each row of an ANOVA table using `generate_models()`. This can be done
+for each of the different SS Types as described in [Using Different SS
+Types](#using-different-ss-types) below.
+
+**Estimate extraction**: Extract estimates from a linear model fit via
+`lm()`: `b0()`, `b1()`, `fVal()`, `PRE()`. These are especially useful
+in the context of creating bootstrapped sampling distributions as in the
+[Bootstrapping Estimates](#bootstrapping-estimates) section below.
+
+**Pairwise comparisons**: Test each categorical group in a model against
+the others using `pairwise()`. This function supports Tukey and
+Bonferroni corrections. See the [Pairwise
+Comparisons](#pairwise-comparisons) section below.
+
+## Installing
 
 You can install the released version of supernova from
 [CRAN](https://CRAN.R-project.org) with:
@@ -110,8 +122,7 @@ library(remotes)
 install_github("UCLATALL/supernova")
 ```
 
-Examples
---------
+## Examples
 
 Here are some basic examples of the code and output for this package:
 
@@ -123,7 +134,7 @@ Here are some basic examples of the code and output for this package:
 supernova(lm(mpg ~ NULL, data = mtcars))
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: mpg ~ NULL
-#>  
+#> 
 #>                                SS  df     MS   F PRE   p
 #>  ----- --------------- | -------- --- ------ --- --- ---
 #>  Model (error reduced) |      --- ---    --- --- --- ---
@@ -138,7 +149,7 @@ supernova(lm(mpg ~ NULL, data = mtcars))
 supernova(lm(mpg ~ hp, data = mtcars))
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: mpg ~ hp
-#>  
+#> 
 #>                                SS df      MS      F    PRE     p
 #>  ----- --------------- | -------- -- ------- ------ ------ -----
 #>  Model (error reduced) |  678.373  1 678.373 45.460 0.6024 .0000
@@ -153,7 +164,7 @@ supernova(lm(mpg ~ hp, data = mtcars))
 supernova(lm(mpg ~ hp + disp, data = mtcars))
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: mpg ~ hp + disp
-#>  
+#> 
 #>                                SS df      MS      F    PRE     p
 #>  ----- --------------- | -------- -- ------- ------ ------ -----
 #>  Model (error reduced) |  842.554  2 421.277 43.095 0.7482 .0000
@@ -170,7 +181,7 @@ supernova(lm(mpg ~ hp + disp, data = mtcars))
 supernova(lm(mpg ~ hp * disp, data = mtcars))
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: mpg ~ hp * disp
-#>  
+#> 
 #>                                  SS df      MS      F    PRE     p
 #>  ------- --------------- | -------- -- ------- ------ ------ -----
 #>    Model (error reduced) |  923.189  3 307.730 42.475 0.8198 .0000
@@ -188,7 +199,7 @@ supernova(lm(mpg ~ hp * disp, data = mtcars))
 supernova(lm(mpg ~ hp * disp, data = mtcars), verbose = FALSE)
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: mpg ~ hp * disp
-#>  
+#> 
 #>                  SS df      MS      F    PRE     p
 #>  ------- | -------- -- ------- ------ ------ -----
 #>  Model   |  923.189  3 307.730 42.475 0.8198 .0000
@@ -238,7 +249,7 @@ simple_crossed %>%
   supernova(verbose = FALSE)
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: puzzles_completed ~ condition
-#>  
+#> 
 #>              SS df    MS     F    PRE     p
 #>  ----- | ------ -- ----- ----- ------ -----
 #>  Model |  2.250  1 2.250 1.518 0.0978 .2382
@@ -252,7 +263,7 @@ simple_crossed %>%
   supernova()
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: puzzles_completed ~ condition + (1 | subject)
-#>  
+#> 
 #>                               SS df    MS     F    PRE     p
 #>  ---------------------- | ------ -- ----- ----- ------ -----
 #>  Between Subjects       |                                   
@@ -278,7 +289,7 @@ multiple_crossed %>%
   supernova(verbose = FALSE)
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: recall ~ type * time
-#>  
+#> 
 #>                   SS df     MS     F    PRE     p
 #>  --------- | ------- -- ------ ----- ------ -----
 #>  Model     |  85.367  5 17.073 2.791 0.3677 .0400
@@ -295,7 +306,7 @@ multiple_crossed %>%
   supernova()
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: recall ~ type * time + (1 | Subject) + (1 | type:Subject) + (1 | time:Subject)
-#>  
+#> 
 #>                                SS df     MS      F    PRE     p
 #>  ---------------------- | ------- -- ------ ------ ------ -----
 #>  Between Subjects       |                                      
@@ -331,7 +342,7 @@ simple_nested %>%
   supernova(verbose = FALSE)
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: value ~ instructions
-#>  
+#> 
 #>              SS df     MS      F    PRE     p
 #>  ----- | ------ -- ------ ------ ------ -----
 #>  Model | 12.500  1 12.500 12.500 0.4386 .0027
@@ -345,7 +356,7 @@ simple_nested %>%
   supernova()
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: value ~ instructions + (1 | group)
-#>  
+#> 
 #>                               SS df     MS     F    PRE     p
 #>  ---------------------- | ------ -- ------ ----- ------ -----
 #>  Between Subjects       |                                    
@@ -379,7 +390,7 @@ complex_nested %>%
   supernova(verbose = FALSE)
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: rating ~ sex * yearsmarried * children
-#>  
+#> 
 #>                                  SS df    MS      F    PRE     p
 #>  ------------------------- | ------ -- ----- ------ ------ -----
 #>  Model                     | 26.500  7 3.786  5.345 0.6092 .0009
@@ -387,7 +398,7 @@ complex_nested %>%
 #>  yearsmarried              |  1.125  1 1.125  1.588 0.0621 .2197
 #>  children                  |  2.000  1 2.000  2.824 0.1053 .1059
 #>  sex:yearsmarried          |  2.250  1 2.250  3.176 0.1169 .0874
-#>  sex:children              |  0.063  1 0.063  0.088 0.0037 .7690
+#>  sex:children              |  0.062  1 0.062  0.088 0.0037 .7690
 #>  yearsmarried:children     |  7.563  1 7.563 10.676 0.3079 .0033
 #>  sex:yearsmarried:children |  0.500  1 0.500  0.706 0.0286 .4091
 #>  Error                     | 17.000 24 0.708                    
@@ -400,7 +411,7 @@ complex_nested %>%
   supernova()
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: rating ~ sex * yearsmarried * children + (1 | couple)
-#>  
+#> 
 #>                                    SS df     MS     F    PRE     p
 #>  --------------------------- | ------ -- ------ ----- ------ -----
 #>  Between Subjects            |                                    
@@ -429,7 +440,7 @@ complex_nested %>%
 supernova(lm(mpg ~ hp * disp, data = mtcars))
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: mpg ~ hp * disp
-#>  
+#> 
 #>                                  SS df      MS      F    PRE     p
 #>  ------- --------------- | -------- -- ------- ------ ------ -----
 #>    Model (error reduced) |  923.189  3 307.730 42.475 0.8198 .0000
@@ -455,7 +466,7 @@ supernova(lm(mpg ~ hp * disp, data = mtcars), type = "orthogonal")
 supernova(lm(mpg ~ hp * disp, data = mtcars), type = 1)
 #>  Analysis of Variance Table (Type I SS)
 #>  Model: mpg ~ hp * disp
-#>  
+#> 
 #>                                  SS df      MS      F    PRE     p
 #>  ------- --------------- | -------- -- ------- ------ ------ -----
 #>    Model (error reduced) |  923.189  3 307.730 42.475 0.8198 .0000
@@ -480,7 +491,7 @@ supernova(lm(mpg ~ hp * disp, data = mtcars), type = "sequential")
 supernova(lm(mpg ~ hp * disp, data = mtcars), type = 2)
 #>  Analysis of Variance Table (Type II SS)
 #>  Model: mpg ~ hp * disp
-#>  
+#> 
 #>                                  SS df      MS      F    PRE     p
 #>  ------- --------------- | -------- -- ------- ------ ------ -----
 #>    Model (error reduced) |  923.189  3 307.730 42.475 0.8198 .0000
@@ -510,21 +521,24 @@ appropriately evaluate each term in the full model.
 
 ``` r
 generate_models(lm(mpg ~ hp * disp, data = mtcars), type = 2)
-#> Comparison Models for Type II SS
-#> Model: mpg ~ hp * disp
 #> 
-#> Full Model
-#>   complex: mpg ~ hp + disp + hp:disp
-#>    simple: mpg ~ NULL
-#> hp
-#>   complex: mpg ~ hp + disp
-#>    simple: mpg ~      disp
-#> disp
-#>   complex: mpg ~ hp + disp
-#>    simple: mpg ~ hp
-#> hp:disp
-#>   complex: mpg ~ hp + disp + hp:disp
-#>    simple: mpg ~ hp + disp
+#> ── Comparison Models for Type III SS ───────────────────────────────────────────
+#> 
+#> ── Full Model
+#> complex: mpg ~ hp + disp + hp:disp
+#> simple:  mpg ~ NULL
+#> 
+#> ── hp
+#> complex: mpg ~ hp + disp + hp:disp
+#> simple:  mpg ~      disp + hp:disp
+#> 
+#> ── disp
+#> complex: mpg ~ hp + disp + hp:disp
+#> simple:  mpg ~ hp +        hp:disp
+#> 
+#> ── hp:disp
+#> complex: mpg ~ hp + disp + hp:disp
+#> simple:  mpg ~ hp + disp
 ```
 
 ### Bootstrapping Estimates
@@ -540,7 +554,7 @@ just needs to be extracted via other means.
 ``` r
 # to extract a single estimate:
 b1(lm(mpg ~ hp, data = mtcars))
-#> [1] -0.06823
+#> [1] -0.06822828
 
 # use mosaic package to repetitively resample to bootstrap a distribution
 sd_of_b1 <- mosaic::do(1000) * b1(lm(mpg ~ hp, data = mosaic::resample(mtcars)))
@@ -568,8 +582,135 @@ hist(sd_of_hp$result)
 
 <img src="man/figures/README-samp_dist_of_hp_coef-1.png" width="80%" />
 
-Contributing
-============
+### Pairwise Comparisons
+
+The `pairwise()` function takes a linear model and performs the
+requested pairwise comparisons on the categorical terms in the model.
+For simple one-way models where a single categorical variable predicts
+and outcome. You will get output similar to other methods of computing
+pairwise comparisons (e.g. `TukeyHSD` or `t.test`). Essentially, the
+differences on the outcome between each of the groups defined by the
+categorical variable are compared with the requested test, and their
+confidence intervals and p-values are adjusted by the requested
+correction.
+
+However, when more than two variables are entered into the model, the
+outcome will diverge somewhat from other methods of computing pairwise
+comparisons. For traditional pairwise tests you need to estimate an
+error term, usually by pooling the standard deviation of the groups
+being compared. This means that when you have other predictors in the
+model, their presence is ignored when running these tests. For the
+functions in this package, we instead compute the pooled standard error
+by using the mean squared error (MSE) from the full model fit.
+
+Let’s take a concrete example to explain that. If we are predicting
+`Thumb` length from `Sex`, we can create that linear model and get the
+pairwise comparisons like this:
+
+``` r
+pairwise(lm(Thumb ~ Sex, data = supernova::Fingers))
+#> 
+#> ── Tukey's Honestly Significant Differences ────────────────────────────────────
+#> Model: Thumb ~ Sex
+#> 
+#> ── Sex
+#> 1 comparison of 2 levels
+#> Family-wise error-rate: 0.05
+#> 
+#>   group_1 group_2  diff pooled_se     q    df lower upper p_adj
+#>   <chr>   <chr>   <dbl>     <dbl> <dbl> <int> <dbl> <dbl> <dbl>
+#> 1 male    female  6.447     1.029 6.262   155 3.571 9.323 .0000
+```
+
+The output of this code will have one table showing the comparison of
+males and females on thumb length. The pooled standard error is the same
+as the square root of the MSE from the full model.
+
+By default, Tukey’s HSD is used to correct for multiple comparisons.
+However, you can specify “none” for t-tests or “Bonferroni” for t-tests
+with Bonferroni corrections.
+
+``` r
+pairwise(lm(Thumb ~ Sex, data = supernova::Fingers), correction = "none")
+#> 
+#> ── Pairwise t-tests ────────────────────────────────────────────────────────────
+#> Model: Thumb ~ Sex
+#> 
+#> ── Sex
+#> 1 comparison of 2 levels
+#> Family-wise error-rate: 0.05
+#> 
+#>   group_1 group_2  diff pooled_se     t    df lower upper p_val
+#>   <chr>   <chr>   <dbl>     <dbl> <dbl> <int> <dbl> <dbl> <dbl>
+#> 1 male    female  6.447     1.456 4.428   155 4.038 8.856 .0000
+pairwise(lm(Thumb ~ Sex, data = supernova::Fingers), correction = "Bonferroni")
+#> 
+#> ── Pairwise t-tests with Bonferroni correction ─────────────────────────────────
+#> Model: Thumb ~ Sex
+#> 
+#> ── Sex
+#> 1 comparison of 2 levels
+#> Family-wise error-rate: 0.05
+#> 
+#>   group_1 group_2  diff pooled_se     t    df lower upper p_adj
+#>   <chr>   <chr>   <dbl>     <dbl> <dbl> <int> <dbl> <dbl> <dbl>
+#> 1 male    female  6.447     1.456 4.428   155 4.038 8.856 .0000
+```
+
+In these data the `Sex` variable did not have any other values than male
+and female, but we can imagine situations where the data had other
+values like other or more refined responses. In these cases, the pooled
+SD would be calculated by taking the MSE of the full model (not of each
+group) and then weighting it based on the size of the groups in question
+(divide by n).
+
+To improve our model, we might add Height as quantitative predictor:
+
+``` r
+pairwise(lm(Thumb ~ Sex + Height, data = supernova::Fingers))
+#> 
+#> ── Tukey's Honestly Significant Differences ────────────────────────────────────
+#> Model: Thumb ~ Sex + Height
+#> 
+#> ── Sex
+#> 1 comparison of 2 levels
+#> Family-wise error-rate: 0.05
+#> 
+#>   group_1 group_2  diff pooled_se     q    df lower upper p_adj
+#>   <chr>   <chr>   <dbl>     <dbl> <dbl> <int> <dbl> <dbl> <dbl>
+#> 1 male    female  6.447     1.001 6.438   154 3.649 9.245 .0000
+```
+
+Note that the output still only has a table for `Sex.` This is because
+we can’t do a pairwise comparison using `Height` because there are no
+groups to compare. Most functions will drop or not let you use this
+variable during pairwise comparisons. Instead, `pairwise()` uses the
+same approach as in the 3+ groups situation: we use the MSE for the full
+model and then weight it by the size of the groups being compared.
+Because we are using the MSE for the full model, the effect of `Height`
+is accounted for in the error term even though we are not explicitly
+comparing different heights. Importantly, the interpretation of the
+outcome is different than in other traditional t-tests. Instead of
+saying, “there is a difference in thumb length based on the value of
+sex,” we must add that this difference is found “after accounting for
+height.”
+
+Finally, the output can be plotted either by using `plot()` on the
+returned object, or specifying `plot = TRUE`:
+
+``` r
+output <- pairwise(lm(Thumb ~ Sex + Height, data = supernova::Fingers))
+plot(output)
+```
+
+<img src="man/figures/README-unnamed-chunk-24-1.png" width="80%" />
+
+``` r
+# alternatively
+# pairwise(lm(Thumb ~ Sex + Height, data = supernova::Fingers), plot = TRUE)
+```
+
+# Contributing
 
 If you see an issue, problem, or improvement that you think we should
 know about, or you think would fit with this package, please let us know

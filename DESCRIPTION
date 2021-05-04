@@ -1,14 +1,27 @@
 Package: supernova
 Type: Package
 Title: Judd, McClelland, & Ryan Formatting for ANOVA Output
-Version: 2.3.0
-Date: 2021-01-12
+Version: 2.4.0
+Date: 2021-05-03
 Authors@R: c(
-    person("Adam", "Blake", email = "theadamattack@gmail.com", role = "aut", comment = c(ORCID = "0000-0001-7881-8652")),
-    person("Jeff", "Chrabaszcz", role = "aut"),
-    person("Ji", "Son", email = "json2@calstatela.edu", role = "aut", comment = c(ORCID = "0000-0002-4258-4791")),
-    person("Jim", "Stigler", email = "jstigler@gmail.com", role = c("cre", "aut"), comment = c(ORCID = "0000-0001-6107-7827"))
-  )
+    person(
+      "Adam", "Blake", 
+      email = "theadamattack@gmail.com", 
+      role = "aut", 
+      comment = c(ORCID = "0000-0001-7881-8652")),
+    person(
+      "Jeff", "Chrabaszcz",
+      role = "aut"),
+    person(
+      "Ji", "Son", 
+      email = "json2@calstatela.edu",
+      role = "aut",
+      comment = c(ORCID = "0000-0002-4258-4791")),
+    person(
+      "Jim", "Stigler",
+      email = "jstigler@gmail.com",
+      role = c("cre", "aut"),
+      comment = c(ORCID = "0000-0001-6107-7827")))
 Encoding: UTF-8
 LazyData: yes
 Description: Produces ANOVA tables in the format used by Judd, McClelland, and Ryan 
@@ -18,18 +31,26 @@ Description: Produces ANOVA tables in the format used by Judd, McClelland, and R
 License: GPL-3
 Depends: R (>= 3.5.0)
 Suggests: 
-    testthat (>= 2.1.0),
-    covr,
-    tibble,
-    tidyr,
     car,
-    lme4
+    covr,
+    lintr,
+    lme4,
+    testthat (>= 2.1.0),
+    vdiffr,
+    tidyr
 Imports:
-    rlang,
+    ggplot2,
+    tibble,
+    cli,
     magrittr,
-    vctrs,
+    purrr,
+    rlang,
     stringr,
-    purrr
+    vctrs,
+    pillar,
+    methods
 RoxygenNote: 7.1.1
 URL: https://github.com/UCLATALL/supernova
 BugReports: https://github.com/UCLATALL/supernova/issues
+Roxygen: list(markdown = TRUE)
+Config/testthat/edition: 3

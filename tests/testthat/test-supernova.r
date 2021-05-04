@@ -1,5 +1,3 @@
-context("supernova: Values, independent designs")
-
 # Notes -------------------------------------------------------------------
 
 # When checking multiple regression, the data are sanity checked against the
@@ -14,45 +12,32 @@ context("supernova: Values, independent designs")
 
 # Helper functions --------------------------------------------------------
 
-pre <- function(ssr, sse) ssr / (ssr + sse)
-ssr <- function(model) sum((predict(model) - mean(model$model[, 1]))^2, na.rm = TRUE)
-sse <- function(model) sum(resid(model)^2, na.rm = TRUE)
 sst <- function(model) var(model$model[, 1], na.rm = TRUE) * (nrow(model$model) - 1)
 formula_to_string <- function(formula) Reduce(paste, deparse(formula))
 
 # Retrieves partial row data for multiple regression from the model cache
 get_partials <- function(model, type) {
-  ivs <- formula(model) %>%
-    terms() %>%
-    labels()
+  ivs <- frm_terms(model)
   if (length(ivs) < 2) {
     return(NULL)
   }
 
-  if (!exists("model_cache")) {
-    model_cache <<- paste0("./cache/model_cache_type_", 1:3, ".Rds") %>%
-      lapply(readRDS)
-  }
+  suppressMessages(car::Anova) # ignore masking lme4 methods
+  anova_tbl <- if (type == 1) anova(model) else car::Anova(model, type = type)
 
-  cache_name <- formula_to_string(model$call)
-
-  anova_tbl <- model_cache[[type]][[cache_name]] %>%
-    .[c("Sum Sq", "Df", "F value", "Pr(>F)")] %>%
-    setNames(c("SS", "df", "F", "p")) %>%
-    {
-      .$term <- rownames(.)
-      .
-    }
+  anova_tbl <- anova_tbl[, c("Sum Sq", "Df", "F value", "Pr(>F)")]
+  anova_tbl <- setNames(anova_tbl, c("SS", "df", "F", "p"))
+  anova_tbl$term <- rownames(anova_tbl)
 
   anova_tbl[which(anova_tbl$term %in% ivs), ]
 }
 
-# This needs to match with df.missing in cache_test_data.R
+# This needs to match with df_missing in cache_test_data.R
 get_data_with_missing <- function() {
-  df.missing <- mtcars
-  df.missing[1, ]$hp <- NA_real_
-  df.missing[2:3, ]$disp <- NA_real_
-  return(df.missing)
+  df_missing <- mtcars
+  df_missing[1, ]$hp <- NA_real_
+  df_missing[2:3, ]$disp <- NA_real_
+  df_missing
 }
 
 
@@ -68,12 +53,12 @@ get_data_with_missing <- function() {
 #' @return Invisibly returns the original `data.frame` object for piping.
 expect_col_equal <- function(object, col_name, expected, ...) {
   column <- object[[col_name]]
-  act <- quasi_label(rlang::enquo(column), sprintf("obj$%s", col_name))
-  exp <- quasi_label(rlang::enquo(expected))
-  comp <- compare(act$val, exp$val, ...)
+  act <- testthat::quasi_label(rlang::enquo(column), sprintf("obj$%s", col_name))
+  exp <- testthat::quasi_label(rlang::enquo(expected))
+  comp <- testthat::compare(act$val, exp$val, ...)
   expect(comp$equal, sprintf(
     "%s not equal to %s.\n%s\nActual: %s\n", "Expected: %s",
-    act$lab, exp$lab, comp$message, tibble::tibble(act$val), tibble::tibble(exp$val)
+    act$lab, exp$lab, comp$message, data.frame(act$val), data.frame(exp$val)
   ))
   invisible(object)
 }
@@ -91,7 +76,9 @@ expect_col_equal <- function(object, col_name, expected, ...) {
 #' @return Invisibly returns the original `supernova` object for piping.
 expect_supernova <- function(object, type = 3, ...) {
   expect_model(object)
-  if (nrow(object$tbl) > 3) expect_partials(object, type, ...)
+  if (nrow(object$tbl) > 3) {
+    expect_partials(object, type, ...)
+  }
   invisible(object)
 }
 
@@ -114,23 +101,23 @@ expect_model <- function(object, ...) {
   expected <- data.frame(
     SS = c(ssr(object$fit), sse(object$fit), sst(object$fit)),
     df = c(f_stats[[2]], f_stats[[3]], nrow(object$fit$model) - 1),
-    F = c(f_stats[[1]], NA_real_, NA_real_),
+    `F` = c(f_stats[[1]], NA_real_, NA_real_),
     PRE = c(pre, NA_real_, NA_real_),
     p = c(p_value, NA_real_, NA_real_)
   )
   expected["MS"] <- expected["SS"] / expected["df"]
   expected <- expected[c("SS", "df", "MS", "F", "PRE", "p")]
 
-  act_model_rows <- object$tbl %>% .[c(1, nrow(.) - 1, nrow(.)), 3:8]
-  expect_table_data(act_model_rows, expected)
+  model_rows <- c(1, nrow(object$tbl) - 1, nrow(object$tbl))
+  act_model_rows <- object$tbl[model_rows, 3:8]
+  expect_table_data(act_model_rows, expected, object$fit, attr(object, "type"))
   invisible(object)
 }
 
 #' Test the partial (predictor) rows in a `supernova` table
 #'
-#' Test that a \code{\link{supernova}} object has the correct values for
-#' evaluation of the partial terms in the model (each predictor in a multiple
-#' regression model).
+#' Test that a [`supernova`] object has the correct values for evaluation of the partial terms in
+#' the model (each predictor in a multiple regression model).
 #'
 #' @param object An object created by `supernova()`.
 #' @param type The type of calculation used to compute the sums of squares.
@@ -138,14 +125,14 @@ expect_model <- function(object, ...) {
 #'
 #' @return Invisibly returns the original `supernova` object for piping.
 expect_partials <- function(object, type = 3, ...) {
-  act_partial_rows <- object$tbl %>% .[2:(nrow(.) - 2), 3:8]
+  act_partial_rows <- object$tbl[2:(nrow(object$tbl) - 2), 3:8]
 
   expected <- get_partials(object$fit, type = type)
   expected["MS"] <- expected["SS"] / expected["df"]
-  expected["PRE"] <- pre(expected["SS"], sse(object$fit))
+  expected["PRE"] <- expected["SS"] / (sse(object$fit) + expected["SS"])
   expected <- expected[c("SS", "df", "MS", "F", "PRE", "p")]
 
-  expect_table_data(act_partial_rows, expected)
+  expect_table_data(act_partial_rows, expected, object$fit, attr(object, "type"))
   invisible(object)
 }
 
@@ -159,15 +146,16 @@ expect_partials <- function(object, type = 3, ...) {
 #' @param ... Additional arguments used to control specifics of comparison.
 #'
 #' @return Invisibly returns the tested object.
-expect_table_data <- function(object, expected, ...) {
+expect_table_data <- function(object, expected, model = "???", type = "???", ...) {
+  model_string <- if (is.character(model)) model else deparse(formula(model))
   testthat_table <- function(table) {
     output <- capture.output(print(table, row.names = FALSE))
     paste0("\n", paste0(output, collapse = "\n"))
   }
-  comp <- compare(object, expected, check.attributes = FALSE, ...)
+  comp <- testthat::compare(object, expected, check.attributes = FALSE, ...)
   expect(comp$equal, sprintf(
-    "%s\n\nActual: %s\n\nExpected: %s\n",
-    comp$message, testthat_table(object), testthat_table(expected)
+    "%s\n\nModel: %s\nType: %s\n\nActual: %s\n\nExpected: %s\n",
+    comp$message, model_string, type, testthat_table(object), testthat_table(expected)
   ))
   invisible(object)
 }
@@ -184,37 +172,35 @@ test_that("supernova object has table, fit, and models", {
   obj <- supernova(fit, type = 3)
 
   obj %>%
-    expect_is("supernova")
-
-  obj$tbl %>%
-    expect_is("data.frame")
+    expect_s3_class("supernova")
 
   obj$fit %>%
-    expect_is("lm") %>%
+    expect_s3_class("lm") %>%
     expect_identical(fit)
 
   obj$models %>%
-    expect_is("comparison_models") %>%
+    expect_s3_class("comparison_models") %>%
     expect_identical(suppressWarnings(generate_models(fit, 3)))
 })
 
 test_that("supernova table structure is well-formed", {
-  obj <- supernova(lm(mpg ~ NULL, mtcars))$tbl %>% expect_is("data.frame")
-  expect_named(obj, c("term", "description", "SS", "df", "MS", "F", "PRE", "p"))
-  expect_is(obj[["term"]], "character")
-  expect_is(obj[["description"]], "character")
-  expect_is(obj[["SS"]], "numeric")
-  expect_is(obj[["df"]], "integer")
-  expect_is(obj[["MS"]], "numeric")
-  expect_is(obj[["F"]], "numeric")
-  expect_is(obj[["PRE"]], "numeric")
-  expect_is(obj[["p"]], "numeric")
+  obj <- supernova(lm(mpg ~ NULL, mtcars))$tbl
+  expect_vector(obj, data.frame(
+    term = character(),
+    description = character(),
+    SS = double(),
+    df = integer(),
+    MS = double(),
+    `F` = double(),
+    PRE = double(),
+    p = double()
+  ))
 })
 
 test_that("magrittr can pipe lm() to supernova", {
   lm(mpg ~ NULL, mtcars) %>%
     supernova() %>%
-    expect_is("supernova")
+    expect_s3_class("supernova")
 })
 
 test_that("magrittr can pipe data to lm() to supernova", {
@@ -224,7 +210,13 @@ test_that("magrittr can pipe data to lm() to supernova", {
   mtcars %>%
     lm(mpg ~ NULL, data = .) %>%
     supernova() %>%
-    expect_is("supernova")
+    expect_s3_class("supernova")
+})
+
+test_that("it can handle datasets with function name collisions", {
+  # subset is a base R function
+  subset <- mtcars
+  expect_error(supernova(lm(mpg ~ hp, data = subset)), NA)
 })
 
 
@@ -237,28 +229,29 @@ test_that("supernova calcs. (quant. ~ NULL) ANOVA correctly", {
   expected[c("F", "PRE", "p")] <- NA_real_
   expected <- expected[c("SS", "df", "MS", "F", "PRE", "p")]
 
-  supernova(model)$tbl %>%
-    .[nrow(.), 3:8] %>%
-    expect_table_data(expected)
+  actual <- supernova(model)$tbl
+  expect_table_data(actual[nrow(actual), 3:8], expected, model)
 })
 
 models_to_test <- list(
-  `q ~ q` = lm(Thumb ~ Weight, Fingers),
-  `q ~ c` = lm(Thumb ~ RaceEthnic, Fingers),
-  `q ~ q + q` = lm(Thumb ~ Weight + Height, Fingers),
-  `q ~ c + q` = lm(Thumb ~ RaceEthnic + Weight, Fingers),
-  `q ~ c + c` = lm(Thumb ~ RaceEthnic + Sex, Fingers),
-  `q ~ c + c + c` = lm(Thumb ~ RaceEthnic + Weight + Sex, Fingers),
-  `q ~ q * q` = lm(Thumb ~ Weight * Height, Fingers),
-
-  `q ~ c * q` = lm(Thumb ~ RaceEthnic * Weight, Fingers),
-  `q ~ c * c` = lm(Thumb ~ RaceEthnic * Sex, Fingers),
-  `q ~ c + q * c` = lm(Thumb ~ RaceEthnic + Weight * Sex, Fingers),
-  `q ~ c * q * c` = lm(Thumb ~ RaceEthnic * Weight * Sex, Fingers)
+  `q ~ q` = lm(Thumb ~ Weight, supernova::Fingers),
+  `q ~ c` = lm(Thumb ~ RaceEthnic, supernova::Fingers),
+  `q ~ q + q` = lm(Thumb ~ Weight + Height, supernova::Fingers),
+  `q ~ c + q` = lm(Thumb ~ RaceEthnic + Weight, supernova::Fingers),
+  `q ~ c + c` = lm(Thumb ~ RaceEthnic + Sex, supernova::Fingers),
+  `q ~ c + c + c` = lm(Thumb ~ RaceEthnic + Weight + Sex, supernova::Fingers),
+  `q ~ q * q` = lm(Thumb ~ Weight * Height, supernova::Fingers),
+  `q ~ c * q` = lm(Thumb ~ RaceEthnic * Weight, supernova::Fingers),
+  `q ~ c * c` = lm(Thumb ~ RaceEthnic * Sex, supernova::Fingers),
+  `q ~ c + q * c` = lm(Thumb ~ RaceEthnic + Weight * Sex, supernova::Fingers),
+  `q ~ c * q * c` = lm(Thumb ~ RaceEthnic * Weight * Sex, supernova::Fingers)
 )
 
-test_that("supernova can calculate different SS types sequential (type 1) SS", {
-  anova_tester <- function(model, type) expect_supernova(supernova(model, type), type)
+test_that("supernova calculates ANOVAs properly (including different SS types)", {
+  anova_tester <- function(model, type) {
+    obj <- supernova(model, type)
+    expect_supernova(obj, type)
+  }
 
   anova_tester_type_1 <- function(model) anova_tester(model, type = 1)
   lapply(models_to_test, anova_tester_type_1)
@@ -271,7 +264,7 @@ test_that("supernova can calculate different SS types sequential (type 1) SS", {
 })
 
 test_that("supernova SS types can be specified as numeric, numeral, character", {
-  model <- models_to_test[[length(models_to_test)]]
+  model <- models_to_test[[1]]
   expect_identical(supernova(model, type = 1), supernova(model, type = "I"))
   expect_identical(supernova(model, type = 1), supernova(model, type = "sequential"))
 
@@ -290,50 +283,45 @@ test_that("supernova SS types can be specified as numeric, numeral, character", 
 # Unbalanced and missing data ---------------------------------------------
 
 test_that("supernova uses listwise deletion for missing data", {
-  df.missing <- get_data_with_missing()
+  df_missing <- get_data_with_missing()
 
   # one-way
-  df_total <- sum(!is.na(df.missing$hp)) - 1
-  supernova(lm(mpg ~ hp, df.missing)) %>%
-    expect_supernova() %>%
-    # explicitly test correct df
-    # this needs to be checked because otherwise the total row will show
-    # nrow() - 1 for df instead of looking at only complete cases
-    .$tbl %>%
-    expect_col_equal("df", c(1, df_total - 1, df_total))
+  df_total <- sum(!is.na(df_missing$hp)) - 1
+  one_way <- suppressMessages({
+    fit <- lm(mpg ~ hp, df_missing)
+    supernova(fit)
+  })
+  expect_supernova(one_way)
+  # explicitly test correct df
+  # this needs to be checked because otherwise the total row will show
+  # num. rows - 1 for df instead of looking at only complete cases
+  expect_col_equal(one_way$tbl, "df", c(1, df_total - 1, df_total))
 
   # two-way
-  df_total <- nrow(na.omit(df.missing[c("mpg", "hp", "disp")])) - 1
-  anova <- supernova(lm(mpg ~ hp * disp, df.missing))
-  expect_supernova(anova)
-  expect_col_equal(anova$tbl, "df", c(3, 1, 1, 1, df_total - 3, df_total))
-})
-
-test_that("message is given for number of rows deleted due to missing cases", {
-  df.missing <- get_data_with_missing()
-
-  expect_message(
-    supernova(lm(mpg ~ hp, mtcars)),
-    NA
-  )
-  expect_message(
-    supernova(lm(mpg ~ hp, df.missing)),
-    "Note: 1 case removed due to missing value(s).",
-    fixed = TRUE
-  )
-  expect_message(
-    supernova(lm(mpg ~ disp, df.missing)),
-    "Note: 2 cases removed due to missing value(s).",
-    fixed = TRUE
-  )
-  expect_message(
-    supernova(lm(mpg ~ hp * disp, df.missing)),
-    "Note: 3 cases removed due to missing value(s).",
-    fixed = TRUE
-  )
+  df_total <- nrow(na.omit(df_missing[c("mpg", "hp", "disp")])) - 1
+  two_way <- suppressMessages({
+    fit <- lm(mpg ~ hp * disp, df_missing)
+    supernova(fit)
+  })
+  expect_supernova(two_way)
+  expect_col_equal(two_way$tbl, "df", c(3, 1, 1, 1, df_total - 3, df_total))
 })
 
 test_that("supernova makes correct calculations for unbalanced data", {
-  expect_supernova(supernova(lm(uptake ~ Treatment, data = CO2[1:80, ])))
-  expect_supernova(supernova(lm(uptake ~ Treatment * Type, data = CO2[1:80, ])))
+  one_way <- suppressMessages(supernova(lm(uptake ~ Treatment, data = CO2[1:80, ])))
+  expect_supernova(one_way)
+
+  two_way <- suppressMessages(supernova(lm(uptake ~ Treatment * Type, data = CO2[1:80, ])))
+  expect_supernova(two_way)
+})
+
+test_that("message is given for number of rows deleted due to missing cases", {
+  df_missing <- get_data_with_missing()
+
+  # 1 case removed
+  expect_snapshot(supernova(lm(mpg ~ hp, df_missing)))
+  # 2 cases removed
+  expect_snapshot(supernova(lm(mpg ~ disp, df_missing)))
+  # 3 cases removed
+  expect_snapshot(supernova(lm(mpg ~ hp * disp, df_missing)))
 })

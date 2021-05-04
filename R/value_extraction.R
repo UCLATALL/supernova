@@ -1,25 +1,23 @@
-#' Extract Estimates/Statistics From a Model
+#' Extract estimates/statistics from a model
 #'
-#' This collection of functions is useful for extracting estimates and
-#' statistics from a fitted model. They are particularly useful when estimating
-#' many models, like when bootstrapping confidence intervals. Each function can
-#' be used with an already fitted model as an \code{\link{lm}} object, or a
-#' formula and associated data can be passed to it.
+#' This collection of functions is useful for extracting estimates and statistics from a fitted
+#' model. They are particularly useful when estimating many models, like when bootstrapping
+#' confidence intervals. Each function can be used with an already fitted model as an [`lm`] object,
+#' or a formula and associated data can be passed to it. **All of these assume the comparison is the
+#' empty model.**
 #'
-#' \describe{
-#'   \item{b0}{The intercept from the full model.}
-#'   \item{b1}{The slope b1 from the full model.}
-#'   \item{fVal}{The F value from the full model.}
-#'   \item{PRE}{The Proportional Reduction in Error for the full model.}
-#'   \item{SSE}{The SS Error (SS Residual) from the model.}
-#'   \item{SSM}{The SS Model (SS Regression) for the full model.}
-#'   \item{SSR}{Alias for SSM.}
-#' }
+#' - **`b0`**: The intercept from the full model.
+#' - **`b1`**: The slope b1 from the full model.
+#' - **`fVal`**: The F value from the full model.
+#' - **`PRE`**: The Proportional Reduction in Error for the full model.
+#' - **`SSE`**: The SS Error (SS Residual) from the model.
+#' - **`SSM`**: The SS Model (SS Regression) for the full model.
+#' - **`SSR`**: Alias for SSM.
 #'
-#' @param object A \code{\link{lm}} object, or \code{\link{formula}}.
-#' @param data If \code{object} is a formula, the data to fit the formula to as
-#'   a \code{\link{data.frame}}.
-#' @param ... Additional arguments passed through to \code{\link{lm}}.
+#'
+#' @param object A [`lm`] object, or [`formula`].
+#' @param data If `object` is a formula, the data to fit the formula to as a [`data.frame`].
+#' @param ... Additional arguments passed through to [`lm`].
 #'
 #' @return The value of the estimate as a single number.
 #'
@@ -42,36 +40,73 @@ b1 <- function(object, data = NULL, ...) {
 
 #' @rdname estimate_extraction
 #' @export
-fVal <- function(object, data = NULL, ...) {
+f <- function(object, data = NULL, ...) {
   fit <- convert_lm(object, data, ...)
   summary(fit)$fstatistic[[1]]
 }
 
 #' @rdname estimate_extraction
 #' @export
-PRE <- function(object, data = NULL, ...) {
+pre <- function(object, data = NULL, ...) {
   fit <- convert_lm(object, data, ...)
   summary(fit)$r.squared[[1]]
 }
 
 #' @rdname estimate_extraction
 #' @export
-SSE <- function(object, data = NULL, ...) {
+sse <- function(object, data = NULL, ...) {
   fit <- convert_lm(object, data, ...)
   sum(fit$residuals^2)
 }
 
 #' @rdname estimate_extraction
 #' @export
-SSM <- function(object, data = NULL, ...) {
+ssm <- function(object, data = NULL, ...) {
   fit <- convert_lm(object, data, ...)
   sum((fit$fitted.values - mean(fit$model[[1]]))^2)
 }
 
 #' @rdname estimate_extraction
 #' @export
-SSR <- SSM
+ssr <- ssm
+
 
 convert_lm <- function(object, data, ...) {
   return(if ("lm" %in% class(object)) object else lm(object, data, ...))
 }
+
+
+# Deprecated for consistent names -------------------------------------------------------------
+# nolint start
+
+#' @rdname estimate_extraction
+#' @export
+fVal <- function(object, data = NULL, ...) {
+  f(object, data, ...)
+}
+
+#' @rdname estimate_extraction
+#' @export
+PRE <- function(object, data = NULL, ...) {
+  pre(object, data, ...)
+}
+
+#' @rdname estimate_extraction
+#' @export
+SSE <- function(object, data = NULL, ...) {
+  sse(object, data, ...)
+}
+
+#' @rdname estimate_extraction
+#' @export
+SSM <- function(object, data = NULL, ...) {
+  sse(object, data, ...)
+}
+
+#' @rdname estimate_extraction
+#' @export
+SSR <- function(object, data = NULL, ...) {
+  ssr(object, data, ...)
+}
+
+# nolint end

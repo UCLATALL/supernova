@@ -8,3 +8,5 @@ cache_test_data
 ^\.travis\.yml$
 ^codecov\.yml$
 ^\.github$
+^\.lintr$
+^data-raw$
