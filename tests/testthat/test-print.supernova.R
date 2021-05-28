@@ -120,6 +120,11 @@ test_that("nested repeated measures tables are beautifully formatted", {
 })
 
 test_that("crossed repeated measures tables are beautifully formatted", {
+  skip_if(
+    package_version(R.version) < 3.5,
+    "The MSE between will be off negligibly on older R versions (~.001)."
+  )
+
   model <- fit_lmer(
     rating ~ sex * yearsmarried * children + (1 | couple),
     data = get_data("jmr_ex11.22")
