@@ -193,7 +193,8 @@ test_that("supernova table structure is well-formed", {
     MS = double(),
     `F` = double(),
     PRE = double(),
-    p = double()
+    p = double(),
+    stringsAsFactors = FALSE
   ))
 })
 

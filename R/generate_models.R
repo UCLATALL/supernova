@@ -243,6 +243,7 @@ drop_term <- function(fit, term) {
     paste0(collapse = "") %>%
     stringr::str_squish()
   new_call_string <- sprintf("drop_term(%s, \"%s\")", call_string, term)
+  str2lang <- getFromNamespace("str2lang", "backports")
   reduced_fit$call <- str2lang(new_call_string)
 
   oldClass(reduced_fit) <- "lm"
