@@ -85,16 +85,6 @@ test_that("pairwise_t family-wise error-rate is larger than alpha when more than
 })
 
 
-# Catch all -----------------------------------------------------------------------------------
-
-test_that("catch all other data here", {
-  fit <- lm(Thumb ~ RaceEthnic, supernova::Fingers)
-  expect_snapshot(pairwise_t(fit))
-  expect_snapshot(pairwise_bonferroni(fit))
-  expect_snapshot(pairwise_tukey(fit))
-})
-
-
 # Plots ---------------------------------------------------------------------------------------
 
 test_that("each type of comparisons object plots well", {
