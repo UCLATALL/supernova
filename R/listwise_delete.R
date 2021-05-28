@@ -50,6 +50,7 @@ listwise_delete.lm <- function(obj, vars = all.vars(formula(obj))) {
     class = "supernova_missing_values_message"
   )
 
+  str2lang <- utils::getFromNamespace("str2lang", "backports")
   rlang::with_handlers(
     eval(str2lang(call_string), envir = environment(as.formula(obj))),
     supernova_missing_values_message = rlang::calling(function(cnd) {

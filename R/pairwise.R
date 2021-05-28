@@ -123,7 +123,8 @@ pairwise_t <- function(fit, term = NULL, alpha = .05, correction = "none") {
         t = number(statistic),
         df = fit$df.residual,
         lower = number(diff - margin), upper = number(diff + margin),
-        p_val = number(p, 4, leading_zero = FALSE)
+        p_val = number(p, 4, leading_zero = FALSE),
+        stringsAsFactors = FALSE
       )
 
       if (correction == "bonferroni") {
@@ -185,7 +186,8 @@ pairwise_tukey <- function(fit, term = NULL, alpha = .05) {
         q = number(statistic),
         df = fit$df.residual,
         lower = number(diff - margin), upper = number(diff + margin),
-        p_adj = number(p, 4, leading_zero = FALSE)
+        p_adj = number(p, 4, leading_zero = FALSE),
+        stringsAsFactors = FALSE
       )
     })
 

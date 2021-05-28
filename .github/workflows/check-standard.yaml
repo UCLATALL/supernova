@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - develop
       - release/*
   pull_request:
     branches:
@@ -27,6 +26,7 @@ jobs:
           - {os: macOS-latest, r: 'release'}
           - {os: ubuntu-20.04, r: 'release', rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest"}
           - {os: ubuntu-20.04, r: 'devel', rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest"}
+          - {os: ubuntu-20.04, r: '3.4', rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest"}
 
     env:
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
@@ -69,6 +69,12 @@ jobs:
         run: |
           remotes::install_deps(dependencies = TRUE)
           remotes::install_cran("rcmdcheck")
+        shell: Rscript {0}
+
+      - name: Install dependencies not on RSPM
+        if: ${{ matrix.config.r == '3.4' }}
+        run: |
+          install.packages(c("lme4", "car"), repos = "https://mran.microsoft.com/snapshot/2018-04-01")
         shell: Rscript {0}
 
       - name: Check

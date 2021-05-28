@@ -75,7 +75,8 @@ test_that("supernova object has table, fit, and models", {
     MS = double(),
     `F` = double(),
     PRE = double(),
-    p = double()
+    p = double(),
+    stringsAsFactors = FALSE
   ))
 })
 
@@ -89,6 +90,11 @@ test_that("magrittr can pipe lmer() to supernova", {
 })
 
 test_that("magrittr can pipe data to lm() to supernova", {
+  skip_if(
+    package_version(R.version) < 3.5,
+    "This is only skipped to make this package compatible with DataCamp Light."
+  )
+
   # Believe it or not, this might not work. Do not remove or refactor test.
   # When stats::update() tries to get the call, the data object is just "."
   # supernova has to middle-man with supernova::update() to get this to work
