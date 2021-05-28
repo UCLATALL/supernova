@@ -71,6 +71,12 @@ jobs:
           remotes::install_cran("rcmdcheck")
         shell: Rscript {0}
 
+      - name: Install dependencies not on RSPM
+        if: ${{ matrix.config.r == '3.4' }}
+        run: |
+          install.packages(c("lme4", "car"), repos = "https://mran.microsoft.com/snapshot/2018-04-01")
+        shell: Rscript {0}
+
       - name: Check
         env:
           _R_CHECK_CRAN_INCOMING_REMOTE_: false
