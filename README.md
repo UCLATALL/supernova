@@ -612,9 +612,8 @@ pairwise(lm(Thumb ~ Sex, data = supernova::Fingers))
 #> 
 #> ── Tukey's Honestly Significant Differences ────────────────────────────────────
 #> Model: Thumb ~ Sex
-#> 
-#> ── Sex
-#> 1 comparison of 2 levels
+#> Sex
+#> Levels: 2
 #> Family-wise error-rate: 0.05
 #> 
 #>   group_1 group_2  diff pooled_se     q    df lower upper p_adj
@@ -635,26 +634,24 @@ pairwise(lm(Thumb ~ Sex, data = supernova::Fingers), correction = "none")
 #> 
 #> ── Pairwise t-tests ────────────────────────────────────────────────────────────
 #> Model: Thumb ~ Sex
-#> 
-#> ── Sex
-#> 1 comparison of 2 levels
+#> Sex
+#> Levels: 2
 #> Family-wise error-rate: 0.05
 #> 
 #>   group_1 group_2  diff pooled_se     t    df lower upper p_val
 #>   <chr>   <chr>   <dbl>     <dbl> <dbl> <int> <dbl> <dbl> <dbl>
-#> 1 male    female  6.447     1.456 4.428   155 4.038 8.856 .0000
+#> 1 male    female  6.447     1.029 6.262   155 4.743 8.150 .0000
 pairwise(lm(Thumb ~ Sex, data = supernova::Fingers), correction = "Bonferroni")
 #> 
 #> ── Pairwise t-tests with Bonferroni correction ─────────────────────────────────
 #> Model: Thumb ~ Sex
-#> 
-#> ── Sex
-#> 1 comparison of 2 levels
+#> Sex
+#> Levels: 2
 #> Family-wise error-rate: 0.05
 #> 
 #>   group_1 group_2  diff pooled_se     t    df lower upper p_adj
 #>   <chr>   <chr>   <dbl>     <dbl> <dbl> <int> <dbl> <dbl> <dbl>
-#> 1 male    female  6.447     1.456 4.428   155 4.038 8.856 .0000
+#> 1 male    female  6.447     1.029 6.262   155 4.743 8.150 .0000
 ```
 
 In these data the `Sex` variable did not have any other values than male
@@ -671,9 +668,8 @@ pairwise(lm(Thumb ~ Sex + Height, data = supernova::Fingers))
 #> 
 #> ── Tukey's Honestly Significant Differences ────────────────────────────────────
 #> Model: Thumb ~ Sex + Height
-#> 
-#> ── Sex
-#> 1 comparison of 2 levels
+#> Sex
+#> Levels: 2
 #> Family-wise error-rate: 0.05
 #> 
 #>   group_1 group_2  diff pooled_se     q    df lower upper p_adj

@@ -1,3 +1,8 @@
+# supernova 2.4.1
+
+* Small tweaks to make the package work on R 3.4.0
+
+
 # supernova 2.4.0
 
 ## New features
