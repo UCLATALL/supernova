@@ -47,7 +47,7 @@ Imports:
     rlang,
     stringr,
     vctrs,
-    pillar,
+    pillar (>= 1.5.0),
     methods,
     backports
 RoxygenNote: 7.1.1
