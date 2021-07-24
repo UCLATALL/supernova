@@ -57,7 +57,7 @@ expect_col_equal <- function(object, col_name, expected, ...) {
   exp <- testthat::quasi_label(rlang::enquo(expected))
   comp <- testthat::compare(act$val, exp$val, ...)
   expect(comp$equal, sprintf(
-    "%s not equal to %s.\n%s\nActual: %s\n", "Expected: %s",
+    "%s not equal to %s.\n%s\nActual: %s\nExpected: %s",
     act$lab, exp$lab, comp$message, data.frame(act$val), data.frame(exp$val)
   ))
   invisible(object)
