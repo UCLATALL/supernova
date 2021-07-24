@@ -1,17 +1,15 @@
 ## Release summary
 
-Small tweaks to make the package work on R 3.4
+Hotfix to ensure appropriate version of `pillar` is installed
 
 
 ## Test environments
 
-- Local install on macOS Big Sur 11.3; R 4.0.4
-- Win Builder via `devtools::check_win_devel()`
-- R-Hub via `devtools::check_rhub()`
+- Local install on macOS Big Sur 11.5; R 4.1.0
 - GitHub Actions
-  * Mac OS X, 10.15.7; R 4.0.5
-  * Microsoft Windows Server 2019, 10.0.17763; R 4.0.5
-  * Ubuntu, 20.04; R-devel, R 4.0.5, 3.4.4
+  * Mac OS X, 10.15.7; R 4.1.0
+  * Microsoft Windows Server 2019, 10.0.17763; R 4.1.0
+  * Ubuntu, 20.04; R-devel, R 4.1.0, 3.4.4
 
 
 ## R CMD check results

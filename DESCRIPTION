@@ -1,8 +1,8 @@
 Package: supernova
 Type: Package
 Title: Judd, McClelland, & Ryan Formatting for ANOVA Output
-Version: 2.4.1
-Date: 2021-05-28
+Version: 2.4.2
+Date: 2021-07-24
 Authors@R: c(
     person(
       "Adam", "Blake", 
@@ -47,7 +47,7 @@ Imports:
     rlang,
     stringr,
     vctrs,
-    pillar,
+    pillar (>= 1.5.0),
     methods,
     backports
 RoxygenNote: 7.1.1
