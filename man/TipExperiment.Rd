@@ -7,9 +7,9 @@
 \format{
 A data frame with 44 observations on the following 3 variables.
 \describe{
-\item{TableID}{A number assigned to each table.}
-\item{Tip}{How much the tip was.}
-\item{Condition}{Which experimental condition the table was randomly assigned to.}
+\item{\code{TableID}}{A number assigned to each table.}
+\item{\code{Tip}}{How much the tip was.}
+\item{\code{Condition}}{Which experimental condition the table was randomly assigned to.}
 }
 }
 \usage{

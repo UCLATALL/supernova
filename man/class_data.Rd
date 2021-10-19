@@ -7,8 +7,8 @@
 \format{
 A data frame with 105 observations on the following 2 variables:
 \describe{
-\item{teacher}{coded as A, B, or C}
-\item{outcome}{each student's score on the outcome test}
+\item{\code{teacher}}{coded as A, B, or C}
+\item{\code{outcome}}{each student's score on the outcome test}
 }
 }
 \usage{

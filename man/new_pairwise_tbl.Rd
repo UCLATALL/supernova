@@ -20,8 +20,8 @@ new_pairwise_tbl(tbl, term, fit, fwer, alpha, correction)
 \item{correction}{The type of alpha correction the tests in the table use.}
 }
 \value{
-A \code{tibble} sub-classed as \code{pairwise_comparison_tbl}. These have custom printers and retain
-their attributes when subsetted.
+A \code{tibble} sub-classed as \code{pairwise_comparison_tbl}. These have custom printers and
+retain their attributes when subsetted.
 }
 \description{
 Constructor for pairwise comparison tables

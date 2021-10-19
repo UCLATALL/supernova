@@ -7,8 +7,8 @@
 \format{
 A data frame with 44 observations on the following 2 variables.
 \describe{
-\item{TableID}{A number assigned to each table.}
-\item{Tip}{How much the tip was.}
+\item{\code{TableID}}{A number assigned to each table.}
+\item{\code{Tip}}{How much the tip was.}
 }
 }
 \usage{
