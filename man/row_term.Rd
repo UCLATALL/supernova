@@ -16,9 +16,9 @@ row_term(name, description, models, term)
 \item{simple}{The simple model (without the term) to compare it to.}
 }
 \value{
-A \code{\link{tibble_row}} with the properties initialized. The code has been written to be as simple
-and understanding as possible. Please take a look at the source and offer any suggestions for
-improvement!
+A \code{\link{tibble_row}} with the properties initialized. The code has been written to be as
+simple and understanding as possible. Please take a look at the source and offer any
+suggestions for improvement!
 }
 \description{
 "Term" is loosely defined here and is probably better understood as "everything in the table that
