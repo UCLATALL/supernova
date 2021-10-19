@@ -7,22 +7,34 @@
 \format{
 A data frame with 157 observations on the following 16 variables:
 \describe{
-\item{Sex}{Sex of participant.}
-\item{RaceEthnic}{Racial or ethnic background.}
-\item{FamilyMembers}{Members of immediate family (excluding self).}
-\item{SSLast}{Last digit of social security number (NA if no SSN).}
-\item{Year}{Year in school: 1=First, 2=Second, 3=Third, 4=Fourth, 5=Other}
-\item{Job}{Current employment status: 0=not working, 1=part-time job, 2=full-time job}
-\item{MathAnxious}{Agreement with this statement "In general I tend to feel very anxious about mathematics": 2=Strongly Agree, 1=Agree, 0=Neither Agree nor Disagree, -1=Disagree, -2=Strongly Disagree}
-\item{Interest}{Interest in statistics and the course: 2=Very Interested, 1=Somewhat Interested, 0=No Interest, -1=Dread the Course.}
-\item{GradePredict}{Prediction for final grade in the course from the university's grade points per unit: 4.0=A, 3.7=A-, 3.3=B+, 3.0=B, 2.7=B-, 2.3=C+, 2.0=C, 1.7=C-, 1.3=Below C- }
-\item{Thumb}{Length in mm from tip of thumb to the crease between the thumb and palm.}
-\item{Index}{Length in mm from tip of index finger to the crease between the index finger and palm.}
-\item{Middle}{Length in mm from tip of middle finger to the crease between the middle finger and palm.}
-\item{Ring}{Length in mm from tip of ring finger to the crease between the middle finger and palm.}
-\item{Pinkie}{Length in mm from tip of pinkie finger to the crease between the pinkie finger and palm }
-\item{Height}{Height in inches.}
-\item{Weight}{Weight in pounds.}
+\item{\code{Sex}}{Sex of participant.}
+\item{\code{RaceEthnic}}{Racial or ethnic background.}
+\item{\code{FamilyMembers}}{Members of immediate family (excluding self).}
+\item{\code{SSLast}}{Last digit of social security number (\code{NA} if no SSN).}
+\item{\code{Year}}{Year in school: \code{1}=First, \code{2}=Second, \code{3}=Third,
+\code{4}=Fourth, \code{5}=Other}
+\item{\code{Job}}{Current employment status: \code{1}=Not Working, \code{2}=Part-time Job,
+\code{3}=Full-time Job}
+\item{\code{MathAnxious}}{Agreement with the statement "In general I tend to feel very anxious
+about mathematics": \code{1}=Strongly Disagree, \code{2}=Disagree, \code{3}=Neither Agree nor
+Disagree, \code{4}=Agree, \code{5}=Strongly Agree}
+\item{\code{Interest}}{Interest in statistics and the course: \code{1}=No Interest,
+\code{2}=Somewhat Interested, \code{3}=Very Interested}
+\item{\code{GradePredict}}{Numeric prediction for final grade in the course. The value is
+converted from the student's letter grade prediction. \code{4.0}=A, \code{3.7}=A-,
+\code{3.3}=B+, \code{3.0}=B, \code{2.7}=B-, \code{2.3}=C+, \code{2.0}=C, \code{1.7}=C-,
+\code{1.3}=Below C-}
+\item{\code{Thumb}}{Length in mm from tip of thumb to the crease between the thumb and palm.}
+\item{\code{Index}}{Length in mm from tip of index finger to the crease between the index
+finger and palm.}
+\item{\code{Middle}}{Length in mm from tip of middle finger to the crease between the middle
+finger and palm.}
+\item{\code{Ring}}{Length in mm from tip of ring finger to the crease between the middle finger
+and palm.}
+\item{\code{Pinkie}}{Length in mm from tip of pinkie finger to the crease between the pinkie
+finger and palm.}
+\item{\code{Height}}{Height in inches.}
+\item{\code{Weight}}{Weight in pounds.}
 }
 }
 \usage{
