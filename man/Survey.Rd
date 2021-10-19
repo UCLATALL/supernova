@@ -7,7 +7,7 @@
 \format{
 A data frame with 211 observations on the following 1 variable:
 \describe{
-\item{Any1_20}{The random number between 1 and 20 that a student thought of.}
+\item{\code{Any1_20}}{The random number between 1 and 20 that a student thought of.}
 }
 }
 \usage{

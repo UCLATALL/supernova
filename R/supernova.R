@@ -124,9 +124,9 @@ row_blank <- function(term = NA_character_, description = NA_character_,
 #' @param complex The complex model containing the term.
 #' @param simple The simple model (without the term) to compare it to.
 #'
-#' @return A [`tibble_row`] with the properties initialized. The code has been written to be as simple
-#'   and understanding as possible. Please take a look at the source and offer any suggestions for
-#'   improvement!
+#' @return A [`tibble_row`] with the properties initialized. The code has been written to be as
+#'   simple and understanding as possible. Please take a look at the source and offer any
+#'   suggestions for improvement!
 #'
 #' @keywords internal
 row_term <- function(name, description, models, term) {
