@@ -1,13 +1,13 @@
 Package: supernova
 Type: Package
 Title: Judd, McClelland, & Ryan Formatting for ANOVA Output
-Version: 2.4.2
-Date: 2021-07-24
+Version: 2.4.3
+Date: 2021-10-19
 Authors@R: c(
     person(
       "Adam", "Blake", 
-      email = "theadamattack@gmail.com", 
-      role = "aut", 
+      email = "adamblake@g.ucla.edu", 
+      role = c("cre", "aut"), 
       comment = c(ORCID = "0000-0001-7881-8652")),
     person(
       "Jeff", "Chrabaszcz",
@@ -20,7 +20,7 @@ Authors@R: c(
     person(
       "Jim", "Stigler",
       email = "jstigler@gmail.com",
-      role = c("cre", "aut"),
+      role = "aut",
       comment = c(ORCID = "0000-0001-6107-7827")))
 Encoding: UTF-8
 LazyData: yes
