@@ -1,6 +1,13 @@
+# supernova 2.4.3
+
+* Fix issues with `lintr` causing `R CMD CHECK` to fail
+* Change maintainer to [@adamblake](https://github.com/adamblake)
+* Change mislabeled factor level in `Fingers$Interest` to "Very Interested"
+
+
 # supernova 2.4.2
 
-* Hotfix to ensure appropriate version of `pillar` is available (thanks @cedricbatailler)
+* Ensure appropriate version of `pillar` is available (thanks @cedricbatailler)
 
 
 # supernova 2.4.1
