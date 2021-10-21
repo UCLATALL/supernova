@@ -1,8 +1,4 @@
-#' Internal `vctrs` methods
-#'
 #' @import vctrs
-#' @keywords internal
-#' @name supernova-vctrs
 NULL
 
 
@@ -152,10 +148,8 @@ vec_cast.supernova_number.character <- function(x, to, ...) {
 
 # Math ----------------------------------------------------------------------------------------
 
-#' @export
 #' @method vec_arith supernova_number
-#' @export vec_arith.supernova_number
-#' @rdname supernova-vctrs
+#' @export
 vec_arith.supernova_number <- function(op, x, y, ...) {
   UseMethod("vec_arith.supernova_number", y)
 }

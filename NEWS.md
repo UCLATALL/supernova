@@ -1,3 +1,7 @@
+# supernova 2.4.4
+
+* Remove `supernova-vctrs` from exports
+
 # supernova 2.4.3
 
 * Fix issues with `lintr` causing `R CMD CHECK` to fail
