@@ -411,14 +411,16 @@ autoplot.pairwise <- function(x, ...) {
       paste(conf, "CI with", stringr::str_to_title(correction), "correction")
     }
 
-    ggplot2::ggplot(tbl) %+%
-      ggplot2::geom_point(ggplot2::aes(.data$diff, .data$pair)) %+%
+    ggplot2::ggplot() %+%
+      ggplot2::geom_point(ggplot2::aes(tbl$diff, tbl$pair)) %+%
       ggplot2::geom_errorbarh(ggplot2::aes(
-        y = .data$pair,
-        xmin = .data$lower,
-        xmax = .data$upper
+        y = tbl$pair,
+        xmin = tbl$lower,
+        xmax = tbl$upper
       )) %+%
       ggplot2::geom_vline(ggplot2::aes(xintercept = 0), linetype = "dashed") %+%
+      # reverse so that plot order matches table
+      ggplot2::scale_y_discrete(limits = rev(tbl$pair)) %+%
       ggplot2::xlab(x_axis_label) %+%
       ggplot2::ylab(NULL)
   })
