@@ -50,7 +50,7 @@ Imports:
     pillar (>= 1.5.0),
     methods,
     backports
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 URL: https://github.com/UCLATALL/supernova
 BugReports: https://github.com/UCLATALL/supernova/issues
 Roxygen: list(markdown = TRUE)
