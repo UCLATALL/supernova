@@ -267,7 +267,7 @@ refit_categorical <- function(fit) {
     stop("There are no categorical variables in this model.")
   }
 
-  to_drop <- setdiff(frm_vars(fit), categorical_vars)
+  to_drop <- setdiff(names(fit$model), c(categorical_vars, frm_outcome(fit)))
   drop_frm <- purrr::reduce(to_drop, frm_remove_var, .init = fit)
 
   update_in_env(fit, drop_frm)
@@ -283,10 +283,9 @@ refit_categorical <- function(fit) {
 #' @keywords internal
 find_categorical_vars <- function(fit) {
   is_categorical <- function(x) is.character(x) || is.factor(x)
-  purrr::keep(frm_vars(fit), function(term_name) {
-    variable <- fit$model[[term_name]]
-    is_categorical(variable)
-  })
+  outcome <- frm_outcome(fit)
+  explanatory <- purrr::discard(names(fit$model), function(term_name) term_name == outcome)
+  purrr::keep(explanatory, function(term_name) is_categorical(fit$model[[term_name]]))
 }
 
 
