@@ -370,6 +370,8 @@ supernova.lmerMod <- function(fit, type = 3, verbose = FALSE) {
 superanova <- supernova
 
 
+# Printing ------------------------------------------------------------------------------------
+
 #' @export
 print.supernova <- function(x, pcut = 4, ...) {
   is_verbose <- attr(x, "verbose") == TRUE
@@ -443,9 +445,13 @@ print.supernova <- function(x, pcut = 4, ...) {
   cli::cat_line(" Analysis of Variance Table (Type ", attr(x, "type"), " SS)")
   cli::cat_line(" Model: ", paste(trimws(deparse(formula(x$fit))), collapse = " "))
   cli::cat_line()
-  print(tbl, row.names = FALSE)
+
+  # use the qualified print method because the generic prints strange in Rmd
+  print.data.frame(tbl, row.names = FALSE)
 }
 
+
+# Helpers -------------------------------------------------------------------------------------
 
 select <- function(df, cols, keep = TRUE) {
   if (keep) {
