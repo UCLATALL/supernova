@@ -1,10 +1,11 @@
-# supernova (development version)
+# supernova 2.5.0
 
 * Change the order of the pairs when plotting `pairwise()` so that the plot matches the table.
 * Fix bug where `pairwise()` would not recognize categorical variables if they were created by using
   `factor()` in the formula, e.g. `pairwise(lm(mpg ~ factor(cyl), data = mtcars))`.
 * Fix printing in RMarkdown documents where `supernova()` output was interpreted as a table.
 * Move `estimate-extraction` functions to [`coursekata`](https://github.com/UCLATALL/coursekata-r).
+* **Breaking**: drop support for R 3.4
 
 
 # supernova 2.4.4
