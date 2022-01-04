@@ -1,4 +1,4 @@
-# supernova (development version)
+# supernova 2.5.0
 
 * Change the order of the pairs when plotting `pairwise()` so that the plot matches the table.
 * Fix bug where `pairwise()` would not recognize categorical variables if they were created by using
