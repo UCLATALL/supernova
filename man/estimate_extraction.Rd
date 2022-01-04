@@ -51,13 +51,17 @@ SSR(object, data = NULL, ...)
 The value of the estimate as a single number.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
+
+\strong{Note:} These functions are deprecated in the \code{supernova} package and have been moved to the
+\code{coursekata} package which can be found at
+\url{https://github.com/UCLATALL/coursekata-r}
+
 This collection of functions is useful for extracting estimates and statistics from a fitted
 model. They are particularly useful when estimating many models, like when bootstrapping
 confidence intervals. Each function can be used with an already fitted model as an \code{\link{lm}} object,
 or a formula and associated data can be passed to it. \strong{All of these assume the comparison is the
 empty model.}
-}
-\details{
 \itemize{
 \item \strong{\code{b0}}: The intercept from the full model.
 \item \strong{\code{b1}}: The slope b1 from the full model.
@@ -68,3 +72,4 @@ empty model.}
 \item \strong{\code{SSR}}: Alias for SSM.
 }
 }
+\keyword{internal}
