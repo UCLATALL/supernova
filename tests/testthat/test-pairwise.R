@@ -18,13 +18,18 @@ test_that("there is an informative error if you try to select a non-existent ter
   expect_snapshot_error(pairwise(fit, "does-not-exist"))
 })
 
-test_that("pairwise can handle models with data names that mask function name", {
+test_that("it can handle models with data names that mask function name", {
   data <- vctrs::vec_c(
     tibble::tibble(group = "A", value = rnorm(31)),
     tibble::tibble(group = "B", value = rnorm(30))
   )
   fitted <- lm(value ~ group, data = data)
   expect_error(pairwise(fitted), NA)
+})
+
+test_that("it can take a factor defined in the formula", {
+  fitted <- lm(mpg ~ factor(cyl), data = mtcars)
+  expect_named(pairwise(fitted), "factor(cyl)")
 })
 
 test_that("there are no errors with balanced data", {

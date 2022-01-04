@@ -94,11 +94,6 @@ each row of an ANOVA table using `generate_models()`. This can be done
 for each of the different SS Types as described in [Using Different SS
 Types](#using-different-ss-types) below.
 
-**Estimate extraction**: Extract estimates from a linear model fit via
-`lm()`: `b0()`, `b1()`, `fVal()`, `PRE()`. These are especially useful
-in the context of creating bootstrapped sampling distributions as in the
-[Bootstrapping Estimates](#bootstrapping-estimates) section below.
-
 **Pairwise comparisons**: Test each categorical group in a model against
 the others using `pairwise()`. This function supports Tukey and
 Bonferroni corrections. See the [Pairwise
@@ -539,47 +534,6 @@ generate_models(lm(mpg ~ hp * disp, data = mtcars), type = 2)
 #> complex: mpg ~ hp + disp + hp:disp
 #> simple:  mpg ~ hp + disp
 ```
-
-### Bootstrapping Estimates
-
-The estimate extraction functions in the package simplify the ability to
-create bootstrapped sampling distributions of those estimates. The
-functions currently exported are `PRE`, `b0`, `b1`, `fVal`, `SSM`/`SSR`,
-and `SSE`. Other terms can be bootstrapped as well, the target estimated
-just needs to be extracted via other means.
-
-#### Bootstrapping the slope of a simple model
-
-``` r
-# to extract a single estimate:
-b1(lm(mpg ~ hp, data = mtcars))
-#> [1] -0.06822828
-
-# use mosaic package to repetitively resample to bootstrap a distribution
-sd_of_b1 <- mosaic::do(1000) * b1(lm(mpg ~ hp, data = mosaic::resample(mtcars)))
-
-# plot the bootstrapped estimates
-hist(sd_of_b1$b1)
-```
-
-<img src="man/figures/README-samp_dist_of_b1-1.png" width="80%" />
-
-#### Bootstrapping the effect of one term from a multiple regression
-
-``` r
-sd_of_hp <- mosaic::do(1000) * {
-  # create a new model from the resampled data
-  model <- lm(mpg ~ disp * hp, data = mosaic::resample(mtcars))
-  
-  # extract the desired estimate, here the coefficient for hp
-  coef(model)[["hp"]]
-}
-
-# plot the bootstrapped estimates
-hist(sd_of_hp$result)
-```
-
-<img src="man/figures/README-samp_dist_of_hp_coef-1.png" width="80%" />
 
 ### Pairwise Comparisons
 

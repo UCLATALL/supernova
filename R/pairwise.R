@@ -267,7 +267,7 @@ refit_categorical <- function(fit) {
     stop("There are no categorical variables in this model.")
   }
 
-  to_drop <- setdiff(frm_vars(fit), categorical_vars)
+  to_drop <- setdiff(names(fit$model), c(categorical_vars, frm_outcome(fit)))
   drop_frm <- purrr::reduce(to_drop, frm_remove_var, .init = fit)
 
   update_in_env(fit, drop_frm)
@@ -283,10 +283,9 @@ refit_categorical <- function(fit) {
 #' @keywords internal
 find_categorical_vars <- function(fit) {
   is_categorical <- function(x) is.character(x) || is.factor(x)
-  purrr::keep(frm_vars(fit), function(term_name) {
-    variable <- fit$model[[term_name]]
-    is_categorical(variable)
-  })
+  outcome <- frm_outcome(fit)
+  explanatory <- purrr::discard(names(fit$model), function(term_name) term_name == outcome)
+  purrr::keep(explanatory, function(term_name) is_categorical(fit$model[[term_name]]))
 }
 
 
@@ -411,14 +410,16 @@ autoplot.pairwise <- function(x, ...) {
       paste(conf, "CI with", stringr::str_to_title(correction), "correction")
     }
 
-    ggplot2::ggplot(tbl) %+%
-      ggplot2::geom_point(ggplot2::aes(.data$diff, .data$pair)) %+%
+    ggplot2::ggplot() %+%
+      ggplot2::geom_point(ggplot2::aes(tbl$diff, tbl$pair)) %+%
       ggplot2::geom_errorbarh(ggplot2::aes(
-        y = .data$pair,
-        xmin = .data$lower,
-        xmax = .data$upper
+        y = tbl$pair,
+        xmin = tbl$lower,
+        xmax = tbl$upper
       )) %+%
       ggplot2::geom_vline(ggplot2::aes(xintercept = 0), linetype = "dashed") %+%
+      # reverse so that plot order matches table
+      ggplot2::scale_y_discrete(limits = rev(tbl$pair)) %+%
       ggplot2::xlab(x_axis_label) %+%
       ggplot2::ylab(NULL)
   })
