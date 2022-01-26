@@ -12,7 +12,9 @@
 
 # Helper functions --------------------------------------------------------
 
-sst <- function(model) var(model$model[, 1], na.rm = TRUE) * (nrow(model$model) - 1)
+sse <- function(fit) sum(fit$residuals^2)
+ssr <- function(fit) sum((fit$fitted.values - mean(fit$model[[1]]))^2)
+sst <- function(fit) var(fit$model[, 1], na.rm = TRUE) * (nrow(fit$model) - 1)
 formula_to_string <- function(formula) Reduce(paste, deparse(formula))
 
 # Retrieves partial row data for multiple regression from the model cache
