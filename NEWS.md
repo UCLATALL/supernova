@@ -1,7 +1,7 @@
 # supernova 2.5.1
 
 * Fix issue where models with long calls (i.e. `deparse(model$call)` results in a vector of length greater than 1) would break the functionality of `listwise_delete()`
-
+* Change print method for `generate_models()` to look clean and comprehensible in Jupyter Notebooks.
 
 # supernova 2.5.0
 
