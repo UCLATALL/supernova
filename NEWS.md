@@ -1,3 +1,8 @@
+# supernova 2.5.1
+
+* Fix issue where models with long calls (i.e. `deparse(model$call)` results in a vector of length greater than 1) would break the functionality of `listwise_delete()`
+
+
 # supernova 2.5.0
 
 * Change the order of the pairs when plotting `pairwise()` so that the plot matches the table.

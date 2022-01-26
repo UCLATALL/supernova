@@ -61,8 +61,12 @@ listwise_delete.lm <- function(obj, vars = all.vars(formula(obj))) {
 
 
 build_equivalent_call_string <- function(linear_model, vars) {
-  call_string <- deparse(linear_model$call)
-  var_string <- paste0("c(", paste0("\"", vars, "\"", collapse = ", "), ")")
+  call_string <- deparse(linear_model$call) %>%
+    stringr::str_flatten() %>%
+    stringr::str_squish()
+  var_string <- paste0("c(",
+    paste0('"', vars, '"', collapse = ", "),
+  ")")
 
   if (stringr::str_detect(call_string, " data = .+?[ ,)]")) {
     new_call_string <- stringr::str_replace(

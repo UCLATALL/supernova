@@ -36,3 +36,15 @@ test_that("it works in a pipe", {
     listwise_delete() %>%
     expect_snapshot()
 })
+
+test_that("it works when the call is long and breaks multiple lines when using deparse", {
+  mtcars_long_vars <- mtcars
+  mtcars_long_vars$mpg_but_with_a_very_long_name <- mtcars$mpg
+  mtcars_long_vars$hp_but_with_a_very_long_name <- mtcars$hp
+  mtcars_long_vars$hp_but_with_a_very_long_name[1] <- NA
+  long_model <- lm(
+    formula = mpg_but_with_a_very_long_name ~ hp_but_with_a_very_long_name,
+    data = mtcars_long_vars
+  )
+  expect_warning(listwise_delete(long_model) %>% suppressMessages(), NA)
+})
