@@ -1,9 +1,7 @@
 ## Release summary
 
-* Fixed some small errors printing in different environments
-* Added deprecation warnings to functions moving to a different package
-* Drop support for R 3.4
-* Add explicit call to backports to take care of check note
+* Fix issue where models with long calls (i.e. `deparse(model$call)` results in a vector of length greater than 1) would break the functionality of `listwise_delete()`
+* Change print method for `generate_models()` to look clean and comprehensible in Jupyter Notebooks.
 
 
 ## Test environments
