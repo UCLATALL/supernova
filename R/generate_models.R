@@ -261,13 +261,16 @@ print.comparison_models <- function(x, ...) {
   if (vctrs::vec_is_empty(x)) {
     cli::cli_alert("No comparisons for empty model.")
   } else {
-    cli::cli_h1("Comparison Models for Type {attr(x, 'type')} SS")
+    cli::cat_line()
+    header <- paste("Comparison Models for Type", attr(x, "type"), "SS")
+    cli::cat_rule(cli::style_bold(header))
+    cli::cat_line()
     purrr::iwalk(x, function(part, term) {
-      cli::cli_h3(term)
+      cli::cat_line(paste0(cli::symbol$line, cli::symbol$line, " ", term))
       cli::cat_line("complex: ", formula_string(x, part$complex, term))
       cli::cat_line("simple:  ", formula_string(x, part$simple, term))
+      cli::cat_line()
     })
-    cli::cat_line()
   }
 }
 
