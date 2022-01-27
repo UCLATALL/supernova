@@ -266,7 +266,7 @@ print.comparison_models <- function(x, ...) {
     cli::cat_rule(cli::style_bold(header))
     cli::cat_line()
     purrr::iwalk(x, function(part, term) {
-      cli::cat_line(paste0("\u2500\u2500 ", term))
+      cli::cat_line(paste0(cli::symbol$line, cli::symbol$line, " ", term))
       cli::cat_line("complex: ", formula_string(x, part$complex, term))
       cli::cat_line("simple:  ", formula_string(x, part$simple, term))
       cli::cat_line()

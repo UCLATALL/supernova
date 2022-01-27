@@ -6,35 +6,35 @@
       
       -- Comparison Models for Type III SS -------------------------------------------
       
-      ── Full Model
+      -- Full Model
       complex: y ~ a + b + c + a:b + a:c + b:c + a:b:c
       simple:  y ~ NULL
       
-      ── a
+      -- a
       complex: y ~ a + b + c + a:b + a:c + b:c + a:b:c
       simple:  y ~     b + c + a:b + a:c + b:c + a:b:c
       
-      ── b
+      -- b
       complex: y ~ a + b + c + a:b + a:c + b:c + a:b:c
       simple:  y ~ a +     c + a:b + a:c + b:c + a:b:c
       
-      ── c
+      -- c
       complex: y ~ a + b + c + a:b + a:c + b:c + a:b:c
       simple:  y ~ a + b +     a:b + a:c + b:c + a:b:c
       
-      ── a:b
+      -- a:b
       complex: y ~ a + b + c + a:b + a:c + b:c + a:b:c
       simple:  y ~ a + b + c +       a:c + b:c + a:b:c
       
-      ── a:c
+      -- a:c
       complex: y ~ a + b + c + a:b + a:c + b:c + a:b:c
       simple:  y ~ a + b + c + a:b +       b:c + a:b:c
       
-      ── b:c
+      -- b:c
       complex: y ~ a + b + c + a:b + a:c + b:c + a:b:c
       simple:  y ~ a + b + c + a:b + a:c +       a:b:c
       
-      ── a:b:c
+      -- a:b:c
       complex: y ~ a + b + c + a:b + a:c + b:c + a:b:c
       simple:  y ~ a + b + c + a:b + a:c + b:c
       
@@ -47,35 +47,35 @@
       
       -- Comparison Models for Type III SS -------------------------------------------
       
-      ── Full Model
+      -- Full Model
       complex: y ~ a + b + c + a:b + a:c + b:c + a:b:c
       simple:  y ~ NULL
       
-      ── a
+      -- a
       complex: y ~ a + b + c + a:b + a:c + b:c + a:b:c
       simple:  y ~     b + c + a:b + a:c + b:c + a:b:c
       
-      ── b
+      -- b
       complex: y ~ a + b + c + a:b + a:c + b:c + a:b:c
       simple:  y ~ a +     c + a:b + a:c + b:c + a:b:c
       
-      ── c
+      -- c
       complex: y ~ a + b + c + a:b + a:c + b:c + a:b:c
       simple:  y ~ a + b +     a:b + a:c + b:c + a:b:c
       
-      ── a:b
+      -- a:b
       complex: y ~ a + b + c + a:b + a:c + b:c + a:b:c
       simple:  y ~ a + b + c +       a:c + b:c + a:b:c
       
-      ── a:c
+      -- a:c
       complex: y ~ a + b + c + a:b + a:c + b:c + a:b:c
       simple:  y ~ a + b + c + a:b +       b:c + a:b:c
       
-      ── b:c
+      -- b:c
       complex: y ~ a + b + c + a:b + a:c + b:c + a:b:c
       simple:  y ~ a + b + c + a:b + a:c +       a:b:c
       
-      ── a:b:c
+      -- a:b:c
       complex: y ~ a + b + c + a:b + a:c + b:c + a:b:c
       simple:  y ~ a + b + c + a:b + a:c + b:c
       
@@ -88,35 +88,35 @@
       
       -- Comparison Models for Type III SS -------------------------------------------
       
-      ── Full Model
+      -- Full Model
       complex: y ~ a + b + c + a:b + a:c + b:c + a:b:c
       simple:  y ~ NULL
       
-      ── a
+      -- a
       complex: y ~ a + b + c + a:b + a:c + b:c + a:b:c
       simple:  y ~     b + c + a:b + a:c + b:c + a:b:c
       
-      ── b
+      -- b
       complex: y ~ a + b + c + a:b + a:c + b:c + a:b:c
       simple:  y ~ a +     c + a:b + a:c + b:c + a:b:c
       
-      ── c
+      -- c
       complex: y ~ a + b + c + a:b + a:c + b:c + a:b:c
       simple:  y ~ a + b +     a:b + a:c + b:c + a:b:c
       
-      ── a:b
+      -- a:b
       complex: y ~ a + b + c + a:b + a:c + b:c + a:b:c
       simple:  y ~ a + b + c +       a:c + b:c + a:b:c
       
-      ── a:c
+      -- a:c
       complex: y ~ a + b + c + a:b + a:c + b:c + a:b:c
       simple:  y ~ a + b + c + a:b +       b:c + a:b:c
       
-      ── b:c
+      -- b:c
       complex: y ~ a + b + c + a:b + a:c + b:c + a:b:c
       simple:  y ~ a + b + c + a:b + a:c +       a:b:c
       
-      ── a:b:c
+      -- a:b:c
       complex: y ~ a + b + c + a:b + a:c + b:c + a:b:c
       simple:  y ~ a + b + c + a:b + a:c + b:c
       
@@ -129,19 +129,19 @@
       
       -- Comparison Models for Type III SS -------------------------------------------
       
-      ── Full Model
+      -- Full Model
       complex: mpg ~ hp + disp + hp:disp
       simple:  mpg ~ NULL
       
-      ── hp
+      -- hp
       complex: mpg ~ hp + disp + hp:disp
       simple:  mpg ~      disp + hp:disp
       
-      ── disp
+      -- disp
       complex: mpg ~ hp + disp + hp:disp
       simple:  mpg ~ hp +        hp:disp
       
-      ── hp:disp
+      -- hp:disp
       complex: mpg ~ hp + disp + hp:disp
       simple:  mpg ~ hp + disp
       
@@ -154,19 +154,19 @@
       
       -- Comparison Models for Type III SS -------------------------------------------
       
-      ── Full Model
+      -- Full Model
       complex: mpg ~ hp + disp + hp:disp
       simple:  mpg ~ NULL
       
-      ── hp
+      -- hp
       complex: mpg ~ hp + disp + hp:disp
       simple:  mpg ~      disp + hp:disp
       
-      ── disp
+      -- disp
       complex: mpg ~ hp + disp + hp:disp
       simple:  mpg ~ hp +        hp:disp
       
-      ── hp:disp
+      -- hp:disp
       complex: mpg ~ hp + disp + hp:disp
       simple:  mpg ~ hp + disp
       
@@ -179,19 +179,19 @@
       
       -- Comparison Models for Type III SS -------------------------------------------
       
-      ── Full Model
+      -- Full Model
       complex: mpg ~ hp + disp + hp:disp
       simple:  mpg ~ NULL
       
-      ── hp
+      -- hp
       complex: mpg ~ hp + disp + hp:disp
       simple:  mpg ~      disp + hp:disp
       
-      ── disp
+      -- disp
       complex: mpg ~ hp + disp + hp:disp
       simple:  mpg ~ hp +        hp:disp
       
-      ── hp:disp
+      -- hp:disp
       complex: mpg ~ hp + disp + hp:disp
       simple:  mpg ~ hp + disp
       
