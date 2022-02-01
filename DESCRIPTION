@@ -1,8 +1,8 @@
 Package: supernova
 Type: Package
 Title: Judd, McClelland, & Ryan Formatting for ANOVA Output
-Version: 2.5.1
-Date: 2022-01-26
+Version: 2.5.2
+Date: 2022-01-31
 Authors@R: c(
     person(
       "Adam", "Blake", 
