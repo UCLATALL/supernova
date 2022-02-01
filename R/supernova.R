@@ -40,6 +40,13 @@ supernova <- function(fit, type = 3, verbose = TRUE) {
 
 #' @export
 #' @rdname supernova
+superanova <- function(fit, type = 3, verbose = TRUE) {
+  lifecycle::deprecate_stop("2.5.2", "superanova()", "supernova()")
+}
+
+
+#' @export
+#' @rdname supernova
 supernova.lm <- function(fit, type = 3, verbose = TRUE) {
   type <- resolve_type(type)
   models <- generate_models(fit, type)
@@ -363,11 +370,6 @@ supernova.lmerMod <- function(fit, type = 3, verbose = FALSE) {
   attr(rl, "verbose") <- verbose
   return(rl)
 }
-
-
-#' @export
-#' @rdname supernova
-superanova <- supernova
 
 
 # Printing ------------------------------------------------------------------------------------

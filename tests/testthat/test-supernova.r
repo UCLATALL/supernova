@@ -165,10 +165,6 @@ expect_table_data <- function(object, expected, model = "???", type = "???", ...
 
 # Structure tests ---------------------------------------------------------
 
-test_that("superanova is an alias of supernova", {
-  expect_identical(superanova, supernova)
-})
-
 test_that("supernova object has table, fit, and models", {
   fit <- lm(mpg ~ NULL, mtcars)
   obj <- supernova(fit, type = 3)
