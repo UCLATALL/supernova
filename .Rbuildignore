@@ -10,3 +10,4 @@ cache_test_data
 ^\.github$
 ^\.lintr$
 ^data-raw$
+^CRAN-SUBMISSION$
