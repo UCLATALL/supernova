@@ -16,7 +16,7 @@ Description: Produces ANOVA tables in the format used by Judd, McClelland,
     and Ryan (2017, ISBN: 978-1138819832) in their introductory textbook,
     Data Analysis. This includes proportional reduction in error and
     formatting to improve ease the transition between the book and R.
-License: GPL-3
+License: AGPL (>= 3)
 URL: https://github.com/UCLATALL/supernova
 BugReports: https://github.com/UCLATALL/supernova/issues
 Depends: 
