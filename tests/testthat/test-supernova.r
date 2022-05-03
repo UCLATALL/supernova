@@ -194,6 +194,8 @@ test_that("supernova table structure is well-formed", {
     p = double(),
     stringsAsFactors = FALSE
   ))
+
+  # TODO: what about verbose table structure?
 })
 
 test_that("magrittr can pipe lm() to supernova", {
@@ -203,7 +205,7 @@ test_that("magrittr can pipe lm() to supernova", {
 })
 
 test_that("magrittr can pipe data to lm() to supernova", {
-  # Believe it or not, this might not work. Do not remove or refactor test.
+  # Believe it or not, this might not work. Do not remove or re-factor test.
   # When stats::update() tries to get the call, the data object is just "."
   # supernova has to middle-man with supernova::update() to get this to work
   mtcars %>%
@@ -223,13 +225,20 @@ test_that("it can handle datasets with function name collisions", {
 
 test_that("supernova calcs. (quant. ~ NULL) ANOVA correctly", {
   model <- lm(Thumb ~ NULL, Fingers)
-  expected <- anova(model)
-  expected[c("SS", "df", "MS")] <- expected[c("Sum Sq", "Df", "Mean Sq")]
-  expected[c("F", "PRE", "p")] <- NA_real_
-  expected <- expected[c("SS", "df", "MS", "F", "PRE", "p")]
-
   actual <- supernova(model)$tbl
-  expect_table_data(actual[nrow(actual), 3:8], expected, model)
+  expected <- anova(model)
+
+  numbers_only <- function(x) x %>% as.matrix() %>% unname()
+  expect_identical(
+    actual[3, c("SS", "df", "MS", "F", "p")] %>% numbers_only(),
+    expected[c("Sum Sq", "Df", "Mean Sq", "F value", "Pr(>F)")] %>% numbers_only
+  )
+})
+
+test_that("it can handle models that don't use `data =` when fitting with `lm()`", {
+  actual <- supernova(lm(Fingers$Thumb ~ NULL))
+  expected <- supernova(lm(Thumb ~ NULL, data = Fingers))
+  expect_identical(actual$tbl, expected$tbl)
 })
 
 models_to_test <- list(
