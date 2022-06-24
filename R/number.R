@@ -95,10 +95,10 @@ obj_print_header.supernova_number <- function(x, ...) NULL
 # Casting and Coercion ------------------------------------------------------------------------
 
 #' @export
-vec_ptype2.supernova_number.supernova_number <- function(x, y, ...) y
+vec_ptype2.supernova_number.supernova_number <- function(x, y, ...) y # nolint
 
 #' @export
-vec_cast.supernova_number.supernova_number <- function(x, to, ...) {
+vec_cast.supernova_number.supernova_number <- function(x, to, ...) { # nolint
   new_number(
     vctrs::vec_data(x),
     digits = attr(to, "digits"),

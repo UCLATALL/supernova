@@ -177,7 +177,7 @@ resolve_type <- function(type) {
 #' @inheritParams stats::update
 #'
 #' @return The updated model is returned.
-update_in_env <- function(object, formula., ...) {
-  code <- stats::update(object, formula., ..., evaluate = FALSE)
+update_in_env <- function(object, formula_, ...) {
+  code <- stats::update(object, formula_, ..., evaluate = FALSE)
   suppressMessages(eval(code, environment(formula(object))))
 }

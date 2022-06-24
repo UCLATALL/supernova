@@ -432,10 +432,10 @@ print.supernova <- function(x, pcut = 4, ...) {
   }
 
   # add spaces and a vertical bar to separate the terms & desc from values
-  barHelp <- function(x, y) paste0(x, y, " |")
-  bar_col <- if (!is_lmer_model & is_verbose) "description" else "term"
+  bar_help <- function(x, y) paste0(x, y, " |")
+  bar_col <- if (!is_lmer_model && is_verbose) "description" else "term"
   spaces_to_add <- max(nchar(tbl[[bar_col]])) - nchar(tbl[[bar_col]])
-  tbl[[bar_col]] <- mapply(barHelp, tbl[[bar_col]], strrep(" ", spaces_to_add))
+  tbl[[bar_col]] <- mapply(bar_help, tbl[[bar_col]], strrep(" ", spaces_to_add))
 
   # remove unnecessary column names
   names(tbl)[names(tbl) %in% c("term", "description")] <- ""
