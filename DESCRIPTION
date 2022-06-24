@@ -33,8 +33,7 @@ Imports:
     rlang,
     stringr,
     tibble,
-    vctrs,
-    withr
+    vctrs
 Suggests: 
     car,
     covr,

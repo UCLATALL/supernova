@@ -7,6 +7,8 @@
 update_in_env(object, formula., ...)
 }
 \arguments{
+\item{object}{An existing fit from a model function such as \code{\link[=lm]{lm()}}, \code{\link[=glm]{glm()}} and many others.}
+
 \item{formula.}{Changes to the formula -- see \code{update.formula} for
    details.}
 
