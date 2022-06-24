@@ -12,7 +12,7 @@
 anova_tbl <- function(model) {
   tbl <- anova(model)
 
-  if (class(model) == "lmerMod") {
+  if (inherits(model, "lmerMod")) {
     names(tbl)[[1]] <- "Df"
   }
 
@@ -177,7 +177,7 @@ resolve_type <- function(type) {
 #' @inheritParams stats::update
 #'
 #' @return The updated model is returned.
-update_in_env <- function(object, formula_, ...) {
-  code <- stats::update(object, formula_, ..., evaluate = FALSE)
+update_in_env <- function(object, formula., ...) { # nolint
+  code <- stats::update(object, formula., ..., evaluate = FALSE)
   suppressMessages(eval(code, environment(formula(object))))
 }

@@ -240,7 +240,7 @@ check_pairwise_args <- function(fit, alpha) {
 #' @describeIn check_pairwise_args Ensure the model can be converted by [`aov()`]
 #' @keywords internal
 check_aov_compat <- function(fit) {
-  if (!("lm" %in% class(fit))) {
+  if (!inherits(fit, "lm")) {
     rlang::abort("`fit` must be an object fit by `lm()` or `aov()` (or be compatible with `aov()`.")
   }
 }
