@@ -1,0 +1,14 @@
+{
+  "editor.formatOnSave": true,
+  "files.associations": {
+    "NAMESPACE": "r",
+    "DESCRIPTION": "debian-control.r"
+  },
+  "r.bracketedPaste": true,
+  "r.rterm.mac": "/Users/Adam/.pyenv/shims/radian",
+  "r.rterm.option": [
+    "--no-save",
+    "--no-restore",
+    "--r-binary=/usr/local/bin/R"
+  ]
+}

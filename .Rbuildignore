@@ -12,3 +12,4 @@ cache_test_data
 ^data-raw$
 ^CRAN-SUBMISSION$
 ^LICENSE\.md$
+^\.vscode
