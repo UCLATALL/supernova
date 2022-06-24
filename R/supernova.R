@@ -238,7 +238,7 @@ supernova.lmerMod <- function(fit, type = 3, verbose = FALSE) {
   )
 
   # TOTAL
-  fit_lm <- lm(formula_simple, data = model_data)
+  fit_lm <- stats::lm(formula_simple, data = model_data)
   fit_null <- stats::update(fit_lm, . ~ NULL)
   total_row <- row_error("Total", description = NA_character_, fit = fit_null)
 
