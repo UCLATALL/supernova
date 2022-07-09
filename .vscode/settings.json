@@ -5,7 +5,7 @@
     "DESCRIPTION": "debian-control.r"
   },
   "r.bracketedPaste": true,
-  "r.rterm.mac": "/Users/Adam/.pyenv/shims/radian",
+  "r.rterm.mac": "/opt/homebrew/bin/radian",
   "r.rterm.option": [
     "--no-save",
     "--no-restore",
