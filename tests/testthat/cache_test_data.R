@@ -1,54 +1,10 @@
-# Cache the car::Anova data and other data used to test the package  so that we
-# don't have to include those packages just for testing
+# Run this to create the JMRData RDS files in ./data
 
 library(magrittr)
+remotes::install_github("UCLATALL/JMRData")
 
-cache_dir <- "./tests/testthat/cache"
 data_dir <- "./tests/testthat/data"
-if (!dir.exists(cache_dir)) dir.create(cache_dir)
 if (!dir.exists(data_dir)) dir.create(data_dir)
-
-
-# Independent designs -----------------------------------------------------
-
-as.character.call <- function(model) {
-  Reduce(paste, deparse(model$call))
-}
-
-df_missing <- mtcars
-df_missing[1, ]$hp <- NA_real_
-df_missing[2:3, ]$disp <- NA_real_
-
-models <- list(
-  lm(Thumb ~ Weight, supernova::Fingers),
-  lm(Thumb ~ RaceEthnic, supernova::Fingers),
-  lm(Thumb ~ Weight + Height, supernova::Fingers),
-  lm(Thumb ~ RaceEthnic + Weight, supernova::Fingers),
-  lm(Thumb ~ RaceEthnic + Sex, supernova::Fingers),
-  lm(Thumb ~ RaceEthnic + Weight + Sex, supernova::Fingers),
-  lm(Thumb ~ Weight * Height, supernova::Fingers),
-  lm(Thumb ~ RaceEthnic * Weight, supernova::Fingers),
-  lm(Thumb ~ RaceEthnic * Sex, supernova::Fingers),
-  lm(Thumb ~ RaceEthnic + Weight * Sex, supernova::Fingers),
-  lm(Thumb ~ RaceEthnic * Weight * Sex, supernova::Fingers),
-  lm(mpg ~ hp, df_missing),
-  lm(mpg ~ hp * disp, df_missing),
-  lm(uptake ~ Treatment, data = CO2[1:80, ]),
-  lm(uptake ~ Treatment * Type, data = CO2[1:80, ])
-) %>%
-  purrr::set_names(purrr::map(., ~ as.character.call(.x)))
-
-models %>%
-  purrr::map(anova) %>%
-  readr::write_rds(file.path(cache_dir, "model_cache_type_1.Rds"))
-
-models %>%
-  purrr::map(car::Anova, type = 2) %>%
-  readr::write_rds(file.path(cache_dir, "model_cache_type_2.Rds"))
-
-models %>%
-  purrr::map(car::Anova, type = 3) %>%
-  readr::write_rds(file.path(cache_dir, "model_cache_type_3.Rds"))
 
 
 # Simple nested designs ---------------------------------------------------
