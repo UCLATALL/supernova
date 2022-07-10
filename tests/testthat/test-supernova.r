@@ -24,8 +24,12 @@ get_partials <- function(model, type) {
     return(NULL)
   }
 
-  suppressMessages(car::Anova) # ignore masking lme4 methods
-  anova_tbl <- if (type == 1) anova(model) else car::Anova(model, type = type)
+  anova_tbl <- if (type == 1) {
+    anova(model)
+  } else {
+    suppressMessages(car::Anova) # ignore masking lme4 methods
+    suppressWarnings(car::Anova(model, type = type))
+  }
 
   anova_tbl <- anova_tbl[, c("Sum Sq", "Df", "F value", "Pr(>F)")]
   anova_tbl <- setNames(anova_tbl, c("SS", "df", "F", "p"))
@@ -228,10 +232,14 @@ test_that("supernova calcs. (quant. ~ NULL) ANOVA correctly", {
   actual <- supernova(model)$tbl
   expected <- anova(model)
 
-  numbers_only <- function(x) x %>% as.matrix() %>% unname()
+  numbers_only <- function(x) {
+    x %>%
+      as.matrix() %>%
+      unname()
+  }
   expect_identical(
     actual[3, c("SS", "df", "MS", "F", "p")] %>% numbers_only(),
-    expected[c("Sum Sq", "Df", "Mean Sq", "F value", "Pr(>F)")] %>% numbers_only
+    expected[c("Sum Sq", "Df", "Mean Sq", "F value", "Pr(>F)")] %>% numbers_only()
   )
 })
 
