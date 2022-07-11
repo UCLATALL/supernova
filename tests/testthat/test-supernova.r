@@ -228,7 +228,7 @@ test_that("it can handle datasets with function name collisions", {
 # ANOVA values ------------------------------------------------------------
 
 test_that("supernova calcs. (quant. ~ NULL) ANOVA correctly", {
-  model <- lm(Thumb ~ NULL, Fingers)
+  model <- lm(mpg ~ NULL, data = mtcars)
   actual <- supernova(model)$tbl
   expected <- anova(model)
 
@@ -244,23 +244,23 @@ test_that("supernova calcs. (quant. ~ NULL) ANOVA correctly", {
 })
 
 test_that("it can handle models that don't use `data =` when fitting with `lm()`", {
-  actual <- supernova(lm(Fingers$Thumb ~ NULL))
-  expected <- supernova(lm(Thumb ~ NULL, data = Fingers))
+  actual <- supernova(lm(mtcars$mpg ~ NULL))
+  expected <- supernova(lm(mpg ~ NULL, data = mtcars))
   expect_identical(actual$tbl, expected$tbl)
 })
 
 models_to_test <- list(
-  `q ~ q` = lm(Thumb ~ Weight, supernova::Fingers),
-  `q ~ c` = lm(Thumb ~ RaceEthnic, supernova::Fingers),
-  `q ~ q + q` = lm(Thumb ~ Weight + Height, supernova::Fingers),
-  `q ~ c + q` = lm(Thumb ~ RaceEthnic + Weight, supernova::Fingers),
-  `q ~ c + c` = lm(Thumb ~ RaceEthnic + Sex, supernova::Fingers),
-  `q ~ c + c + c` = lm(Thumb ~ RaceEthnic + Weight + Sex, supernova::Fingers),
-  `q ~ q * q` = lm(Thumb ~ Weight * Height, supernova::Fingers),
-  `q ~ c * q` = lm(Thumb ~ RaceEthnic * Weight, supernova::Fingers),
-  `q ~ c * c` = lm(Thumb ~ RaceEthnic * Sex, supernova::Fingers),
-  `q ~ c + q * c` = lm(Thumb ~ RaceEthnic + Weight * Sex, supernova::Fingers),
-  `q ~ c * q * c` = lm(Thumb ~ RaceEthnic * Weight * Sex, supernova::Fingers)
+  `q ~ q` = lm(mpg ~ hp, data = mtcars),
+  `q ~ q + q` = lm(mpg ~ hp + disp, data = mtcars),
+  `q ~ q * q` = lm(mpg ~ hp * disp, data = mtcars),
+  `q ~ c` = lm(mpg ~ factor(cyl), data = mtcars),
+  `q ~ c + c` = lm(mpg ~ factor(cyl) + factor(am), data = mtcars),
+  `q ~ c * c` = lm(mpg ~ factor(cyl) * factor(am), data = mtcars),
+  `q ~ c + c + c` = lm(mpg ~ factor(cyl) + factor(am) + factor(gear), data = mtcars),
+  `q ~ q + c` = lm(mpg ~ hp + factor(cyl), data = mtcars),
+  `q ~ q * c` = lm(mpg ~ hp * factor(cyl), data = mtcars),
+  `q ~ q * c + c` = lm(mpg ~ hp * factor(cyl) + factor(am), data = mtcars),
+  `q ~ q * c * c` = lm(mpg ~ hp * factor(cyl) * factor(am), data = mtcars)
 )
 
 test_that("supernova calculates ANOVAs properly (including different SS types)", {
