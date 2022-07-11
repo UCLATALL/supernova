@@ -1,14 +1,16 @@
 ## Release summary
 
-* Deprecate unused function alias (it was confusing some users and does nothing different)
+* Fix issue where using a model fit with an interactive term that has `factor()`
+  in it (e.g. `lm(mpg ~ factor(cyl) * hp, data = mtcars)`) would result in an
+  incorrect *df* (and related values) in the ANOVA table.
 
 ## Test environments
 
-- Local install on macOS Big Sur 11.5; R 4.1.2
+- Local install on macOS Monterey 12.4 (ARM); R 4.2.1
 - GitHub Actions
-  * Mac OS X, 10.15.7; R 4.1.2
-  * Microsoft Windows Server 2019, 10.0.17763; R 4.1.2
-  * Ubuntu, 20.04; R-devel, R 4.1.2
+  * macOS, 11.6.6; R 4.2.1
+  * Microsoft Windows Server 2022, 10.0.20348; R 4.2.1
+  * Ubuntu, 20.04; R-devel, R 4.2.1
 
 
 ## R CMD check results
