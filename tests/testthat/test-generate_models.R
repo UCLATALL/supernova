@@ -198,10 +198,9 @@ test_that("linear models are refit with the resulting formulae", {
 })
 
 test_that("type 3 models properly exclude lower-level terms", {
-  model <- lm(Thumb ~ RaceEthnic + RaceEthnic:Height, data = Fingers)
+  model <- lm(mpg ~ hp * disp, data = mtcars)
   models <- generate_models(model, type = 3)
-  actual <- coefficients(models$Height$simple)
-  expect_false("Height" %in% names(actual$Height$simple))
+  expect_false("hp" %in% names(coefficients(models$hp$simple)))
 })
 
 test_that("the updated models remove missing cases according to the largest model", {

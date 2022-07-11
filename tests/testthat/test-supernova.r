@@ -24,8 +24,12 @@ get_partials <- function(model, type) {
     return(NULL)
   }
 
-  suppressMessages(car::Anova) # ignore masking lme4 methods
-  anova_tbl <- if (type == 1) anova(model) else car::Anova(model, type = type)
+  anova_tbl <- if (type == 1) {
+    anova(model)
+  } else {
+    suppressMessages(car::Anova) # ignore masking lme4 methods
+    suppressWarnings(car::Anova(model, type = type))
+  }
 
   anova_tbl <- anova_tbl[, c("Sum Sq", "Df", "F value", "Pr(>F)")]
   anova_tbl <- setNames(anova_tbl, c("SS", "df", "F", "p"))
@@ -224,35 +228,39 @@ test_that("it can handle datasets with function name collisions", {
 # ANOVA values ------------------------------------------------------------
 
 test_that("supernova calcs. (quant. ~ NULL) ANOVA correctly", {
-  model <- lm(Thumb ~ NULL, Fingers)
+  model <- lm(mpg ~ NULL, data = mtcars)
   actual <- supernova(model)$tbl
   expected <- anova(model)
 
-  numbers_only <- function(x) x %>% as.matrix() %>% unname()
+  numbers_only <- function(x) {
+    x %>%
+      as.matrix() %>%
+      unname()
+  }
   expect_identical(
     actual[3, c("SS", "df", "MS", "F", "p")] %>% numbers_only(),
-    expected[c("Sum Sq", "Df", "Mean Sq", "F value", "Pr(>F)")] %>% numbers_only
+    expected[c("Sum Sq", "Df", "Mean Sq", "F value", "Pr(>F)")] %>% numbers_only()
   )
 })
 
 test_that("it can handle models that don't use `data =` when fitting with `lm()`", {
-  actual <- supernova(lm(Fingers$Thumb ~ NULL))
-  expected <- supernova(lm(Thumb ~ NULL, data = Fingers))
+  actual <- supernova(lm(mtcars$mpg ~ NULL))
+  expected <- supernova(lm(mpg ~ NULL, data = mtcars))
   expect_identical(actual$tbl, expected$tbl)
 })
 
 models_to_test <- list(
-  `q ~ q` = lm(Thumb ~ Weight, supernova::Fingers),
-  `q ~ c` = lm(Thumb ~ RaceEthnic, supernova::Fingers),
-  `q ~ q + q` = lm(Thumb ~ Weight + Height, supernova::Fingers),
-  `q ~ c + q` = lm(Thumb ~ RaceEthnic + Weight, supernova::Fingers),
-  `q ~ c + c` = lm(Thumb ~ RaceEthnic + Sex, supernova::Fingers),
-  `q ~ c + c + c` = lm(Thumb ~ RaceEthnic + Weight + Sex, supernova::Fingers),
-  `q ~ q * q` = lm(Thumb ~ Weight * Height, supernova::Fingers),
-  `q ~ c * q` = lm(Thumb ~ RaceEthnic * Weight, supernova::Fingers),
-  `q ~ c * c` = lm(Thumb ~ RaceEthnic * Sex, supernova::Fingers),
-  `q ~ c + q * c` = lm(Thumb ~ RaceEthnic + Weight * Sex, supernova::Fingers),
-  `q ~ c * q * c` = lm(Thumb ~ RaceEthnic * Weight * Sex, supernova::Fingers)
+  `q ~ q` = lm(mpg ~ hp, data = mtcars),
+  `q ~ q + q` = lm(mpg ~ hp + disp, data = mtcars),
+  `q ~ q * q` = lm(mpg ~ hp * disp, data = mtcars),
+  `q ~ c` = lm(mpg ~ factor(cyl), data = mtcars),
+  `q ~ c + c` = lm(mpg ~ factor(cyl) + factor(am), data = mtcars),
+  `q ~ c * c` = lm(mpg ~ factor(cyl) * factor(am), data = mtcars),
+  `q ~ c + c + c` = lm(mpg ~ factor(cyl) + factor(am) + factor(gear), data = mtcars),
+  `q ~ q + c` = lm(mpg ~ hp + factor(cyl), data = mtcars),
+  `q ~ q * c` = lm(mpg ~ hp * factor(cyl), data = mtcars),
+  `q ~ q * c + c` = lm(mpg ~ hp * factor(cyl) + factor(am), data = mtcars),
+  `q ~ q * c * c` = lm(mpg ~ hp * factor(cyl) * factor(am), data = mtcars)
 )
 
 test_that("supernova calculates ANOVAs properly (including different SS types)", {
