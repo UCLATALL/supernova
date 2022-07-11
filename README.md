@@ -540,12 +540,12 @@ generate_models(lm(mpg ~ hp * disp, data = mtcars), type = 2)
 The `pairwise()` function takes a linear model and performs the
 requested pairwise comparisons on the categorical terms in the model.
 For simple one-way models where a single categorical variable predicts
-and outcome. You will get output similar to other methods of computing
-pairwise comparisons (e.g. `TukeyHSD` or `t.test`). Essentially, the
+and outcome, you will get output similar to other methods of computing
+pairwise comparisons (e.g. `TukeyHSD()` or `t.test()`). Essentially, the
 differences on the outcome between each of the groups defined by the
 categorical variable are compared with the requested test, and their
-confidence intervals and p-values are adjusted by the requested
-correction.
+confidence intervals and *p*-values are adjusted by the requested
+`correction`.
 
 However, when more than two variables are entered into the model, the
 outcome will diverge somewhat from other methods of computing pairwise
@@ -554,109 +554,84 @@ error term, usually by pooling the standard deviation of the groups
 being compared. This means that when you have other predictors in the
 model, their presence is ignored when running these tests. For the
 functions in this package, we instead compute the pooled standard error
-by using the mean squared error (MSE) from the full model fit.
+by using the mean squared error (*MSE*) from the full model fit.
 
-Let’s take a concrete example to explain that. If we are predicting
-`Thumb` length from `Sex`, we can create that linear model and get the
+Let’s take a concrete example to explain that. If we are predicting a
+car’s miles-per-gallon (`mpg`) based on whether it has an automatic or
+manual transmission (`am`), we can create that linear model and get the
 pairwise comparisons like this:
 
 ``` r
-pairwise(lm(Thumb ~ Sex, data = supernova::Fingers))
+pairwise(lm(mpg ~ factor(am), data = mtcars))
 #> 
 #> ── Tukey's Honestly Significant Differences ────────────────────────────────────
-#> Model: Thumb ~ Sex
-#> Sex
+#> Model: mpg ~ factor(am)
+#> factor(am)
+#> Levels: 2
+#> Family-wise error-rate: 0.05
+#> 
+#>   group_1 group_2  diff pooled_se     q    df lower  upper p_adj
+#>   <chr>   <chr>   <dbl>     <dbl> <dbl> <int> <dbl>  <dbl> <dbl>
+#> 1 1       0       7.245     1.248 5.807    30 3.642 10.848 .0003
+```
+
+The output of this code will is one table showing the comparison of
+manual and automatic transmissions with regard to miles-per-gallon. The
+pooled standard error is the same as the square root of the *MSE* from
+the full model.
+
+In these data the `am` variable did not have any other values than
+*automatic* and *manual*, but we can imagine situations where the
+predictor has more than two levels. In these cases, the pooled SD would
+be calculated by taking the MSE of the full model (not of each group)
+and then weighting it based on the size of the groups in question
+(divide by *n*).
+
+To improve our model, we might add the car’s displacement (`disp`) as a
+quantitative predictor:
+
+``` r
+pairwise(lm(mpg ~ factor(am) + disp, data = mtcars))
+#> 
+#> ── Tukey's Honestly Significant Differences ────────────────────────────────────
+#> Model: mpg ~ factor(am) + disp
+#> factor(am)
 #> Levels: 2
 #> Family-wise error-rate: 0.05
 #> 
 #>   group_1 group_2  diff pooled_se     q    df lower upper p_adj
 #>   <chr>   <chr>   <dbl>     <dbl> <dbl> <int> <dbl> <dbl> <dbl>
-#> 1 male    female  6.447     1.029 6.262   155 3.571 9.323 .0000
+#> 1 1       0       7.245     0.819 8.846    29 4.876 9.614 .0000
 ```
 
-The output of this code will have one table showing the comparison of
-males and females on thumb length. The pooled standard error is the same
-as the square root of the MSE from the full model.
-
-By default, Tukey’s HSD is used to correct for multiple comparisons.
-However, you can specify “none” for t-tests or “Bonferroni” for t-tests
-with Bonferroni corrections.
-
-``` r
-pairwise(lm(Thumb ~ Sex, data = supernova::Fingers), correction = "none")
-#> 
-#> ── Pairwise t-tests ────────────────────────────────────────────────────────────
-#> Model: Thumb ~ Sex
-#> Sex
-#> Levels: 2
-#> Family-wise error-rate: 0.05
-#> 
-#>   group_1 group_2  diff pooled_se     t    df lower upper p_val
-#>   <chr>   <chr>   <dbl>     <dbl> <dbl> <int> <dbl> <dbl> <dbl>
-#> 1 male    female  6.447     1.029 6.262   155 4.743 8.150 .0000
-pairwise(lm(Thumb ~ Sex, data = supernova::Fingers), correction = "Bonferroni")
-#> 
-#> ── Pairwise t-tests with Bonferroni correction ─────────────────────────────────
-#> Model: Thumb ~ Sex
-#> Sex
-#> Levels: 2
-#> Family-wise error-rate: 0.05
-#> 
-#>   group_1 group_2  diff pooled_se     t    df lower upper p_adj
-#>   <chr>   <chr>   <dbl>     <dbl> <dbl> <int> <dbl> <dbl> <dbl>
-#> 1 male    female  6.447     1.029 6.262   155 4.743 8.150 .0000
-```
-
-In these data the `Sex` variable did not have any other values than male
-and female, but we can imagine situations where the data had other
-values like other or more refined responses. In these cases, the pooled
-SD would be calculated by taking the MSE of the full model (not of each
-group) and then weighting it based on the size of the groups in question
-(divide by n).
-
-To improve our model, we might add Height as quantitative predictor:
-
-``` r
-pairwise(lm(Thumb ~ Sex + Height, data = supernova::Fingers))
-#> 
-#> ── Tukey's Honestly Significant Differences ────────────────────────────────────
-#> Model: Thumb ~ Sex + Height
-#> Sex
-#> Levels: 2
-#> Family-wise error-rate: 0.05
-#> 
-#>   group_1 group_2  diff pooled_se     q    df lower upper p_adj
-#>   <chr>   <chr>   <dbl>     <dbl> <dbl> <int> <dbl> <dbl> <dbl>
-#> 1 male    female  6.447     1.001 6.438   154 3.649 9.245 .0000
-```
-
-Note that the output still only has a table for `Sex.` This is because
-we can’t do a pairwise comparison using `Height` because there are no
-groups to compare. Most functions will drop or not let you use this
-variable during pairwise comparisons. Instead, `pairwise()` uses the
-same approach as in the 3+ groups situation: we use the MSE for the full
+Note that the output still only has a table for `am`. This is because we
+can’t do a pairwise comparison using `disp` because there are no groups
+to compare. Most functions will drop or not let you use this variable
+during pairwise comparisons. Instead, `pairwise()` uses the same \#’
+approach as in the 3+ groups situation: we use the *MSE* for the full
 model and then weight it by the size of the groups being compared.
-Because we are using the MSE for the full model, the effect of `Height`
-is accounted for in the error term even though we are not explicitly
-comparing different heights. Importantly, the interpretation of the
-outcome is different than in other traditional t-tests. Instead of
-saying, “there is a difference in thumb length based on the value of
-sex,” we must add that this difference is found “after accounting for
-height.”
+Because we are using the MSE for the full model, the effect of `disp` is
+accounted for in the error term even though we are not explicitly
+comparing different displacements. **Importantly**, the interpretation
+of the outcome is different than in other traditional t-tests. Instead
+of saying, “there is a difference in miles-per-gallon based on the type
+of transmission,” we must add that this difference is found “after
+accounting for displacement.”
 
 Finally, the output can be plotted either by using `plot()` on the
 returned object, or specifying `plot = TRUE`:
 
 ``` r
-output <- pairwise(lm(Thumb ~ Sex + Height, data = supernova::Fingers))
+output <- pairwise(lm(mpg ~ factor(am) + disp, data = mtcars))
 plot(output)
 ```
 
-<img src="man/figures/README-unnamed-chunk-24-1.png" width="80%" />
+<img src="man/figures/README-unnamed-chunk-23-1.png" width="80%" />
+
+This would produce an identical plot:
 
 ``` r
-# alternatively
-# pairwise(lm(Thumb ~ Sex + Height, data = supernova::Fingers), plot = TRUE)
+pairwise(lm(mpg ~ factor(am) + disp, data = mtcars), plot = TRUE)
 ```
 
 # Contributing

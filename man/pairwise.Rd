@@ -59,7 +59,7 @@ make consistent decisions about how to calculate error terms and confidence inte
 match other functions).
 }
 \details{
-For simple one-way models where a single categorical variable predicts and outcome. You will get
+For simple one-way models where a single categorical variable predicts and outcome, you will get
 output similar to other methods of computing pairwise comparisons. Essentially, the differences
 on the outcome between each of the groups defined by the categorical variable are compared with
 the requested test, and their confidence intervals and p-values are adjusted by the requested
@@ -72,30 +72,33 @@ compared. This means that when you have other predictors in the model, their pre
 when running these tests. For the functions in this package, we instead compute the pooled
 standard error by using the mean squared error (MSE) from the full model fit.
 
-Let's take a concrete example to explain that. If we are predicting \code{Thumb} length from \code{Sex}, we
-can create that linear model and get the pairwise comparisons like this:
+Let's take a concrete example to explain that. If we are predicting a car's miles-per-gallon
+(\code{mpg}) based on whether it has an automatic or manual transmission (\code{am}), we can create that
+linear model and get the pairwise comparisons like this:
 
-\code{pairwise(lm(Thumb ~ Sex, data = supernova::Fingers))}
+\code{pairwise(lm(mpg ~ factor(am), data = mtcars))}
 
-The output of this code will have one table showing the comparison of males and females on thumb
-length. The pooled standard error is the same as the square root of the MSE from the full model.
+The output of this code will have one table showing the comparison of manual and automatic
+transmissions with regard to miles-per-gallon. The pooled standard error is the same as the
+square root of the MSE from the full model.
 
-In these data the \code{Sex} variable did not have any other values than \emph{male} and \emph{female}, but we
-can imagine situations where the data had other values like \emph{other} or more refined responses. In
-these cases, the pooled SD would be calculated by taking the MSE of the full model (not of each
-group) and then weighting it based on the size of the groups in question (divide by \emph{n}).
+In these data the \code{am} variable did not have any other values than \emph{automatic} and \emph{manual}, but
+we can imagine situations where the predictor has more than two levels. In these cases, the
+pooled SD would be calculated by taking the MSE of the full model (not of each group) and then
+weighting it based on the size of the groups in question (divide by \emph{n}).
 
-To improve our model, we might add \code{Height} as quantitative predictor:
+To improve our model, we might add the car's displacement (\code{disp}) as a quantitative predictor:
 
-\code{pairwise(lm(Thumb ~ Sex + Height, data = supernova::Fingers))}
+\code{pairwise(lm(mpg ~ factor(am) + disp, data = mtcars))}
 
-Note that the output still only has a table for \code{Sex}. This is because we can't do a pairwise
-comparison using \code{Height} because there are no groups to compare. Most functions will drop or not
+Note that the output still only has a table for \code{am}. This is because we can't do a pairwise
+comparison using \code{disp} because there are no groups to compare. Most functions will drop or not
 let you use this variable during pairwise comparisons. Instead, \code{pairwise()} uses the same
 approach as in the 3+ groups situation: we use the MSE for the full model and then weight it by
 the size of the groups being compared. Because we are using the MSE for the full model, the
-effect of \code{Height} is accounted for in the error term even though we are not explicitly comparing
-different heights. \strong{Importantly}, the interpretation of the outcome is different than in other
-traditional t-tests. Instead of saying, "there is a difference in thumb length based on the value
-of sex," we must add that this difference is found "after accounting for height."
+effect of \code{disp} is accounted for in the error term even though we are not explicitly comparing
+different displacements. \strong{Importantly}, the interpretation of the outcome is different than in
+other traditional t-tests. Instead of saying, "there is a difference in miles-per-gallon based
+on the type of transmission," we must add that this difference is found "after accounting for
+displacement."
 }
