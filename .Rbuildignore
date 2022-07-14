@@ -11,3 +11,5 @@ cache_test_data
 ^\.lintr$
 ^data-raw$
 ^CRAN-SUBMISSION$
+^LICENSE\.md$
+^\.vscode$

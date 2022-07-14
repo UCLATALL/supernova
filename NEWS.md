@@ -1,3 +1,9 @@
+# supernova 2.5.3
+
+* Remove references to `Fingers` data in examples and tests as it may be removed in the near future
+* Fix issue where using a model fit with an interactive term that has `factor()` in it (e.g. `lm(mpg ~ factor(cyl) * hp, data = mtcars)`) would result in an incorrect *df* (and related values) in the ANOVA table.
+
+
 # supernova 2.5.2
 
 ## Breaking (kind of)

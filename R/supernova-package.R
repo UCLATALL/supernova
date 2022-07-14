@@ -6,3 +6,7 @@ NULL
 .onLoad <- function(libname, pkgname) {
   backports::import(pkgname, "str2lang")
 }
+
+# Suppress R CMD check note (these are actually used)
+#' @importFrom methods setOldClass
+NULL

@@ -12,7 +12,7 @@
 anova_tbl <- function(model) {
   tbl <- anova(model)
 
-  if (class(model) == "lmerMod") {
+  if (inherits(model, "lmerMod")) {
     names(tbl)[[1]] <- "Df"
   }
 
@@ -174,10 +174,11 @@ resolve_type <- function(type) {
 #' problems when the update is called by another function (so the parent frame is no longer the
 #' environment the user is in).
 #'
+#' @param object An existing fit from a model function such as [`lm()`], [`glm()`] and many others.
 #' @inheritParams stats::update
 #'
 #' @return The updated model is returned.
-update_in_env <- function(object, formula., ...) {
+update_in_env <- function(object, formula., ...) { # nolint
   code <- stats::update(object, formula., ..., evaluate = FALSE)
   suppressMessages(eval(code, environment(formula(object))))
 }

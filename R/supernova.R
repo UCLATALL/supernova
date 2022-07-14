@@ -23,9 +23,8 @@
 #'   \item{models}{Models created by \code{\link{generate_models}}}
 #'
 #' @examples
-#' supernova(lm(Thumb ~ Weight, data = Fingers))
-#' format_p <- supernova(lm(Thumb ~ Weight, data = Fingers))
-#' print(format_p, pcut = 8)
+#' supernova(lm(mpg ~ disp, data = mtcars))
+#' supernova(lm(mpg ~ disp, data = mtcars)) %>% print(pcut = 8)
 #' @importFrom stats anova as.formula drop1 pf
 #'
 #' @references Judd, C. M., McClelland, G. H., & Ryan, C. S. (2017). \emph{Data
@@ -50,18 +49,20 @@ superanova <- function(fit, type = 3, verbose = TRUE) {
 supernova.lm <- function(fit, type = 3, verbose = TRUE) {
   type <- resolve_type(type)
   models <- generate_models(fit, type)
-
   is_null_model <- length(models) == 0
+
+  # don't use update() or you will end up losing the `data = ` argument
+  # it's some kind of environment bug
   fit_null <- if (is_null_model) fit else models[[1]]$simple
 
-  if (is_null_model) {
-    tbl <- vctrs::vec_c(
+  tbl <- if (is_null_model) {
+    vctrs::vec_c(
       row_blank("Model", "(error reduced)"),
       row_blank("Error", "(from model)"),
       row_error("Total", "(empty model)", fit_null)
     )
   } else if (length(models) == 2) {
-    tbl <- vctrs::vec_c(
+    vctrs::vec_c(
       row_term("Model", "(error reduced)", models, "Full Model"),
       row_error("Error", "(from model)", fit),
       row_error("Total", "(empty model)", fit_null)
@@ -73,7 +74,7 @@ supernova.lm <- function(fit, type = 3, verbose = TRUE) {
       row_term(term_name, NA_character_, models, term_name)
     })
 
-    tbl <- vctrs::vec_c(
+    vctrs::vec_c(
       row_term("Model", "(error reduced)", models, "Full Model"),
       partial_rows %>% purrr::reduce(vctrs::vec_c),
       row_error("Error", "(from model)", fit),
@@ -144,14 +145,25 @@ row_term <- function(name, description, models, term) {
 
   # compute the SS model using the comparison models from generate_models()
   ss <- sum((complex$fitted.values - simple$fitted.values)^2)
-  df <- if (is_full_model) full_model$rank - 1L else df_term(term, complex$model)
-  ms <- ss / df
+  df <- if (is_full_model) {
+    full_model$rank - 1L
+  } else {
+    factor_mat <- as.data.frame(attr(complex$terms, "factors"))
+    matched <- rownames(factor_mat)[factor_mat[, term] == 1]
+    df_each <- purrr::map_int(matched, function(term) {
+      data <- complex$model[[term]]
+      degrees <- if (is.numeric(data)) 2L else length(levels(factor(data)))
+      degrees - 1L
+    })
+    as.integer(prod(df_each))
+  }
 
   # always use the more complete SS error from the full model, never the partials
   ss_error <- sum(full_model$residuals^2)
   df_error <- nrow(full_model$model) - length(full_model$coefficients)
   ms_error <- ss_error / df_error
 
+  ms <- ss / df
   f <- ms / ms_error
   pre <- ss / (ss + ss_error)
   p <- pf(f, df, df_error, lower.tail = FALSE)
@@ -176,37 +188,6 @@ row_error <- function(name, description, fit) {
   ms <- ss / df
 
   row_blank(name, description, ss, df, ms)
-}
-
-#' Get the degrees of freedom a variable or term uses
-#'
-#' A term here is a predictor from a linear model (e.g. "weight" or "weight:height") whereas a
-#' variable is a column in a data frame (e.g. "weight" or "height").
-#'
-#' @param term,variable The term or variable to get the degrees of freedom for. It should match one
-#'   of the column names in `data`, or, if it is an interactive term (e.g. "weight:height"), all
-#'   components must be column names in `data`.
-#' @param data The data the term is from.
-#'
-#' @return The degrees of freedom used by the term or variable in the model (as an integer).
-#'
-#' @rdname df
-#' @keywords internal
-df_term <- function(term, data) {
-  # if the term is interactive, this splits out the variables and multiplies them
-  term_frm <- paste0("~", term) %>% as.formula()
-  term_vars <- frm_vars(term_frm)
-  purrr::map_int(term_vars, ~ df_variable(.x, data)) %>%
-    prod() %>%
-    as.integer()
-}
-
-#' @rdname df
-#' @keywords internal
-df_variable <- function(variable, data) {
-  vec <- data[[variable]]
-  n_param <- if (is.numeric(vec)) 2L else nlevels(factor(vec))
-  n_param - 1L
 }
 
 
@@ -238,7 +219,7 @@ supernova.lmerMod <- function(fit, type = 3, verbose = FALSE) {
   )
 
   # TOTAL
-  fit_lm <- lm(formula_simple, data = model_data)
+  fit_lm <- stats::lm(formula_simple, data = model_data)
   fit_null <- stats::update(fit_lm, . ~ NULL)
   total_row <- row_error("Total", description = NA_character_, fit = fit_null)
 
@@ -432,10 +413,10 @@ print.supernova <- function(x, pcut = 4, ...) {
   }
 
   # add spaces and a vertical bar to separate the terms & desc from values
-  barHelp <- function(x, y) paste0(x, y, " |")
-  bar_col <- if (!is_lmer_model & is_verbose) "description" else "term"
+  bar_help <- function(x, y) paste0(x, y, " |")
+  bar_col <- if (!is_lmer_model && is_verbose) "description" else "term"
   spaces_to_add <- max(nchar(tbl[[bar_col]])) - nchar(tbl[[bar_col]])
-  tbl[[bar_col]] <- mapply(barHelp, tbl[[bar_col]], strrep(" ", spaces_to_add))
+  tbl[[bar_col]] <- mapply(bar_help, tbl[[bar_col]], strrep(" ", spaces_to_add))
 
   # remove unnecessary column names
   names(tbl)[names(tbl) %in% c("term", "description")] <- ""

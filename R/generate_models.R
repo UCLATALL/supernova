@@ -68,12 +68,14 @@
 #'
 #' @examples
 #' # create all type 2 comparison models
-#' mod <- lm(Thumb ~ Height * Sex, data = Fingers)
-#' mods_2 <- generate_models(mod, type = 2)
+#' models <- generate_models(
+#'   lm(mpg ~ hp * factor(am), data = mtcars),
+#'   type = 2
+#' )
 #'
-#' # compute the SS for the Height term
-#' mod_Height <- anova(mods_2[["Height"]]$simple, mods_2[["Height"]]$complex)
-#' mod_Height[["Sum of Sq"]][[2]]
+#' # compute the SS for the hp term
+#' anova_hp <- anova(models$hp$simple, models$hp$complex)
+#' anova_hp[["Sum of Sq"]][[2]]
 #' @export
 generate_models <- function(model, type = 3) {
   UseMethod("generate_models", model)
