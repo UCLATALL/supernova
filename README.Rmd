@@ -25,13 +25,13 @@ set.seed(123)
 [![codecov](https://codecov.io/gh/uclatall/supernova/branch/main/graph/badge.svg?token=HEenoYyHcn)](https://app.codecov.io/gh/uclatall/supernova)
 <!-- badges: end -->
 
-The goal of `supernova` is to create ANOVA tables in the format used by Judd, McClelland, and Ryan (2017, ISBN: 978-1138819832) in their introductory textbook, *Data Analysis: A Model Comparison Approach to Regression, ANOVA, and Beyond* [(book website)](http://www.dataanalysisbook.com/index.html).\* These tables include proportional reduction in error, a useful measure for teaching the underlying concepts of ANOVA and regression, and formatting to ease the transition between the book and R. 
+The goal of `supernova` is to create ANOVA tables in the format used by Judd, McClelland, and Ryan (2017, ISBN: 978-1138819832) in their introductory textbook, *Data Analysis: A Model Comparison Approach to Regression, ANOVA, and Beyond* [(book website)](http://www.dataanalysisbook.com/index.html).\* These tables include proportional reduction in error, a useful measure for teaching the underlying concepts of ANOVA and regression, and formatting to ease the transition between the book and R.
 
 *\* Note: we are NOT affiliated with the authors or their institution.*
 
 In keeping with the approach in Judd, McClelland, and Ryan (2017), the ANOVA tables in this package are calculated using a model comparison approach that should be understandable given a beginner's understanding of base R and the information from the book (so if you have these and don't understand what is going on in the code, let us know because we are missing the mark!). Here is an explanation of how the tables are calculated for fully independent predictor variables (i.e. between-subjects designs):
 
-1. The "Total" row is calculated by updating the model passed to an empty model. For example, `lm(mpg ~ hp * disp, data = mtcars)` is updated to `lm(mpg ~ NULL, data = mtcars)`. From this empty model, the sum of squares and df can be calculated. 
+1. The "Total" row is calculated by updating the model passed to an empty model. For example, `lm(mpg ~ hp * disp, data = mtcars)` is updated to `lm(mpg ~ NULL, data = mtcars)`. From this empty model, the sum of squares and df can be calculated.
 
 2. If there is at least one predictor in the model, the overall model row and the error row are calculated. In the vernacular of the book, the compact model is represented by the updated empty model from 1 above, and the augmented model is the original model passed to ```supernova()```. From these models the SSE(A) is calculated by `sum(resid(null_model) ^ 2)`, the SSR is calculated by SSE(C) - SSE(A), the PRE for the overall model is extracted from the fit (`r.squared`), the df for the error row is extracted from the `lm()` fit (`df.residuals`).
 
@@ -116,7 +116,7 @@ supernova(lm(mpg ~ hp * disp, data = mtcars), verbose = FALSE)
 
 ### Within Subjects Models
 
-First let's load up `lme4` which gives us `lmer()`, the function we will use to fit within-subjects models. Additionally, install and load the `JMRData` package which has some short datasets with non-independent observations, and load `dplyr` and `tidyr` so that we can tidy the data. 
+First let's load up `lme4` which gives us `lmer()`, the function we will use to fit within-subjects models. Additionally, install and load the `JMRData` package which has some short datasets with non-independent observations, and load `dplyr` and `tidyr` so that we can tidy the data.
 
 ```{r, message = FALSE}
 # Run this line if you do not have the JMRData package
@@ -128,7 +128,7 @@ library(dplyr)
 
 simple_crossed <- JMRData::ex11.9 %>%
   gather(condition, puzzles_completed, -subject) %>%
-  mutate_at(vars(subject, condition), as.factor) 
+  mutate_at(vars(subject, condition), as.factor)
 
 multiple_crossed <- JMRData::ex11.17 %>%
   gather(condition, recall, -Subject) %>%
@@ -141,13 +141,13 @@ multiple_crossed <- JMRData::ex11.17 %>%
 Fitting the `simple_crossed` data with `lm()` would ignore the non-independence due to observations coming from the same `subject`. Compare this output with the following output where the model was fit with `lmer()` and the specification of `subject` as a random factor:
 
 ```{r}
-simple_crossed %>% 
-  lm(puzzles_completed ~ condition, data = .) %>% 
+simple_crossed %>%
+  lm(puzzles_completed ~ condition, data = .) %>%
   supernova(verbose = FALSE)
 
 # use lmer() to specify the non-independence
-simple_crossed %>% 
-  lmer(puzzles_completed ~ condition + (1|subject), data = .) %>% 
+simple_crossed %>%
+  lmer(puzzles_completed ~ condition + (1|subject), data = .) %>%
   supernova()
 ```
 
@@ -157,13 +157,13 @@ Here is another example like the previous, but here multiple variables (`time`, 
 
 ```{r}
 # fitting this with lm would ignore the non-independence due to Subject
-multiple_crossed %>% 
-  lm(recall ~ type * time, data = .) %>% 
+multiple_crossed %>%
+  lm(recall ~ type * time, data = .) %>%
   supernova(verbose = FALSE)
 
 # using lmer() we can specify the non-independence
-multiple_crossed %>% 
-  lmer(recall ~ type * time + (1|Subject) + (1|type:Subject) + (1|time:Subject), data = .) %>% 
+multiple_crossed %>%
+  lmer(recall ~ type * time + (1|Subject) + (1|type:Subject) + (1|time:Subject), data = .) %>%
   supernova()
 ```
 
@@ -177,13 +177,13 @@ simple_nested <- JMRData::ex11.1 %>%
   mutate(across(c(group, instructions, id), as.factor))
 
 # fitting this with lm would ignore the non-independence due to group
-simple_nested %>% 
-  lm(value ~ instructions, data = .) %>% 
+simple_nested %>%
+  lm(value ~ instructions, data = .) %>%
   supernova(verbose = FALSE)
 
 # using lmer() we can specify the non-independence
-simple_nested %>% 
-  lmer(value ~ instructions + (1|group), data = .) %>% 
+simple_nested %>%
+  lmer(value ~ instructions + (1|group), data = .) %>%
   supernova()
 ```
 
@@ -197,13 +197,13 @@ complex_nested <- JMRData::ex11.22 %>%
   mutate(across(c(couple, children, sex, yearsmarried), as.factor))
 
 # fitting this with lm would ignore the non-independence due to group
-complex_nested %>% 
-  lm(rating ~ sex * yearsmarried * children, data = .) %>% 
+complex_nested %>%
+  lm(rating ~ sex * yearsmarried * children, data = .) %>%
   supernova(verbose = FALSE)
 
 # using lmer() we can specify the non-independence
-complex_nested %>% 
-  lmer(rating ~ sex * yearsmarried * children + (1|couple), data = .) %>% 
+complex_nested %>%
+  lmer(rating ~ sex * yearsmarried * children + (1|couple), data = .) %>%
   supernova()
 ```
 
@@ -228,7 +228,7 @@ supernova(lm(mpg ~ hp * disp, data = mtcars), type = "orthogonal")
 
 ```{r}
 supernova(lm(mpg ~ hp * disp, data = mtcars), type = 1)
-``` 
+```
 
 These are equivalent to the above:
 
@@ -248,7 +248,7 @@ These are equivalent to the above:
 ```{r, eval=FALSE}
 supernova(lm(mpg ~ hp * disp, data = mtcars), type = "II")
 supernova(lm(mpg ~ hp * disp, data = mtcars), type = "hierarchical")
-``` 
+```
 
 ### Displaying which models were compared
 
@@ -280,8 +280,7 @@ To improve our model, we might add the car's displacement (`disp`) as a quantita
 pairwise(lm(mpg ~ factor(am) + disp, data = mtcars))
 ```
 
-Note that the output still only has a table for `am`. This is because we can't do a pairwise comparison using `disp` because there are no groups to compare. Most functions will drop or not let you use this variable during pairwise comparisons. Instead, `pairwise()` uses the same
-#' approach as in the 3+ groups situation: we use the *MSE* for the full model and then weight it by the size of the groups being compared. Because we are using the MSE for the full model, the effect of `disp` is accounted for in the error term even though we are not explicitly comparing different displacements. **Importantly**, the interpretation of the outcome is different than in other traditional t-tests. Instead of saying, "there is a difference in miles-per-gallon based on the type of transmission," we must add that this difference is found "after accounting for displacement."
+Note that the output still only has a table for `am`. This is because we can't do a pairwise comparison using `disp` because there are no groups to compare. Most functions will drop or not let you use this variable during pairwise comparisons. Instead, `pairwise()` uses the same approach as in the 3+ groups situation: we use the *MSE* for the full model and then weight it by the size of the groups being compared. Because we are using the MSE for the full model, the effect of `disp` is accounted for in the error term even though we are not explicitly comparing different displacements. **Importantly**, the interpretation of the outcome is different than in other traditional t-tests. Instead of saying, "there is a difference in miles-per-gallon based on the type of transmission," we must add that this difference is found "after accounting for displacement."
 
 Finally, the output can be plotted either by using `plot()` on the returned object, or specifying `plot = TRUE`:
 

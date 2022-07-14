@@ -222,7 +222,7 @@ library(dplyr)
 
 simple_crossed <- JMRData::ex11.9 %>%
   gather(condition, puzzles_completed, -subject) %>%
-  mutate_at(vars(subject, condition), as.factor) 
+  mutate_at(vars(subject, condition), as.factor)
 
 multiple_crossed <- JMRData::ex11.17 %>%
   gather(condition, recall, -Subject) %>%
@@ -238,8 +238,8 @@ Compare this output with the following output where the model was fit
 with `lmer()` and the specification of `subject` as a random factor:
 
 ``` r
-simple_crossed %>% 
-  lm(puzzles_completed ~ condition, data = .) %>% 
+simple_crossed %>%
+  lm(puzzles_completed ~ condition, data = .) %>%
   supernova(verbose = FALSE)
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: puzzles_completed ~ condition
@@ -252,8 +252,8 @@ simple_crossed %>%
 #>  Total | 23.000 15 1.533
 
 # use lmer() to specify the non-independence
-simple_crossed %>% 
-  lmer(puzzles_completed ~ condition + (1|subject), data = .) %>% 
+simple_crossed %>%
+  lmer(puzzles_completed ~ condition + (1|subject), data = .) %>%
   supernova()
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: puzzles_completed ~ condition + (1 | subject)
@@ -278,8 +278,8 @@ Here is another example like the previous, but here multiple variables
 
 ``` r
 # fitting this with lm would ignore the non-independence due to Subject
-multiple_crossed %>% 
-  lm(recall ~ type * time, data = .) %>% 
+multiple_crossed %>%
+  lm(recall ~ type * time, data = .) %>%
   supernova(verbose = FALSE)
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: recall ~ type * time
@@ -295,8 +295,8 @@ multiple_crossed %>%
 #>  Total     | 232.167 29  8.006
 
 # using lmer() we can specify the non-independence
-multiple_crossed %>% 
-  lmer(recall ~ type * time + (1|Subject) + (1|type:Subject) + (1|time:Subject), data = .) %>% 
+multiple_crossed %>%
+  lmer(recall ~ type * time + (1|Subject) + (1|type:Subject) + (1|time:Subject), data = .) %>%
   supernova()
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: recall ~ type * time + (1 | Subject) + (1 | type:Subject) + (1 | time:Subject)
@@ -331,8 +331,8 @@ simple_nested <- JMRData::ex11.1 %>%
   mutate(across(c(group, instructions, id), as.factor))
 
 # fitting this with lm would ignore the non-independence due to group
-simple_nested %>% 
-  lm(value ~ instructions, data = .) %>% 
+simple_nested %>%
+  lm(value ~ instructions, data = .) %>%
   supernova(verbose = FALSE)
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: value ~ instructions
@@ -345,8 +345,8 @@ simple_nested %>%
 #>  Total | 28.500 17  1.676
 
 # using lmer() we can specify the non-independence
-simple_nested %>% 
-  lmer(value ~ instructions + (1|group), data = .) %>% 
+simple_nested %>%
+  lmer(value ~ instructions + (1|group), data = .) %>%
   supernova()
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: value ~ instructions + (1 | group)
@@ -379,8 +379,8 @@ complex_nested <- JMRData::ex11.22 %>%
   mutate(across(c(couple, children, sex, yearsmarried), as.factor))
 
 # fitting this with lm would ignore the non-independence due to group
-complex_nested %>% 
-  lm(rating ~ sex * yearsmarried * children, data = .) %>% 
+complex_nested %>%
+  lm(rating ~ sex * yearsmarried * children, data = .) %>%
   supernova(verbose = FALSE)
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: rating ~ sex * yearsmarried * children
@@ -400,8 +400,8 @@ complex_nested %>%
 #>  Total                     | 43.500 31 1.403
 
 # using lmer() we can specify the non-independence
-complex_nested %>% 
-  lmer(rating ~ sex * yearsmarried * children + (1|couple), data = .) %>% 
+complex_nested %>%
+  lmer(rating ~ sex * yearsmarried * children + (1|couple), data = .) %>%
   supernova()
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: rating ~ sex * yearsmarried * children + (1 | couple)
@@ -607,7 +607,7 @@ pairwise(lm(mpg ~ factor(am) + disp, data = mtcars))
 Note that the output still only has a table for `am`. This is because we
 can’t do a pairwise comparison using `disp` because there are no groups
 to compare. Most functions will drop or not let you use this variable
-during pairwise comparisons. Instead, `pairwise()` uses the same \#’
+during pairwise comparisons. Instead, `pairwise()` uses the same
 approach as in the 3+ groups situation: we use the *MSE* for the full
 model and then weight it by the size of the groups being compared.
 Because we are using the MSE for the full model, the effect of `disp` is
