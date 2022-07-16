@@ -1,15 +1,3 @@
-# Notes -------------------------------------------------------------------
-
-# When checking multiple regression, the data are sanity checked against the
-# output from car::Anova(type = 3). The car package is NOT included in the
-# supernova package, so these data are cached in
-# "./tests/testthat/model_cache.Rds". This cache is accessed every time there
-# are more than one predictor in the model, and the model is being tested using
-# expect_supernova(). If you are going to test a new model using
-# expect_supernova() and it has more than one predictor, you need to add that
-# model in the "cache_test_data.R" script.
-
-
 # Helper functions --------------------------------------------------------
 
 sse <- function(fit) sum(fit$residuals^2)
@@ -38,7 +26,6 @@ get_partials <- function(model, type) {
   anova_tbl[which(anova_tbl$term %in% ivs), ]
 }
 
-# This needs to match with df_missing in cache_test_data.R
 get_data_with_missing <- function() {
   df_missing <- mtcars
   df_missing[1, ]$hp <- NA_real_
