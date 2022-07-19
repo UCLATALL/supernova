@@ -55,3 +55,65 @@
        ------- --------------- | -------- -- ------- ------ ----- -----
          Total (empty model)   | 1116.346 28  39.869                   
 
+# null model tables are beautifully formatted
+
+    Code
+      supernova(model)
+    Output
+       Analysis of Variance Table (Type III SS)
+       Model: mpg ~ NULL
+      
+                                     SS  df     MS   F PRE   p
+       ----- --------------- | -------- --- ------ --- --- ---
+       Model (error reduced) |      --- ---    --- --- --- ---
+       Error (from model)    |      --- ---    --- --- --- ---
+       ----- --------------- | -------- --- ------ --- --- ---
+       Total (empty model)   | 1126.047  31 36.324            
+
+# single predictor tables are beautifully formatted
+
+    Code
+      supernova(model)
+    Output
+       Analysis of Variance Table (Type III SS)
+       Model: mpg ~ hp
+      
+                                     SS df      MS      F   PRE     p
+       ----- --------------- | -------- -- ------- ------ ----- -----
+       Model (error reduced) |  678.373  1 678.373 45.460 .6024 .0000
+       Error (from model)    |  447.674 30  14.922                   
+       ----- --------------- | -------- -- ------- ------ ----- -----
+       Total (empty model)   | 1126.047 31  36.324                   
+
+# multiple predictor tables are beautifully formatted
+
+    Code
+      supernova(model)
+    Output
+       Analysis of Variance Table (Type III SS)
+       Model: mpg ~ hp + disp
+      
+                                     SS df      MS      F   PRE     p
+       ----- --------------- | -------- -- ------- ------ ----- -----
+       Model (error reduced) |  842.554  2 421.277 43.095 .7482 .0000
+          hp                 |   33.665  1  33.665  3.444 .1061 .0737
+        disp                 |  164.181  1 164.181 16.795 .3667 .0003
+       Error (from model)    |  283.493 29   9.776                   
+       ----- --------------- | -------- -- ------- ------ ----- -----
+       Total (empty model)   | 1126.047 31  36.324                   
+
+# non-verbose tables do not have a description column
+
+    Code
+      supernova(model)
+    Output
+       Analysis of Variance Table (Type III SS)
+       Model: mpg ~ NULL
+      
+                                     SS  df     MS   F PRE   p
+       ----- --------------- | -------- --- ------ --- --- ---
+       Model (error reduced) |      --- ---    --- --- --- ---
+       Error (from model)    |      --- ---    --- --- --- ---
+       ----- --------------- | -------- --- ------ --- --- ---
+       Total (empty model)   | 1126.047  31 36.324            
+

@@ -328,3 +328,26 @@ test_that("message is given for number of rows deleted due to missing cases", {
   # 3 cases removed
   expect_snapshot(supernova(lm(mpg ~ hp * disp, df_missing)))
 })
+
+
+# Printing -------------------------------------------------------------------
+
+test_that("null model tables are beautifully formatted", {
+  model <- lm(mpg ~ NULL, data = mtcars)
+  expect_snapshot(supernova(model))
+})
+
+test_that("single predictor tables are beautifully formatted", {
+  model <- lm(mpg ~ hp, data = mtcars)
+  expect_snapshot(supernova(model))
+})
+
+test_that("multiple predictor tables are beautifully formatted", {
+  model <- lm(mpg ~ hp + disp, data = mtcars)
+  expect_snapshot(supernova(model))
+})
+
+test_that("non-verbose tables do not have a description column", {
+  model <- lm(mpg ~ NULL, data = mtcars)
+  expect_snapshot(supernova(model))
+})
