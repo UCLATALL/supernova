@@ -379,8 +379,9 @@ print.supernova <- function(x, pcut = 4, ...) {
   tbl <- lapply(tbl, function(x) gsub("\\s*NA\\s*", "   ", x)) %>%
     as.data.frame(stringsAsFactors = FALSE)
 
-  # trim leading 0 from p
+  # trim leading 0 from p and PRE
   tbl[["p"]] <- substring(tbl[["p"]], 2)
+  tbl[["PRE"]] <- substring(tbl[["PRE"]], 2)
 
   # TABLE FORMATTING
   # add placeholders for null model
