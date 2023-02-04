@@ -67,10 +67,10 @@ The following models are explicitly tested and supported by
 For these models, there is also support for datasets with missing or
 unbalanced data.
 
--   empty models: `y ~ NULL`
--   simple regression: `y ~ a`
--   multiple regression: `y ~ a + b`
--   interactive regression: `y ~ a * b`
+- empty models: `y ~ NULL`
+- simple regression: `y ~ a`
+- multiple regression: `y ~ a + b`
+- interactive regression: `y ~ a * b`
 
 Additionally, a subset of within-subjects designs are supported and
 explicitly tested. To accommodate these models `supernova()` can accept
@@ -81,7 +81,7 @@ within-subjects designs.
 Anything not included above is not (yet) explicitly tested and may yield
 errors or incorrect statistics. This includes, but is not limited to
 
--   one-sample *t*-tests
+- one-sample *t*-tests
 
 ### Other features
 
@@ -144,11 +144,11 @@ supernova(lm(mpg ~ hp, data = mtcars))
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: mpg ~ hp
 #> 
-#>                                SS df      MS      F    PRE     p
-#>  ----- --------------- | -------- -- ------- ------ ------ -----
-#>  Model (error reduced) |  678.373  1 678.373 45.460 0.6024 .0000
-#>  Error (from model)    |  447.674 30  14.922                    
-#>  ----- --------------- | -------- -- ------- ------ ------ -----
+#>                                SS df      MS      F   PRE     p
+#>  ----- --------------- | -------- -- ------- ------ ----- -----
+#>  Model (error reduced) |  678.373  1 678.373 45.460 .6024 .0000
+#>  Error (from model)    |  447.674 30  14.922                   
+#>  ----- --------------- | -------- -- ------- ------ ----- -----
 #>  Total (empty model)   | 1126.047 31  36.324
 ```
 
@@ -159,13 +159,13 @@ supernova(lm(mpg ~ hp + disp, data = mtcars))
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: mpg ~ hp + disp
 #> 
-#>                                SS df      MS      F    PRE     p
-#>  ----- --------------- | -------- -- ------- ------ ------ -----
-#>  Model (error reduced) |  842.554  2 421.277 43.095 0.7482 .0000
-#>     hp                 |   33.665  1  33.665  3.444 0.1061 .0737
-#>   disp                 |  164.181  1 164.181 16.795 0.3667 .0003
-#>  Error (from model)    |  283.493 29   9.776                    
-#>  ----- --------------- | -------- -- ------- ------ ------ -----
+#>                                SS df      MS      F   PRE     p
+#>  ----- --------------- | -------- -- ------- ------ ----- -----
+#>  Model (error reduced) |  842.554  2 421.277 43.095 .7482 .0000
+#>     hp                 |   33.665  1  33.665  3.444 .1061 .0737
+#>   disp                 |  164.181  1 164.181 16.795 .3667 .0003
+#>  Error (from model)    |  283.493 29   9.776                   
+#>  ----- --------------- | -------- -- ------- ------ ----- -----
 #>  Total (empty model)   | 1126.047 31  36.324
 ```
 
@@ -176,14 +176,14 @@ supernova(lm(mpg ~ hp * disp, data = mtcars))
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: mpg ~ hp * disp
 #> 
-#>                                  SS df      MS      F    PRE     p
-#>  ------- --------------- | -------- -- ------- ------ ------ -----
-#>    Model (error reduced) |  923.189  3 307.730 42.475 0.8198 .0000
-#>       hp                 |  113.393  1 113.393 15.651 0.3586 .0005
-#>     disp                 |  188.449  1 188.449 26.011 0.4816 .0000
-#>  hp:disp                 |   80.635  1  80.635 11.130 0.2844 .0024
-#>    Error (from model)    |  202.858 28   7.245                    
-#>  ------- --------------- | -------- -- ------- ------ ------ -----
+#>                                  SS df      MS      F   PRE     p
+#>  ------- --------------- | -------- -- ------- ------ ----- -----
+#>    Model (error reduced) |  923.189  3 307.730 42.475 .8198 .0000
+#>       hp                 |  113.393  1 113.393 15.651 .3586 .0005
+#>     disp                 |  188.449  1 188.449 26.011 .4816 .0000
+#>  hp:disp                 |   80.635  1  80.635 11.130 .2844 .0024
+#>    Error (from model)    |  202.858 28   7.245                   
+#>  ------- --------------- | -------- -- ------- ------ ----- -----
 #>    Total (empty model)   | 1126.047 31  36.324
 ```
 
@@ -194,14 +194,14 @@ supernova(lm(mpg ~ hp * disp, data = mtcars), verbose = FALSE)
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: mpg ~ hp * disp
 #> 
-#>                  SS df      MS      F    PRE     p
-#>  ------- | -------- -- ------- ------ ------ -----
-#>  Model   |  923.189  3 307.730 42.475 0.8198 .0000
-#>  hp      |  113.393  1 113.393 15.651 0.3586 .0005
-#>  disp    |  188.449  1 188.449 26.011 0.4816 .0000
-#>  hp:disp |   80.635  1  80.635 11.130 0.2844 .0024
-#>  Error   |  202.858 28   7.245                    
-#>  ------- | -------- -- ------- ------ ------ -----
+#>                  SS df      MS      F   PRE     p
+#>  ------- | -------- -- ------- ------ ----- -----
+#>  Model   |  923.189  3 307.730 42.475 .8198 .0000
+#>  hp      |  113.393  1 113.393 15.651 .3586 .0005
+#>  disp    |  188.449  1 188.449 26.011 .4816 .0000
+#>  hp:disp |   80.635  1  80.635 11.130 .2844 .0024
+#>  Error   |  202.858 28   7.245                   
+#>  ------- | -------- -- ------- ------ ----- -----
 #>  Total   | 1126.047 31  36.324
 ```
 
@@ -244,30 +244,30 @@ simple_crossed %>%
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: puzzles_completed ~ condition
 #> 
-#>              SS df    MS     F    PRE     p
-#>  ----- | ------ -- ----- ----- ------ -----
-#>  Model |  2.250  1 2.250 1.518 0.0978 .2382
-#>  Error | 20.750 14 1.482                   
-#>  ----- | ------ -- ----- ----- ------ -----
+#>              SS df    MS     F   PRE     p
+#>  ----- | ------ -- ----- ----- ----- -----
+#>  Model |  2.250  1 2.250 1.518 .0978 .2382
+#>  Error | 20.750 14 1.482                  
+#>  ----- | ------ -- ----- ----- ----- -----
 #>  Total | 23.000 15 1.533
 
 # use lmer() to specify the non-independence
 simple_crossed %>%
-  lmer(puzzles_completed ~ condition + (1|subject), data = .) %>%
+  lmer(puzzles_completed ~ condition + (1 | subject), data = .) %>%
   supernova()
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: puzzles_completed ~ condition + (1 | subject)
 #> 
-#>                               SS df    MS     F    PRE     p
-#>  ---------------------- | ------ -- ----- ----- ------ -----
-#>  Between Subjects       |                                   
-#>  Total                  | 18.000  7 2.571                   
-#>  ---------------------- | ------ -- ----- ----- ------ -----
-#>  Within Subjects        |                                   
-#>    condition            |  2.250  1 2.250 5.727 0.4500 .0479
-#>  Error                  |  2.750  7 0.393                   
-#>  Total                  |  5.000  8 0.625                   
-#>  ---------------------- | ------ -- ----- ----- ------ -----
+#>                               SS df    MS     F   PRE     p
+#>  ---------------------- | ------ -- ----- ----- ----- -----
+#>  Between Subjects       |                                  
+#>  Total                  | 18.000  7 2.571                  
+#>  ---------------------- | ------ -- ----- ----- ----- -----
+#>  Within Subjects        |                                  
+#>    condition            |  2.250  1 2.250 5.727 .4500 .0479
+#>  Error                  |  2.750  7 0.393                  
+#>  Total                  |  5.000  8 0.625                  
+#>  ---------------------- | ------ -- ----- ----- ----- -----
 #>  Total                  | 23.000 15 1.533
 ```
 
@@ -284,37 +284,37 @@ multiple_crossed %>%
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: recall ~ type * time
 #> 
-#>                   SS df     MS     F    PRE     p
-#>  --------- | ------- -- ------ ----- ------ -----
-#>  Model     |  85.367  5 17.073 2.791 0.3677 .0400
-#>  type      |  12.100  1 12.100 1.978 0.0761 .1724
-#>  time      |  44.400  2 22.200 3.629 0.2322 .0420
-#>  type:time |   1.867  2  0.933 0.153 0.0126 .8593
-#>  Error     | 146.800 24  6.117                   
-#>  --------- | ------- -- ------ ----- ------ -----
+#>                   SS df     MS     F   PRE     p
+#>  --------- | ------- -- ------ ----- ----- -----
+#>  Model     |  85.367  5 17.073 2.791 .3677 .0400
+#>  type      |  12.100  1 12.100 1.978 .0761 .1724
+#>  time      |  44.400  2 22.200 3.629 .2322 .0420
+#>  type:time |   1.867  2  0.933 0.153 .0126 .8593
+#>  Error     | 146.800 24  6.117                  
+#>  --------- | ------- -- ------ ----- ----- -----
 #>  Total     | 232.167 29  8.006
 
 # using lmer() we can specify the non-independence
 multiple_crossed %>%
-  lmer(recall ~ type * time + (1|Subject) + (1|type:Subject) + (1|time:Subject), data = .) %>%
+  lmer(recall ~ type * time + (1 | Subject) + (1 | type:Subject) + (1 | time:Subject), data = .) %>%
   supernova()
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: recall ~ type * time + (1 | Subject) + (1 | type:Subject) + (1 | time:Subject)
 #> 
-#>                                SS df     MS      F    PRE     p
-#>  ---------------------- | ------- -- ------ ------ ------ -----
-#>  Between Subjects       |                                      
-#>  Total                  | 131.000  4 32.750                    
-#>  ---------------------- | ------- -- ------ ------ ------ -----
-#>  Within Subjects        |                                      
-#>    type                 |  17.633  1 17.633 11.376 0.7399 .0280
-#>      Error              |   6.200  4  1.550                    
-#>    time                 |  65.867  2 32.933 29.939 0.8821 .0002
-#>      Error              |   8.800  8  1.100                    
-#>    type:time            |   1.867  2  0.933  9.333 0.7000 .0081
-#>      Error              |   0.800  8  0.100                    
-#>  Total                  | 101.167 25  4.047                    
-#>  ---------------------- | ------- -- ------ ------ ------ -----
+#>                                SS df     MS      F   PRE     p
+#>  ---------------------- | ------- -- ------ ------ ----- -----
+#>  Between Subjects       |                                     
+#>  Total                  | 131.000  4 32.750                   
+#>  ---------------------- | ------- -- ------ ------ ----- -----
+#>  Within Subjects        |                                     
+#>    type                 |  17.633  1 17.633 11.376 .7399 .0280
+#>      Error              |   6.200  4  1.550                   
+#>    time                 |  65.867  2 32.933 29.939 .8821 .0002
+#>      Error              |   8.800  8  1.100                   
+#>    type:time            |   1.867  2  0.933  9.333 .7000 .0081
+#>      Error              |   0.800  8  0.100                   
+#>  Total                  | 101.167 25  4.047                   
+#>  ---------------------- | ------- -- ------ ------ ----- -----
 #>  Total                  | 232.167 29  8.006
 ```
 
@@ -337,30 +337,30 @@ simple_nested %>%
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: value ~ instructions
 #> 
-#>              SS df     MS      F    PRE     p
-#>  ----- | ------ -- ------ ------ ------ -----
-#>  Model | 12.500  1 12.500 12.500 0.4386 .0027
-#>  Error | 16.000 16  1.000                    
-#>  ----- | ------ -- ------ ------ ------ -----
+#>              SS df     MS      F   PRE     p
+#>  ----- | ------ -- ------ ------ ----- -----
+#>  Model | 12.500  1 12.500 12.500 .4386 .0027
+#>  Error | 16.000 16  1.000                   
+#>  ----- | ------ -- ------ ------ ----- -----
 #>  Total | 28.500 17  1.676
 
 # using lmer() we can specify the non-independence
 simple_nested %>%
-  lmer(value ~ instructions + (1|group), data = .) %>%
+  lmer(value ~ instructions + (1 | group), data = .) %>%
   supernova()
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: value ~ instructions + (1 | group)
 #> 
-#>                               SS df     MS     F    PRE     p
-#>  ---------------------- | ------ -- ------ ----- ------ -----
-#>  Between Subjects       |                                    
-#>    instructions         | 12.500  1 12.500 4.687 0.5396 .0963
-#>  Error                  | 10.667  4  2.667                   
-#>  Total                  | 23.167  5  4.633                   
-#>  ---------------------- | ------ -- ------ ----- ------ -----
-#>  Within Subjects        |                                    
-#>  Total                  |  5.333 12  0.444                   
-#>  ---------------------- | ------ -- ------ ----- ------ -----
+#>                               SS df     MS     F   PRE     p
+#>  ---------------------- | ------ -- ------ ----- ----- -----
+#>  Between Subjects       |                                   
+#>    instructions         | 12.500  1 12.500 4.687 .5396 .0963
+#>  Error                  | 10.667  4  2.667                  
+#>  Total                  | 23.167  5  4.633                  
+#>  ---------------------- | ------ -- ------ ----- ----- -----
+#>  Within Subjects        |                                   
+#>  Total                  |  5.333 12  0.444                  
+#>  ---------------------- | ------ -- ------ ----- ----- -----
 #>  Total                  | 28.500 17  1.676
 ```
 
@@ -385,44 +385,44 @@ complex_nested %>%
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: rating ~ sex * yearsmarried * children
 #> 
-#>                                  SS df    MS      F    PRE     p
-#>  ------------------------- | ------ -- ----- ------ ------ -----
-#>  Model                     | 26.500  7 3.786  5.345 0.6092 .0009
-#>  sex                       |  0.000  1 0.000  0.000 0.0000 .0000
-#>  yearsmarried              |  1.125  1 1.125  1.588 0.0621 .2197
-#>  children                  |  2.000  1 2.000  2.824 0.1053 .1059
-#>  sex:yearsmarried          |  2.250  1 2.250  3.176 0.1169 .0874
-#>  sex:children              |  0.062  1 0.062  0.088 0.0037 .7690
-#>  yearsmarried:children     |  7.563  1 7.563 10.676 0.3079 .0033
-#>  sex:yearsmarried:children |  0.500  1 0.500  0.706 0.0286 .4091
-#>  Error                     | 17.000 24 0.708                    
-#>  ------------------------- | ------ -- ----- ------ ------ -----
+#>                                  SS df    MS      F   PRE     p
+#>  ------------------------- | ------ -- ----- ------ ----- -----
+#>  Model                     | 26.500  7 3.786  5.345 .6092 .0009
+#>  sex                       |  0.000  1 0.000  0.000 .0000 .0000
+#>  yearsmarried              |  1.125  1 1.125  1.588 .0621 .2197
+#>  children                  |  2.000  1 2.000  2.824 .1053 .1059
+#>  sex:yearsmarried          |  2.250  1 2.250  3.176 .1169 .0874
+#>  sex:children              |  0.062  1 0.062  0.088 .0037 .7690
+#>  yearsmarried:children     |  7.563  1 7.563 10.676 .3079 .0033
+#>  sex:yearsmarried:children |  0.500  1 0.500  0.706 .0286 .4091
+#>  Error                     | 17.000 24 0.708                   
+#>  ------------------------- | ------ -- ----- ------ ----- -----
 #>  Total                     | 43.500 31 1.403
 
 # using lmer() we can specify the non-independence
 complex_nested %>%
-  lmer(rating ~ sex * yearsmarried * children + (1|couple), data = .) %>%
+  lmer(rating ~ sex * yearsmarried * children + (1 | couple), data = .) %>%
   supernova()
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: rating ~ sex * yearsmarried * children + (1 | couple)
 #> 
-#>                                    SS df     MS     F    PRE     p
-#>  --------------------------- | ------ -- ------ ----- ------ -----
-#>  Between Subjects            |                                    
-#>    yearsmarried              | 10.125  1 10.125 9.529 0.4426 .0094
-#>    children                  |  0.500  1  0.500 0.471 0.0377 .5058
-#>    yearsmarried:children     | 10.125  1 10.125 9.529 0.4426 .0094
-#>  Error                       | 12.750 12  1.063                   
-#>  Total                       | 33.500 15  2.233                   
-#>  --------------------------- | ------ -- ------ ----- ------ -----
-#>  Within Subjects             |                                    
-#>    sex                       |  3.125  1  3.125 8.824 0.4237 .0117
-#>    sex:yearsmarried          |  2.000  1  2.000 5.647 0.3200 .0350
-#>    sex:children              |  0.125  1  0.125 0.353 0.0286 .5635
-#>    sex:yearsmarried:children |  0.500  1  0.500 1.412 0.1053 .2577
-#>  Error                       |  4.250 12  0.354                   
-#>  Total                       | 10.000 16  0.625                   
-#>  --------------------------- | ------ -- ------ ----- ------ -----
+#>                                    SS df     MS     F   PRE     p
+#>  --------------------------- | ------ -- ------ ----- ----- -----
+#>  Between Subjects            |                                   
+#>    yearsmarried              | 10.125  1 10.125 9.529 .4426 .0094
+#>    children                  |  0.500  1  0.500 0.471 .0377 .5058
+#>    yearsmarried:children     | 10.125  1 10.125 9.529 .4426 .0094
+#>  Error                       | 12.750 12  1.063                  
+#>  Total                       | 33.500 15  2.233                  
+#>  --------------------------- | ------ -- ------ ----- ----- -----
+#>  Within Subjects             |                                   
+#>    sex                       |  3.125  1  3.125 8.824 .4237 .0117
+#>    sex:yearsmarried          |  2.000  1  2.000 5.647 .3200 .0350
+#>    sex:children              |  0.125  1  0.125 0.353 .0286 .5635
+#>    sex:yearsmarried:children |  0.500  1  0.500 1.412 .1053 .2577
+#>  Error                       |  4.250 12  0.354                  
+#>  Total                       | 10.000 16  0.625                  
+#>  --------------------------- | ------ -- ------ ----- ----- -----
 #>  Total                       | 43.500 31  1.403
 ```
 
@@ -435,14 +435,14 @@ supernova(lm(mpg ~ hp * disp, data = mtcars))
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: mpg ~ hp * disp
 #> 
-#>                                  SS df      MS      F    PRE     p
-#>  ------- --------------- | -------- -- ------- ------ ------ -----
-#>    Model (error reduced) |  923.189  3 307.730 42.475 0.8198 .0000
-#>       hp                 |  113.393  1 113.393 15.651 0.3586 .0005
-#>     disp                 |  188.449  1 188.449 26.011 0.4816 .0000
-#>  hp:disp                 |   80.635  1  80.635 11.130 0.2844 .0024
-#>    Error (from model)    |  202.858 28   7.245                    
-#>  ------- --------------- | -------- -- ------- ------ ------ -----
+#>                                  SS df      MS      F   PRE     p
+#>  ------- --------------- | -------- -- ------- ------ ----- -----
+#>    Model (error reduced) |  923.189  3 307.730 42.475 .8198 .0000
+#>       hp                 |  113.393  1 113.393 15.651 .3586 .0005
+#>     disp                 |  188.449  1 188.449 26.011 .4816 .0000
+#>  hp:disp                 |   80.635  1  80.635 11.130 .2844 .0024
+#>    Error (from model)    |  202.858 28   7.245                   
+#>  ------- --------------- | -------- -- ------- ------ ----- -----
 #>    Total (empty model)   | 1126.047 31  36.324
 ```
 
@@ -461,14 +461,14 @@ supernova(lm(mpg ~ hp * disp, data = mtcars), type = 1)
 #>  Analysis of Variance Table (Type I SS)
 #>  Model: mpg ~ hp * disp
 #> 
-#>                                  SS df      MS      F    PRE     p
-#>  ------- --------------- | -------- -- ------- ------ ------ -----
-#>    Model (error reduced) |  923.189  3 307.730 42.475 0.8198 .0000
-#>       hp                 |  678.373  1 678.373 93.634 0.7698 .0000
-#>     disp                 |  164.181  1 164.181 22.661 0.4473 .0001
-#>  hp:disp                 |   80.635  1  80.635 11.130 0.2844 .0024
-#>    Error (from model)    |  202.858 28   7.245                    
-#>  ------- --------------- | -------- -- ------- ------ ------ -----
+#>                                  SS df      MS      F   PRE     p
+#>  ------- --------------- | -------- -- ------- ------ ----- -----
+#>    Model (error reduced) |  923.189  3 307.730 42.475 .8198 .0000
+#>       hp                 |  678.373  1 678.373 93.634 .7698 .0000
+#>     disp                 |  164.181  1 164.181 22.661 .4473 .0001
+#>  hp:disp                 |   80.635  1  80.635 11.130 .2844 .0024
+#>    Error (from model)    |  202.858 28   7.245                   
+#>  ------- --------------- | -------- -- ------- ------ ----- -----
 #>    Total (empty model)   | 1126.047 31  36.324
 ```
 
@@ -486,14 +486,14 @@ supernova(lm(mpg ~ hp * disp, data = mtcars), type = 2)
 #>  Analysis of Variance Table (Type II SS)
 #>  Model: mpg ~ hp * disp
 #> 
-#>                                  SS df      MS      F    PRE     p
-#>  ------- --------------- | -------- -- ------- ------ ------ -----
-#>    Model (error reduced) |  923.189  3 307.730 42.475 0.8198 .0000
-#>       hp                 |   33.665  1  33.665  4.647 0.1423 .0399
-#>     disp                 |  164.181  1 164.181 22.661 0.4473 .0001
-#>  hp:disp                 |   80.635  1  80.635 11.130 0.2844 .0024
-#>    Error (from model)    |  202.858 28   7.245                    
-#>  ------- --------------- | -------- -- ------- ------ ------ -----
+#>                                  SS df      MS      F   PRE     p
+#>  ------- --------------- | -------- -- ------- ------ ----- -----
+#>    Model (error reduced) |  923.189  3 307.730 42.475 .8198 .0000
+#>       hp                 |   33.665  1  33.665  4.647 .1423 .0399
+#>     disp                 |  164.181  1 164.181 22.661 .4473 .0001
+#>  hp:disp                 |   80.635  1  80.635 11.130 .2844 .0024
+#>    Error (from model)    |  202.858 28   7.245                   
+#>  ------- --------------- | -------- -- ------- ------ ----- -----
 #>    Total (empty model)   | 1126.047 31  36.324
 ```
 
@@ -516,19 +516,19 @@ appropriately evaluate each term in the full model.
 ``` r
 generate_models(lm(mpg ~ hp * disp, data = mtcars), type = 2)
 #> 
-#> ── Comparison Models for Type III SS ───────────────────────────────────────────
+#> ── Comparison Models for Type II SS ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 #> 
 #> ── Full Model
 #> complex: mpg ~ hp + disp + hp:disp
 #> simple:  mpg ~ NULL
 #> 
 #> ── hp
-#> complex: mpg ~ hp + disp + hp:disp
-#> simple:  mpg ~      disp + hp:disp
+#> complex: mpg ~ hp + disp
+#> simple:  mpg ~      disp
 #> 
 #> ── disp
-#> complex: mpg ~ hp + disp + hp:disp
-#> simple:  mpg ~ hp +        hp:disp
+#> complex: mpg ~ hp + disp
+#> simple:  mpg ~ hp
 #> 
 #> ── hp:disp
 #> complex: mpg ~ hp + disp + hp:disp
@@ -564,7 +564,7 @@ pairwise comparisons like this:
 ``` r
 pairwise(lm(mpg ~ factor(am), data = mtcars))
 #> 
-#> ── Tukey's Honestly Significant Differences ────────────────────────────────────
+#> ── Tukey's Honestly Significant Differences ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 #> Model: mpg ~ factor(am)
 #> factor(am)
 #> Levels: 2
@@ -593,7 +593,7 @@ quantitative predictor:
 ``` r
 pairwise(lm(mpg ~ factor(am) + disp, data = mtcars))
 #> 
-#> ── Tukey's Honestly Significant Differences ────────────────────────────────────
+#> ── Tukey's Honestly Significant Differences ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 #> Model: mpg ~ factor(am) + disp
 #> factor(am)
 #> Levels: 2

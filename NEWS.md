@@ -1,3 +1,7 @@
+# supernova 2.5.5
+
+- Remove data (all moved to the [`coursekata` package](https://github.com/UCLATALL/coursekata-r)). This removes some of the messages that spout when the `coursekata` package loads.
+
 # supernova 2.5.4
 
 - Fix print error where `generate_models()` would only print the comparison models for type III SS.
