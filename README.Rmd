@@ -147,7 +147,7 @@ simple_crossed %>%
 
 # use lmer() to specify the non-independence
 simple_crossed %>%
-  lmer(puzzles_completed ~ condition + (1|subject), data = .) %>%
+  lmer(puzzles_completed ~ condition + (1 | subject), data = .) %>%
   supernova()
 ```
 
@@ -163,7 +163,7 @@ multiple_crossed %>%
 
 # using lmer() we can specify the non-independence
 multiple_crossed %>%
-  lmer(recall ~ type * time + (1|Subject) + (1|type:Subject) + (1|time:Subject), data = .) %>%
+  lmer(recall ~ type * time + (1 | Subject) + (1 | type:Subject) + (1 | time:Subject), data = .) %>%
   supernova()
 ```
 
@@ -183,7 +183,7 @@ simple_nested %>%
 
 # using lmer() we can specify the non-independence
 simple_nested %>%
-  lmer(value ~ instructions + (1|group), data = .) %>%
+  lmer(value ~ instructions + (1 | group), data = .) %>%
   supernova()
 ```
 
@@ -203,7 +203,7 @@ complex_nested %>%
 
 # using lmer() we can specify the non-independence
 complex_nested %>%
-  lmer(rating ~ sex * yearsmarried * children + (1|couple), data = .) %>%
+  lmer(rating ~ sex * yearsmarried * children + (1 | couple), data = .) %>%
   supernova()
 ```
 
