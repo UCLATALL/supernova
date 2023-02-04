@@ -6,9 +6,9 @@
 
 - Local install on macOS Monterey 13.1 (ARM); R 4.2.1
 - GitHub Actions
-  - macOS, 11.6.8; R 4.2.1
-  - Microsoft Windows Server 2022, 10.0.20348; R 4.2.1
-  - Ubuntu, 20.04.4; R-devel, R 4.2.1
+  - macOS: 12.6.3; R: 4.2.2
+  - Microsoft Windows Server 2022: 10.0.20348; R: 4.2.2, 3.6.3
+  - Ubuntu: 18.04.6; R: devel, 4.2.2, 4.1.3
   - `check_rhub()`
   - `check_win_devel()`
 
