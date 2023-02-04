@@ -258,7 +258,7 @@ drop_term <- function(fit, term) {
 #' @export
 print.comparison_models <- function(x, ...) {
   full_model <- attr(x, "model")
-  x <- generate_models.formula(as.formula(full_model))
+  x <- generate_models.formula(as.formula(full_model), attr(x, "type"))
 
   if (vctrs::vec_is_empty(x)) {
     cli::cli_alert("No comparisons for empty model.")
