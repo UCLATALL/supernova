@@ -51,11 +51,11 @@ listwise_delete.lm <- function(obj, vars = all.vars(formula(obj))) {
   )
 
   str2lang <- utils::getFromNamespace("str2lang", "backports")
-  rlang::with_handlers(
+  rlang::try_fetch(
     eval(str2lang(call_string), envir = environment(as.formula(obj))),
-    supernova_missing_values_message = rlang::calling(function(cnd) {
+    supernova_missing_values_message = function(cnd) {
       rlang::cnd_muffle(cnd)
-    })
+    }
   )
 }
 
@@ -64,9 +64,11 @@ build_equivalent_call_string <- function(linear_model, vars) {
   call_string <- deparse(linear_model$call) %>%
     stringr::str_flatten() %>%
     stringr::str_squish()
-  var_string <- paste0("c(",
+  var_string <- paste0(
+    "c(",
     paste0('"', vars, '"', collapse = ", "),
-  ")")
+    ")"
+  )
 
   if (stringr::str_detect(call_string, " data = .+?[ ,)]")) {
     new_call_string <- stringr::str_replace(
