@@ -382,7 +382,7 @@ print.pairwise <- function(x, ..., n_per_table = Inf) {
 
 #' @export
 #' @importFrom pillar tbl_sum
-tbl_sum.pairwise_tbl <- function(x, setup, ...) {
+tbl_sum.pairwise_tbl <- function(x) {
   cli::cat_line()
   cli::cli_text(cli::style_bold(attr(x, "term")))
   cli::cli_text("Levels: ", attr(x, "n_levels"))
@@ -397,8 +397,8 @@ tbl_sum.pairwise_tbl <- function(x, setup, ...) {
 #' @importFrom ggplot2 autoplot
 #' @importFrom ggplot2 %+%
 #' @importFrom rlang .data
-autoplot.pairwise <- function(x, ...) {
-  x <- x[!(names(x) %in% c("p_adj", "p_val"))]
+autoplot.pairwise <- function(object, ...) {
+  x <- object[!(names(object) %in% c("p_adj", "p_val"))]
   p <- purrr::imap(x, function(tbl, term) {
     tbl$term <- term
     tbl$pair <- paste(tbl$group_1, tbl$group_2, sep = " - ")
