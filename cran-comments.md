@@ -1,6 +1,6 @@
 ## Release summary
 
-- Remove deprecated/migrated data. Data was not used in package and has moved to a different pedagogical package.
+- Move from deprecated `rlang::with_handlers` & `rlang::calling` to the simpler `rlang::try_fetch`
 
 ## Test environments
 
