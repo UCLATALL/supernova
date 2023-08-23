@@ -91,7 +91,7 @@ test_that("magrittr can pipe lmer() to supernova", {
 
 test_that("magrittr can pipe data to lm() to supernova", {
   skip_if(
-    package_version(R.version) < 3.5,
+    package_version(R.version) < "3.5",
     "This is only skipped to make this package compatible with DataCamp Light."
   )
 
@@ -173,7 +173,7 @@ test_that("nested repeated measures tables are beautifully formatted", {
 
 test_that("crossed repeated measures tables are beautifully formatted", {
   skip_if(
-    package_version(R.version) < 3.5,
+    package_version(R.version) < "3.5",
     "The MSE between will be off negligibly on older R versions (~.001)."
   )
 

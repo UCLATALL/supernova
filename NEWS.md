@@ -1,5 +1,9 @@
 # Changelog
 
+## supernova 2.5.7
+
+- Check package version using string comparison to pass _R_CHECK_STOP_ON_INVALID_NUMERIC_VERSION_INPUTS_ check on CRAN
+
 ## supernova 2.5.6
 
 - Move from deprecated `rlang::with_handlers` + `rlang::calling` to the simpler `rlang::try_fetch`

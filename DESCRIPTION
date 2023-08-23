@@ -1,8 +1,8 @@
 Type: Package
 Package: supernova
 Title: Judd, McClelland, & Ryan Formatting for ANOVA Output
-Version: 2.5.6
-Date: 2023-03-20
+Version: 2.5.7
+Date: 2023-08-23
 Authors@R: c(
     person("Adam", "Blake", , "adamblake@g.ucla.edu", role = c("cre", "aut"),
            comment = c(ORCID = "0000-0001-7881-8652")),
@@ -19,7 +19,7 @@ Description: Produces ANOVA tables in the format used by Judd, McClelland,
 License: AGPL (>= 3)
 URL: https://github.com/UCLATALL/supernova
 BugReports: https://github.com/UCLATALL/supernova/issues
-Depends: 
+Depends:
     R (>= 3.4.0)
 Imports:
     backports,
@@ -34,7 +34,7 @@ Imports:
     stringr,
     tibble,
     vctrs
-Suggests: 
+Suggests:
     car,
     covr,
     lintr,
@@ -46,4 +46,4 @@ Config/testthat/edition: 3
 Encoding: UTF-8
 LazyData: yes
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.0
+RoxygenNote: 7.2.3

@@ -1,7 +1,6 @@
 ## Release summary
 
-- Move from deprecated `rlang::with_handlers` & `rlang::calling` to the simpler `rlang::try_fetch`
-- Fix generic function consistency errors (`ggplot2::autoplot`, `pillar::tbl_sum`) with current version (on devel build)
+- Check package version using string comparison to pass _R_CHECK_STOP_ON_INVALID_NUMERIC_VERSION_INPUTS_ check on CRAN
 
 ## Test environments
 
