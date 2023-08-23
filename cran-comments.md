@@ -21,4 +21,8 @@ R CMD check succeeded
 
 ## Reverse dependencies
 
-No known reverse dependencies (no results from `devtools::revdep('supernova')`)
+Dependencies were identified with `devtools::revdep_check()` and tested with `revdepcheck::revdep_check(num_workers = 4)`. No problems were found.
+
+Packages:
+
+- eda4treeR
