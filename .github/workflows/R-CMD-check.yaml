@@ -23,12 +23,12 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {os: macOS-latest, r: "release"}
-          - {os: windows-latest, r: "release"}
-          - {os: windows-latest, r: "3.6"}
-          - {os: ubuntu-20.04, r: "devel", http-user-agent: "release"}
-          - {os: ubuntu-20.04, r: "release"}
-          - {os: ubuntu-20.04, r: "oldrel-1"}
+          - { os: macOS-latest, r: "release" }
+          - { os: windows-latest, r: "release" }
+          - { os: windows-latest, r: "3.6" }
+          - { os: ubuntu-20.04, r: "devel", http-user-agent: "release" }
+          - { os: ubuntu-20.04, r: "release" }
+          - { os: ubuntu-20.04, r: "oldrel-1" }
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -62,3 +62,5 @@ jobs:
       - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true
+        env:
+          _R_CHECK_STOP_ON_INVALID_NUMERIC_VERSION_INPUTS_: true

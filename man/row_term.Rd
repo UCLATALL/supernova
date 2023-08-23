@@ -9,11 +9,9 @@ row_term(name, description, models, term)
 \arguments{
 \item{description}{An optional, short description of the term (pedagogical).}
 
-\item{term}{The name of the term the row describes.}
+\item{models}{The models created by \code{\link[=generate_models]{generate_models()}} for comparison.}
 
-\item{complex}{The complex model containing the term.}
-
-\item{simple}{The simple model (without the term) to compare it to.}
+\item{term}{The term to compute the row for.}
 }
 \value{
 A \code{\link{tibble_row}} with the properties initialized. The code has been written to be as
