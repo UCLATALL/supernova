@@ -12,7 +12,7 @@
 
 ## supernova 2.5.5
 
-- Remove data (all moved to the [`coursekata` package](https://github.com/UCLATALL/coursekata-r)). This removes some of the messages that spout when the `coursekata` package loads.
+- Remove data (all moved to the [`coursekata` package](https://github.com/coursekata/coursekata-r)). This removes some of the messages that spout when the `coursekata` package loads.
 
 ## supernova 2.5.4
 
@@ -40,7 +40,7 @@
 - Fix bug where `pairwise()` would not recognize categorical variables if they were created by using
   `factor()` in the formula, e.g. `pairwise(lm(mpg ~ factor(cyl), data = mtcars))`.
 - Fix printing in RMarkdown documents where `supernova()` output was interpreted as a table.
-- Move `estimate-extraction` functions to [`coursekata`](https://github.com/UCLATALL/coursekata-r).
+- Move `estimate-extraction` functions to [`coursekata`](https://github.com/coursekata/coursekata-r).
 - **Breaking**: drop support for R 3.4
 
 ## supernova 2.4.4
