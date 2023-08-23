@@ -3,6 +3,7 @@
 ## supernova 2.5.7
 
 - Check package version using string comparison to pass _R_CHECK_STOP_ON_INVALID_NUMERIC_VERSION_INPUTS_ check on CRAN
+- Match parameter names to docs for two internal functions
 
 ## supernova 2.5.6
 
