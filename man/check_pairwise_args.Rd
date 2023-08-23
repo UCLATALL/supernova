@@ -22,9 +22,9 @@ Check that the arguments are compatible with the rest of the pairwise code.
 }
 \section{Functions}{
 \itemize{
-\item \code{check_aov_compat}: Ensure the model can be converted by \code{\link[=aov]{aov()}}
+\item \code{check_aov_compat()}: Ensure the model can be converted by \code{\link[=aov]{aov()}}
 
-\item \code{check_not_empty}: Check that the model is not the empty model
+\item \code{check_not_empty()}: Check that the model is not the empty model
+
 }}
-
 \keyword{internal}

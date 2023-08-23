@@ -129,8 +129,8 @@ row_blank <- function(term = NA_character_, description = NA_character_,
 #'
 #' @param term The name of the term the row describes.
 #' @param description An optional, short description of the term (pedagogical).
-#' @param complex The complex model containing the term.
-#' @param simple The simple model (without the term) to compare it to.
+#' @param models The models created by [`generate_models()`] for comparison.
+#' @param term The term to compute the row for.
 #'
 #' @return A [`tibble_row`] with the properties initialized. The code has been written to be as
 #'   simple and understanding as possible. Please take a look at the source and offer any
@@ -175,19 +175,19 @@ row_term <- function(name, description, models, term) {
 #'
 #' @param term The name of the term the row describes (e.g. Error or Total).
 #' @param description An optional, short description of the term (pedagogical).
-#' @param complex The model we are describing error from.
+#' @param fit The model we are describing error from.
 #'
 #' @return A [`tibble_row`] with the properties initialized. The code has been written to be as
 #'   simple and understandable as possible. Please take a look at the source and offer any
 #'   suggestions for improvement!
 #'
 #' @keywords internal
-row_error <- function(name, description, fit) {
+row_error <- function(term, description, fit) {
   ss <- sum(fit$residuals^2)
   df <- nrow(fit$model) - length(fit$coefficients)
   ms <- ss / df
 
-  row_blank(name, description, ss, df, ms)
+  row_blank(term, description, ss, df, ms)
 }
 
 

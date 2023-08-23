@@ -1,7 +1,8 @@
 ## Release summary
 
-- Move from deprecated `rlang::with_handlers` & `rlang::calling` to the simpler `rlang::try_fetch`
-- Fix generic function consistency errors (`ggplot2::autoplot`, `pillar::tbl_sum`) with current version (on devel build)
+- Check package version using string comparison to pass _R_CHECK_STOP_ON_INVALID_NUMERIC_VERSION_INPUTS_ check on CRAN
+- Match parameter names to docs for two internal functions
+- Fixed notes about HTTP 301 responses on NEWS.md links
 
 ## Test environments
 
@@ -21,4 +22,8 @@ R CMD check succeeded
 
 ## Reverse dependencies
 
-No known reverse dependencies (no results from `devtools::revdep('supernova')`)
+Dependencies were identified with `devtools::revdep_check()` and tested with `revdepcheck::revdep_check(num_workers = 4)`. No problems were found.
+
+Packages:
+
+- eda4treeR

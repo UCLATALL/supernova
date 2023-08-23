@@ -4,14 +4,14 @@
 \alias{row_error}
 \title{Compute and construct an ANOVA table row for an error term}
 \usage{
-row_error(name, description, fit)
+row_error(term, description, fit)
 }
 \arguments{
-\item{description}{An optional, short description of the term (pedagogical).}
-
 \item{term}{The name of the term the row describes (e.g. Error or Total).}
 
-\item{complex}{The model we are describing error from.}
+\item{description}{An optional, short description of the term (pedagogical).}
+
+\item{fit}{The model we are describing error from.}
 }
 \value{
 A \code{\link{tibble_row}} with the properties initialized. The code has been written to be as
