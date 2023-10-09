@@ -26,9 +26,9 @@ jobs:
           - { os: macOS-latest, r: "release" }
           - { os: windows-latest, r: "release" }
           - { os: windows-latest, r: "3.6" }
-          - { os: ubuntu-20.04, r: "devel", http-user-agent: "release" }
-          - { os: ubuntu-20.04, r: "release" }
-          - { os: ubuntu-20.04, r: "oldrel-1" }
+          - { os: ubuntu-latest, r: "devel", http-user-agent: "release" }
+          - { os: ubuntu-latest, r: "release" }
+          - { os: ubuntu-latest, r: "oldrel-1" }
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -37,10 +37,6 @@ jobs:
     steps:
       # https://github.com/actions/checkout
       - uses: actions/checkout@v3
-
-      - name: System dependencies
-        if: ${{ matrix.config.os == 'macOS-latest' }}
-        run: brew install gdal
 
       # https://github.com/r-lib/actions/tree/v2/setup-pandoc
       - uses: r-lib/actions/setup-pandoc@v2
