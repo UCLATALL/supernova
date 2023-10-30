@@ -351,3 +351,8 @@ test_that("non-verbose tables do not have a description column", {
   model <- lm(mpg ~ NULL, data = mtcars)
   expect_snapshot(supernova(model))
 })
+
+test_that("perfectly fit models print 1.000 for PRE and p", {
+  model <- lm(c(1:10) ~ c(11:20))
+  expect_snapshot(supernova(model))
+})
