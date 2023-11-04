@@ -380,8 +380,11 @@ print.supernova <- function(x, pcut = 4, ...) {
     as.data.frame(stringsAsFactors = FALSE)
 
   # trim leading 0 from p and PRE
-  tbl[["p"]] <- substring(tbl[["p"]], 2)
-  tbl[["PRE"]] <- substring(tbl[["PRE"]], 2)
+  tbl[, c("p", "PRE")] <- vapply(
+    tbl[, c("p", "PRE")],
+    function(x) ifelse(x < 1, substring(x, 2), x),
+    character(nrow(tbl))
+  )
 
   # TABLE FORMATTING
   # add placeholders for null model

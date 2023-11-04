@@ -117,3 +117,18 @@
        ----- --------------- | -------- --- ------ --- --- ---
        Total (empty model)   | 1126.047  31 36.324            
 
+# perfectly fit models print 1.000 for PRE and p
+
+    Code
+      supernova(model)
+    Output
+       Analysis of Variance Table (Type III SS)
+       Model: c(1:10) ~ c(11:20)
+      
+                                   SS df     MS            F    PRE     p
+       ----- --------------- | ------  - ------ ------------ ------ -----
+       Model (error reduced) | 82.500  1 82.500 1.202968e+32 1.0000 .0000
+       Error (from model)    |  0.000  8  0.000                          
+       ----- --------------- | ------  - ------ ------------ ------ -----
+       Total (empty model)   | 82.500  9  9.167                          
+
