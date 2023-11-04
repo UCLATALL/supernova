@@ -1,4 +1,3 @@
-
 # Notes -------------------------------------------------------------------
 # The datasets and expected values used here are taken from the textbook cited in the package
 # description (Judd, McClelland, & Ryan). The page numbers and exhibit references correspond to the
@@ -19,6 +18,7 @@ get_expected <- function(name) {
 }
 
 fit_lmer <- function(formula, data) {
+  skip_if_not_installed("lme4")
   lme4::lmer(
     formula,
     data = data,
