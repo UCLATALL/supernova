@@ -1,8 +1,7 @@
 ## Release summary
 
-- Check package version using string comparison to pass _R_CHECK_STOP_ON_INVALID_NUMERIC_VERSION_INPUTS_ check on CRAN
-- Match parameter names to docs for two internal functions
-- Fixed notes about HTTP 301 responses on NEWS.md links
+- Don't trim the leading digit from p-value or PRE when they are exactly 1
+- Fix issue on CRAN check when lme4 (optional) is not installed but is used in tests
 
 ## Test environments
 

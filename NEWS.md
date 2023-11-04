@@ -1,5 +1,9 @@
 # Changelog
 
+## supernova 2.5.8
+
+- Don't trim the leading digit from p-value or PRE when they are exactly 1
+
 ## supernova 2.5.7
 
 - Check package version using string comparison to pass _R_CHECK_STOP_ON_INVALID_NUMERIC_VERSION_INPUTS_ check on CRAN
