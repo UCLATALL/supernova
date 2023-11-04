@@ -5,5 +5,8 @@
 .Ruserdata
 .Rapp.history
 
+# CRAN
+CRAN-SUBMISSION
+
 # Mac file
 .DS_Store
