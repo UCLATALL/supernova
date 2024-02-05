@@ -51,7 +51,7 @@ jobs:
       # https://github.com/r-lib/actions/tree/v2/setup-r-dependencies
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck
+          extra-packages: any::rcmdcheck, any::Matrix, any::lme4
           needs: check
 
       # https://github.com/r-lib/actions/tree/v2/check-r-package
