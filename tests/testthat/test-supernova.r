@@ -358,5 +358,8 @@ test_that("non-verbose tables do not have a description column", {
 
 test_that("perfectly fit models print 1.000 for PRE and p", {
   model <- lm(c(1:10) ~ c(11:20))
-  expect_snapshot(supernova(model))
+  # f statistic can be unreliable to reproduce
+  supernova(model) |>
+    print() |>
+    expect_output("1.0000 .0000\n")
 })
