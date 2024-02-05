@@ -1,7 +1,6 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^scripts$
-cache_test_data
 ^README\.Rmd$
 ^cran-comments\.md$
 ^CRAN-RELEASE$

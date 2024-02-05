@@ -1,7 +1,8 @@
 linters: linters_with_defaults(
-    line_length_linter(100), 
+    line_length_linter(100),
     commented_code_linter = NULL,
-    object_usage_linter = NULL
+    object_usage_linter = NULL,
+    t_and_f_symbol_linter = NULL,
   )
 exclusions: list(
     "DESCRIPTION",
