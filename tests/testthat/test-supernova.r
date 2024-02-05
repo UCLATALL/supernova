@@ -190,12 +190,16 @@ test_that("supernova table structure is well-formed", {
 })
 
 test_that("supernova works when lm() is piped in", {
+  skip_if(package_version(R.version) < "4.2")
+
   lm(mpg ~ NULL, mtcars) |>
     supernova() |>
     expect_s3_class("supernova")
 })
 
 test_that("supernova works when data is piped into lm() is piped in", {
+  skip_if(package_version(R.version) < "4.2")
+
   # Believe it or not, this might not work. Do not remove or re-factor test.
   # When stats::update() tries to get the call, the data object is just "."
   # supernova has to middle-man with supernova::update() to get this to work

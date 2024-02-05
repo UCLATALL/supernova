@@ -30,7 +30,8 @@ test_that("it refits an lm with missing data with a message about the new call",
 })
 
 test_that("it works in a pipe", {
-  skip_if(package_version(R.version) < "4.2")
+  skip_if(package_version(R.version) < "4.1")
+
   get_data_with_missing() |>
     lm(mpg ~ hp * disp, data = _) |>
     listwise_delete() |>

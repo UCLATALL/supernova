@@ -8,7 +8,6 @@
 # Helper functions --------------------------------------------------------
 
 fit_lmer <- function(formula, data) {
-  skip_if_not_installed("lme4")
   lme4::lmer(
     formula,
     data = data,
@@ -69,16 +68,15 @@ test_that("supernova object has table, fit, and models", {
 })
 
 test_that("supernova works when lmer() is piped in", {
+  skip_if(package_version(R.version) < "4.1")
+
   fit_lmer(puzzles_completed ~ condition + (1 | subject), test_jmr_ex11.9) |>
     supernova() |>
     expect_s3_class("supernova")
 })
 
 test_that("supernova works when data is piped into lmer() is piped in", {
-  skip_if(
-    package_version(R.version) < "3.5",
-    "This is only skipped to make this package compatible with DataCamp Light."
-  )
+  skip_if(package_version(R.version) < "4.1")
 
   # Believe it or not, this might not work. Do not remove or refactor test.
   # When stats::update() tries to get the call, the data object is just the
