@@ -14,7 +14,7 @@ jobs:
 
     steps:
       # https://github.com/actions/checkout
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # https://github.com/r-lib/actions/tree/v2/setup-r
       - uses: r-lib/actions/setup-r@v2
