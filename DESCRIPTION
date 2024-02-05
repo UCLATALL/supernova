@@ -38,7 +38,6 @@ Suggests:
     lme4,
     readr,
     remotes,
-    rprojroot,
     testthat (>= 2.1.0),
     tidyr,
     vdiffr
