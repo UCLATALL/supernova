@@ -22,10 +22,8 @@ BugReports: https://github.com/UCLATALL/supernova/issues
 Depends:
     R (>= 3.4.0)
 Imports:
-    backports,
     cli,
     ggplot2,
-    lifecycle,
     methods,
     pillar (>= 1.5.0),
     purrr,

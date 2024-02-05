@@ -240,13 +240,7 @@ drop_term <- function(fit, term) {
   x_reduced <- x[, which(column_term_indices != term_index_to_drop), drop = FALSE]
 
   reduced_fit <- stats::lm.fit(x_reduced, y, offset = offset)
-
-  call_string <- deparse(fit$call) |>
-    paste0(collapse = "") |>
-    stringr::str_squish()
-  new_call_string <- sprintf("drop_term(%s, \"%s\")", call_string, term)
-  str2lang <- utils::getFromNamespace("str2lang", "backports")
-  reduced_fit$call <- str2lang(new_call_string)
+  reduced_fit$call <- base::call("drop_term", fit$call, term)
 
   oldClass(reduced_fit) <- "lm"
   reduced_fit
