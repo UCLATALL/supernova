@@ -220,13 +220,13 @@ library(lme4)
 library(tidyr)
 library(dplyr)
 
-simple_crossed <- JMRData::ex11.9 %>%
-  gather(condition, puzzles_completed, -subject) %>%
+simple_crossed <- JMRData::ex11.9 |>
+  gather(condition, puzzles_completed, -subject) |>
   mutate_at(vars(subject, condition), as.factor)
 
-multiple_crossed <- JMRData::ex11.17 %>%
-  gather(condition, recall, -Subject) %>%
-  separate(condition, c("type", "time"), -1) %>%
+multiple_crossed <- JMRData::ex11.17 |>
+  gather(condition, recall, -Subject) |>
+  separate(condition, c("type", "time"), -1) |>
   mutate(across(c(Subject, type, time), as.factor))
 ```
 
@@ -238,8 +238,8 @@ Compare this output with the following output where the model was fit
 with `lmer()` and the specification of `subject` as a random factor:
 
 ``` r
-simple_crossed %>%
-  lm(puzzles_completed ~ condition, data = .) %>%
+simple_crossed |>
+  lm(puzzles_completed ~ condition, data = _) |>
   supernova(verbose = FALSE)
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: puzzles_completed ~ condition
@@ -252,8 +252,8 @@ simple_crossed %>%
 #>  Total | 23.000 15 1.533
 
 # use lmer() to specify the non-independence
-simple_crossed %>%
-  lmer(puzzles_completed ~ condition + (1 | subject), data = .) %>%
+simple_crossed |>
+  lmer(puzzles_completed ~ condition + (1 | subject), data = _) |>
   supernova()
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: puzzles_completed ~ condition + (1 | subject)
@@ -278,8 +278,8 @@ Here is another example like the previous, but here multiple variables
 
 ``` r
 # fitting this with lm would ignore the non-independence due to Subject
-multiple_crossed %>%
-  lm(recall ~ type * time, data = .) %>%
+multiple_crossed |>
+  lm(recall ~ type * time, data = _) |>
   supernova(verbose = FALSE)
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: recall ~ type * time
@@ -295,8 +295,8 @@ multiple_crossed %>%
 #>  Total     | 232.167 29  8.006
 
 # using lmer() we can specify the non-independence
-multiple_crossed %>%
-  lmer(recall ~ type * time + (1 | Subject) + (1 | type:Subject) + (1 | time:Subject), data = .) %>%
+multiple_crossed |>
+  lmer(recall ~ type * time + (1 | Subject) + (1 | type:Subject) + (1 | time:Subject), data = _) |>
   supernova()
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: recall ~ type * time + (1 | Subject) + (1 | type:Subject) + (1 | time:Subject)
@@ -326,13 +326,13 @@ to the people being in the same `group`. Compare this output with the
 following output where the `group` is specified as a random factor.
 
 ``` r
-simple_nested <- JMRData::ex11.1 %>%
-  gather(id, value, starts_with("score")) %>%
+simple_nested <- JMRData::ex11.1 |>
+  gather(id, value, starts_with("score")) |>
   mutate(across(c(group, instructions, id), as.factor))
 
 # fitting this with lm would ignore the non-independence due to group
-simple_nested %>%
-  lm(value ~ instructions, data = .) %>%
+simple_nested |>
+  lm(value ~ instructions, data = _) |>
   supernova(verbose = FALSE)
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: value ~ instructions
@@ -345,8 +345,8 @@ simple_nested %>%
 #>  Total | 28.500 17  1.676
 
 # using lmer() we can specify the non-independence
-simple_nested %>%
-  lmer(value ~ instructions + (1 | group), data = .) %>%
+simple_nested |>
+  lmer(value ~ instructions + (1 | group), data = _) |>
   supernova()
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: value ~ instructions + (1 | group)
@@ -374,34 +374,34 @@ to the people being in the same `couple`. Compare this output with the
 following output where the `group` is specified as a random factor.
 
 ``` r
-complex_nested <- JMRData::ex11.22 %>%
-  gather(sex, rating, Male, Female) %>%
+complex_nested <- JMRData::ex11.22 |>
+  gather(sex, rating, Male, Female) |>
   mutate(across(c(couple, children, sex, yearsmarried), as.factor))
 
 # fitting this with lm would ignore the non-independence due to group
-complex_nested %>%
-  lm(rating ~ sex * yearsmarried * children, data = .) %>%
+complex_nested |>
+  lm(rating ~ sex * yearsmarried * children, data = _) |>
   supernova(verbose = FALSE)
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: rating ~ sex * yearsmarried * children
 #> 
-#>                                  SS df    MS      F   PRE     p
-#>  ------------------------- | ------ -- ----- ------ ----- -----
-#>  Model                     | 26.500  7 3.786  5.345 .6092 .0009
-#>  sex                       |  0.000  1 0.000  0.000 .0000 .0000
-#>  yearsmarried              |  1.125  1 1.125  1.588 .0621 .2197
-#>  children                  |  2.000  1 2.000  2.824 .1053 .1059
-#>  sex:yearsmarried          |  2.250  1 2.250  3.176 .1169 .0874
-#>  sex:children              |  0.062  1 0.062  0.088 .0037 .7690
-#>  yearsmarried:children     |  7.563  1 7.563 10.676 .3079 .0033
-#>  sex:yearsmarried:children |  0.500  1 0.500  0.706 .0286 .4091
-#>  Error                     | 17.000 24 0.708                   
-#>  ------------------------- | ------ -- ----- ------ ----- -----
+#>                                  SS df    MS      F   PRE      p
+#>  ------------------------- | ------ -- ----- ------ ----- ------
+#>  Model                     | 26.500  7 3.786  5.345 .6092  .0009
+#>  sex                       |  0.000  1 0.000  0.000 .0000 1.0000
+#>  yearsmarried              |  1.125  1 1.125  1.588 .0621  .2197
+#>  children                  |  2.000  1 2.000  2.824 .1053  .1059
+#>  sex:yearsmarried          |  2.250  1 2.250  3.176 .1169  .0874
+#>  sex:children              |  0.063  1 0.063  0.088 .0037  .7690
+#>  yearsmarried:children     |  7.562  1 7.562 10.676 .3079  .0033
+#>  sex:yearsmarried:children |  0.500  1 0.500  0.706 .0286  .4091
+#>  Error                     | 17.000 24 0.708                    
+#>  ------------------------- | ------ -- ----- ------ ----- ------
 #>  Total                     | 43.500 31 1.403
 
 # using lmer() we can specify the non-independence
-complex_nested %>%
-  lmer(rating ~ sex * yearsmarried * children + (1 | couple), data = .) %>%
+complex_nested |>
+  lmer(rating ~ sex * yearsmarried * children + (1 | couple), data = _) |>
   supernova()
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: rating ~ sex * yearsmarried * children + (1 | couple)
@@ -516,7 +516,7 @@ appropriately evaluate each term in the full model.
 ``` r
 generate_models(lm(mpg ~ hp * disp, data = mtcars), type = 2)
 #> 
-#> ── Comparison Models for Type II SS ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+#> ── Comparison Models for Type II SS ────────────────────────────────────────────
 #> 
 #> ── Full Model
 #> complex: mpg ~ hp + disp + hp:disp
@@ -564,7 +564,7 @@ pairwise comparisons like this:
 ``` r
 pairwise(lm(mpg ~ factor(am), data = mtcars))
 #> 
-#> ── Tukey's Honestly Significant Differences ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+#> ── Tukey's Honestly Significant Differences ────────────────────────────────────
 #> Model: mpg ~ factor(am)
 #> factor(am)
 #> Levels: 2
@@ -593,7 +593,7 @@ quantitative predictor:
 ``` r
 pairwise(lm(mpg ~ factor(am) + disp, data = mtcars))
 #> 
-#> ── Tukey's Honestly Significant Differences ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+#> ── Tukey's Honestly Significant Differences ────────────────────────────────────
 #> Model: mpg ~ factor(am) + disp
 #> factor(am)
 #> Levels: 2

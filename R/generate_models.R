@@ -128,7 +128,7 @@ generate_models.lm <- function(model, type = 3) {
       list(complex = model, simple = drop_term(model, term))
     })
 
-    fits <- magrittr::set_names(fits, terms)
+    fits <- rlang::set_names(fits, terms)
     full_model_pair <- list(complex = model, simple = update_in_env(model, . ~ NULL))
     fits <- append(fits, list("Full Model" = full_model_pair), after = 0L)
   }
@@ -149,7 +149,7 @@ add_class_information <- function(models, model, type) {
 build_formulae_full_model <- function(frm) {
   null_model <- frm_build(frm_outcome(frm), "NULL", environment(frm))
   models <- list(complex = frm, simple = null_model)
-  magrittr::set_names(list(models), "Full Model")
+  rlang::set_names(list(models), "Full Model")
 }
 
 build_formulae_type_1 <- function(frm) {
@@ -163,7 +163,7 @@ build_formulae_type_1 <- function(frm) {
     list(complex = complex, simple = frm_remove_term(complex, term))
   })
 
-  magrittr::set_names(models, terms)
+  rlang::set_names(models, terms)
 }
 
 build_formulae_type_2 <- function(frm) {
@@ -189,7 +189,7 @@ build_formulae_type_2 <- function(frm) {
     list(complex = complex, simple = frm_remove_term(complex, term))
   })
 
-  magrittr::set_names(models, terms)
+  rlang::set_names(models, terms)
 }
 
 build_formulae_type_3 <- function(frm) {
@@ -202,7 +202,7 @@ build_formulae_type_3 <- function(frm) {
     list(complex = frm, simple = frm_remove_term(frm, term))
   })
 
-  magrittr::set_names(models, terms)
+  rlang::set_names(models, terms)
 }
 
 
@@ -241,8 +241,8 @@ drop_term <- function(fit, term) {
 
   reduced_fit <- stats::lm.fit(x_reduced, y, offset = offset)
 
-  call_string <- deparse(fit$call) %>%
-    paste0(collapse = "") %>%
+  call_string <- deparse(fit$call) |>
+    paste0(collapse = "") |>
     stringr::str_squish()
   new_call_string <- sprintf("drop_term(%s, \"%s\")", call_string, term)
   str2lang <- utils::getFromNamespace("str2lang", "backports")
@@ -280,8 +280,8 @@ print.comparison_models <- function(x, ...) {
 #' @keywords internal
 formula_string <- function(obj, part, term) {
   type <- resolve_type(attr(obj, "type"))
-  model_full <- as.formula(attr(obj, "model")) %>% frm_expand()
-  model_part <- as.formula(part) %>% frm_expand()
+  model_full <- as.formula(attr(obj, "model")) |> frm_expand()
+  model_part <- as.formula(part) |> frm_expand()
 
   # For Types II and III the spaces need to be inserted within the formula string.
   # So, determine which variables were removed
@@ -301,9 +301,9 @@ formula_string <- function(obj, part, term) {
     rem_pat <- paste0(paste0(" ", rem_pat, collapse = " \\+?|"), "$")
 
     # perform replacements
-    output <- deparse(model_full) %>%
+    output <- deparse(model_full) |>
       # replace variables with spaces in full string
-      stringr::str_replace_all(rem_pat, function(str) strrep(" ", nchar(str))) %>%
+      stringr::str_replace_all(rem_pat, function(str) strrep(" ", nchar(str))) |>
       # trim dangling spaces and plus signs from end
       stringr::str_remove("[ \\+]*$")
 
@@ -317,9 +317,9 @@ formula_string <- function(obj, part, term) {
     rem_pat <- paste0(" ", rem_pat, "( \\+|$)")
 
     # perform replacements
-    output <- deparse(model_full) %>%
+    output <- deparse(model_full) |>
       # replace variables with spaces in full string
-      stringr::str_replace_all(rem_pat, function(str) strrep(" ", nchar(str))) %>%
+      stringr::str_replace_all(rem_pat, function(str) strrep(" ", nchar(str))) |>
       # trim dangling spaces and plus signs from end
       stringr::str_remove("[ \\+]*$")
 

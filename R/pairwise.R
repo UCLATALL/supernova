@@ -101,9 +101,9 @@ pairwise_t <- function(fit, term = NULL, alpha = .05, correction = "none") {
   params <- means_and_counts(fit, term)
   tests <- purrr::pmap(params, function(means, counts, term) {
     if (term %in% frm_interaction_terms(fit)) {
-      simple_terms <- expand.grid(dimnames(means)) %>% purrr::pmap_chr(paste, sep = ":")
-      means <- as.vector(means) %>% magrittr::set_names(simple_terms)
-      counts <- as.vector(counts) %>% magrittr::set_names(simple_terms)
+      simple_terms <- expand.grid(dimnames(means)) |> purrr::pmap_chr(paste, sep = ":")
+      means <- as.vector(means) |> rlang::set_names(simple_terms)
+      counts <- as.vector(counts) |> rlang::set_names(simple_terms)
       pairs <- level_pairs(simple_terms)
     } else {
       pairs <- level_pairs(names(means))
@@ -139,7 +139,7 @@ pairwise_t <- function(fit, term = NULL, alpha = .05, correction = "none") {
     })
 
     fwer <- 1 - (1 - alpha / corr_val)^length(rows)
-    purrr::reduce(rows, vctrs::vec_c) %>%
+    purrr::reduce(rows, vctrs::vec_c) |>
       new_pairwise_tbl(term, fit, fwer, alpha, correction)
   })
 
@@ -163,9 +163,9 @@ pairwise_tukey <- function(fit, term = NULL, alpha = .05) {
   mse <- sum(fit$residuals^2) / fit$df.residual
   tests <- purrr::pmap(means_and_counts(fit, term), function(means, counts, term) {
     if (term %in% frm_interaction_terms(fit)) {
-      simple_terms <- expand.grid(dimnames(means)) %>% purrr::pmap_chr(paste, sep = ":")
-      means <- as.vector(means) %>% magrittr::set_names(simple_terms)
-      counts <- as.vector(counts) %>% magrittr::set_names(simple_terms)
+      simple_terms <- expand.grid(dimnames(means)) |> purrr::pmap_chr(paste, sep = ":")
+      means <- as.vector(means) |> rlang::set_names(simple_terms)
+      counts <- as.vector(counts) |> rlang::set_names(simple_terms)
       pairs <- level_pairs(simple_terms)
     } else {
       pairs <- level_pairs(names(means))
@@ -194,7 +194,7 @@ pairwise_tukey <- function(fit, term = NULL, alpha = .05) {
       )
     })
 
-    purrr::reduce(rows, vctrs::vec_c) %>%
+    purrr::reduce(rows, vctrs::vec_c) |>
       new_pairwise_tbl(term, fit, alpha, alpha, correction)
   })
 
@@ -303,7 +303,7 @@ means_and_counts <- function(fit, term) {
 
   model_tables <- stats::model.tables(stats::aov(categorical_fit), "means")
   means <- model_tables$tables[terms]
-  counts <- model_tables$n[terms] %>%
+  counts <- model_tables$n[terms] |>
     purrr::imap(function(term_counts, index) {
       if (length(term_counts) == 1) {
         term_counts <- rep_len(term_counts, length(means[[index]]))
@@ -349,14 +349,14 @@ select_terms <- function(fit, term = NULL) {
 #' @keywords internal
 level_pairs <- function(levels) {
   create_row <- function(level) {
-    purrr::map(levels, ~ list(level, .x)) %>%
-      vctrs::vec_rbind() %>%
+    purrr::map(levels, ~ list(level, .x)) |>
+      vctrs::vec_rbind() |>
       suppressMessages()
   }
 
-  purrr::map(levels, create_row) %>%
-    purrr::reduce(vctrs::vec_c) %>%
-    as.matrix() %>%
+  purrr::map(levels, create_row) |>
+    purrr::reduce(vctrs::vec_c) |>
+    as.matrix() |>
     lower_tri()
 }
 
@@ -405,10 +405,10 @@ autoplot.pairwise <- function(object, ...) {
 
     correction <- attr(tbl, "correction")
     x_axis_label <- if (correction == "none") {
-      conf <- format((1 - attr(tbl, "alpha")) * 100, digits = 3) %>% paste0("%")
+      conf <- format((1 - attr(tbl, "alpha")) * 100, digits = 3) |> paste0("%")
       paste(conf, "CI (per test; uncorrected)")
     } else {
-      conf <- format((1 - attr(tbl, "fwer")) * 100, digits = 3) %>% paste0("%")
+      conf <- format((1 - attr(tbl, "fwer")) * 100, digits = 3) |> paste0("%")
       paste(conf, "CI with", stringr::str_to_title(correction), "correction")
     }
 

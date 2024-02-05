@@ -69,8 +69,8 @@ as_number <- function(x) vctrs::vec_cast(x, new_number())
 #' @export
 format.supernova_number <- function(x, ...) {
   formatter <- function(values) {
-    formatted <- values %>%
-      round(attr(x, "digits")) %>%
+    formatted <- values |>
+      round(attr(x, "digits")) |>
       format(nsmall = attr(x, "digits"), scientific = attr(x, "scientific"))
 
     if (!attr(x, "leading_zero")) {

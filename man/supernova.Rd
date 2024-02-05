@@ -39,7 +39,7 @@ Ryan (2017).
 }
 \examples{
 supernova(lm(mpg ~ disp, data = mtcars))
-supernova(lm(mpg ~ disp, data = mtcars)) \%>\% print(pcut = 8)
+supernova(lm(mpg ~ disp, data = mtcars)) |> print(pcut = 8)
 }
 \references{
 Judd, C. M., McClelland, G. H., & Ryan, C. S. (2017). \emph{Data
