@@ -23,7 +23,6 @@ Depends:
     R (>= 3.4.0)
 Imports:
     cli,
-    ggplot2,
     methods,
     pillar (>= 1.5.0),
     purrr,
@@ -34,6 +33,8 @@ Imports:
 Suggests:
     car,
     covr,
+    dplyr (>= 1.0.0),
+    ggplot2,
     lintr,
     lme4,
     readr,

@@ -393,11 +393,33 @@ tbl_sum.pairwise_tbl <- function(x) {
 
 # Plotting ------------------------------------------------------------------------------------
 
+scale_type.supernova_number <- function(x) "continuous"
+
+#' Autoplot method for pairwise objects.
+#'
+#' @param object A [`pairwise`] object.
+#' @param ... Additional arguments passed to the plotting geom.
+#' @details This function requires an optional dependency: [ggplot2][ggplot2::ggplot2-package]. When
+#'  this package is installed, calling `autoplot()` or `plot` on a `pairwise` object will generate a
+#'  plot of the pairwise comparisons. The plot will show the differences between the groups, with
+#'  error bars representing the confidence intervals. The x-axis will be labeled with the type of
+#'  confidence interval used and the values of the differences, and the y-axis will be labeled with
+#'  the groups being compared. A dashed line at 0 is included to help visualize the differences.
+#'
 #' @export
-#' @importFrom ggplot2 autoplot
-#' @importFrom ggplot2 %+%
 #' @importFrom rlang .data
+#'
+#' @examples
+#' if (require(ggplot2)) {
+#'   # generate the plot immediately
+#'   pairwise(lm(mpg ~ factor(am) + disp, data = mtcars), plot = TRUE)
+#'
+#'   # or save the object and plot it later
+#'   p <- pairwise(lm(mpg ~ factor(am) + disp, data = mtcars))
+#'   plot(p)
+#' }
 autoplot.pairwise <- function(object, ...) {
+  `%+%` <- ggplot2::`%+%`
   x <- object[!(names(object) %in% c("p_adj", "p_val"))]
   p <- purrr::imap(x, function(tbl, term) {
     tbl$term <- term
@@ -429,13 +451,14 @@ autoplot.pairwise <- function(object, ...) {
 }
 
 
+#' @rdname autoplot.pairwise
+#' @param x A `pairwise` object.
+#' @param y Ignored, required for compatibility with the `plot()` generic.
 #' @export
-#' @importFrom ggplot2 scale_type
-scale_type.supernova_number <- function(x) "continuous"
+plot.pairwise <- function(x, y, ...) {
+  if (!requireNamespace("ggplot2", quietly = TRUE)) {
+    rlang::abort("The ggplot2 package is required to plot pairwise comparisons.")
+  }
 
-
-#' @export
-#' @importFrom ggplot2 autoplot
-plot.pairwise <- function(x, ...) {
-  purrr::walk(autoplot(x, ...), print)
+  purrr::walk(ggplot2::autoplot(x, ...), print)
 }
