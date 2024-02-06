@@ -5,6 +5,7 @@
 ### Breaking changes
 
 - Remove deprecated `superanova()`
+- Remove magrittr, ggplot2, and backports dependencies
 
 ## supernova 2.5.8
 
