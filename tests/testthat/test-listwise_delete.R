@@ -30,12 +30,11 @@ test_that("it refits an lm with missing data with a message about the new call",
 })
 
 test_that("it works in a pipe", {
-  skip_if(package_version(R.version) < "4.1")
-
-  get_data_with_missing() |>
-    lm(mpg ~ hp * disp, data = _) |>
-    listwise_delete() |>
-    expect_snapshot()
+  expect_snapshot(
+    get_data_with_missing() %>%
+      lm(mpg ~ hp * disp, data = .) %>%
+      listwise_delete()
+  )
 })
 
 test_that("it works when the call is long and breaks multiple lines when using deparse", {
@@ -47,5 +46,5 @@ test_that("it works when the call is long and breaks multiple lines when using d
     formula = mpg_but_with_a_very_long_name ~ hp_but_with_a_very_long_name,
     data = mtcars_long_vars
   )
-  expect_warning(listwise_delete(long_model) |> suppressMessages(), NA)
+  expect_warning(listwise_delete(long_model) %>% suppressMessages(), NA)
 })

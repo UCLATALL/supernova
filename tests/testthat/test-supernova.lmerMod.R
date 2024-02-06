@@ -49,13 +49,13 @@ test_that("supernova object has table, fit, and models", {
 
   obj <- supernova(model, type = 3)
 
-  obj |> expect_s3_class("supernova")
+  obj %>% expect_s3_class("supernova")
 
-  obj$fit |> expect_identical(model)
+  obj$fit %>% expect_identical(model)
 
-  obj$models |> expect_null()
+  obj$models %>% expect_null()
 
-  obj$tbl |> expect_vector(data.frame(
+  obj$tbl %>% expect_vector(data.frame(
     term = character(),
     SS = double(),
     df = integer(),
@@ -68,22 +68,18 @@ test_that("supernova object has table, fit, and models", {
 })
 
 test_that("supernova works when lmer() is piped in", {
-  skip_if(package_version(R.version) < "4.1")
-
-  fit_lmer(puzzles_completed ~ condition + (1 | subject), test_jmr_ex11.9) |>
-    supernova() |>
+  fit_lmer(puzzles_completed ~ condition + (1 | subject), test_jmr_ex11.9) %>%
+    supernova() %>%
     expect_s3_class("supernova")
 })
 
 test_that("supernova works when data is piped into lmer() is piped in", {
-  skip_if(package_version(R.version) < "4.1")
-
   # Believe it or not, this might not work. Do not remove or refactor test.
   # When stats::update() tries to get the call, the data object is just the
   # placeholder. supernova has to middle-man with supernova::update()
-  test_jmr_ex11.9 |>
-    fit_lmer(puzzles_completed ~ condition + (1 | subject), data = _) |>
-    supernova() |>
+  test_jmr_ex11.9 %>%
+    fit_lmer(puzzles_completed ~ condition + (1 | subject), data = .) %>%
+    supernova() %>%
     expect_s3_class("supernova")
 })
 

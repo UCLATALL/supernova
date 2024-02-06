@@ -58,16 +58,16 @@
 # it works in a pipe
 
     Code
-      listwise_delete(lm(mpg ~ hp * disp, data = get_data_with_missing()))
+      get_data_with_missing() %>% lm(mpg ~ hp * disp, data = .) %>% listwise_delete()
     Message
       Refitting to remove 3 cases with missing value(s)
-      i lm(formula = mpg ~ hp * disp, data = listwise_delete(get_data_with_missing(), 
-          c("mpg", "hp", "disp")))
+      i lm(formula = mpg ~ hp * disp, data = listwise_delete(., c("mpg", 
+      "hp", "disp")))
     Output
       
       Call:
-      lm(formula = mpg ~ hp * disp, data = listwise_delete(get_data_with_missing(), 
-          c("mpg", "hp", "disp")))
+      lm(formula = mpg ~ hp * disp, data = listwise_delete(., c("mpg", 
+      "hp", "disp")))
       
       Coefficients:
       (Intercept)           hp         disp      hp:disp  

@@ -58,8 +58,8 @@ variables.lmerMod <- function(object) {
   # currently we only support a single grouping variable, logically it must be the random variable
   # with the shortest name --- all other valid random variables will be nested in some way and have
   # (1 | a:b) syntax, where b is the group variable
-  group_var <- random_terms[which.min(nchar(random_terms))] |>
-    stringr::str_remove("^1 [|] ")
+  group_var <- random_terms[which.min(nchar(random_terms))]
+  group_var <- stringr::str_remove(group_var, "^1 [|] ")
 
   # need to check the data and number of groups to determine within and between below
   data <- object@frame

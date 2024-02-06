@@ -37,6 +37,7 @@ Suggests:
     ggplot2,
     lintr,
     lme4,
+    magrittr,
     readr,
     remotes,
     testthat (>= 2.1.0),

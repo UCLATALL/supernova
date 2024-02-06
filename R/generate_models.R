@@ -274,8 +274,8 @@ print.comparison_models <- function(x, ...) {
 #' @keywords internal
 formula_string <- function(obj, part, term) {
   type <- resolve_type(attr(obj, "type"))
-  model_full <- as.formula(attr(obj, "model")) |> frm_expand()
-  model_part <- as.formula(part) |> frm_expand()
+  model_full <- frm_expand(as.formula(attr(obj, "model")))
+  model_part <- frm_expand(as.formula(part))
 
   # For Types II and III the spaces need to be inserted within the formula string.
   # So, determine which variables were removed
@@ -294,14 +294,11 @@ formula_string <- function(obj, part, term) {
     # add regex to remove immediately following space and plus
     rem_pat <- paste0(paste0(" ", rem_pat, collapse = " \\+?|"), "$")
 
-    # perform replacements
-    output <- deparse(model_full) |>
-      # replace variables with spaces in full string
-      stringr::str_replace_all(rem_pat, function(str) strrep(" ", nchar(str))) |>
-      # trim dangling spaces and plus signs from end
-      stringr::str_remove("[ \\+]*$")
-
-    return(output)
+    # replace variables with spaces in full string
+    replacer <- function(str) strrep(" ", nchar(str))
+    vars_removed <- stringr::str_replace_all(deparse(model_full), rem_pat, replacer)
+    # trim dangling spaces and plus signs from end
+    return(stringr::str_remove(vars_removed, "[ \\+]*$"))
   }
 
   if (type == 3) {
@@ -310,13 +307,23 @@ formula_string <- function(obj, part, term) {
     # add regex to remove immediately following space and plus
     rem_pat <- paste0(" ", rem_pat, "( \\+|$)")
 
-    # perform replacements
-    output <- deparse(model_full) |>
-      # replace variables with spaces in full string
-      stringr::str_replace_all(rem_pat, function(str) strrep(" ", nchar(str))) |>
-      # trim dangling spaces and plus signs from end
-      stringr::str_remove("[ \\+]*$")
-
-    return(output)
+    # replace variables with spaces in full string
+    replacer <- function(str) strrep(" ", nchar(str))
+    vars_removed <- stringr::str_replace_all(deparse(model_full), rem_pat, replacer)
+    # trim dangling spaces and plus signs from end
+    return(stringr::str_remove(vars_removed, "[ \\+]*$"))
   }
+}
+
+replace_vars_with_spaces <- function(str, vars) {
+  # escape special regex characters in variables
+  rem_pat <- stringr::str_replace_all(vars, "(\\W)", "\\\\\\1")
+  # add regex to remove immediately following space and plus
+  rem_pat <- paste0(paste0(" ", rem_pat, collapse = " \\+?|"), "$")
+
+  # replace variables with spaces in full string
+  replacer <- function(str) strrep(" ", nchar(str))
+  vars_removed <- stringr::str_replace_all(str, rem_pat, replacer)
+  # trim dangling spaces and plus signs from end
+  stringr::str_remove(vars_removed, "[ \\+]*$")
 }

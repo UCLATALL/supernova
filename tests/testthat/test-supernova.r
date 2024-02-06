@@ -160,15 +160,15 @@ test_that("supernova object has table, fit, and models", {
   fit <- lm(mpg ~ NULL, mtcars)
   obj <- supernova(fit, type = 3)
 
-  obj |>
+  obj %>%
     expect_s3_class("supernova")
 
-  obj$fit |>
-    expect_s3_class("lm") |>
+  obj$fit %>%
+    expect_s3_class("lm") %>%
     expect_identical(fit)
 
-  obj$models |>
-    expect_s3_class("comparison_models") |>
+  obj$models %>%
+    expect_s3_class("comparison_models") %>%
     expect_identical(suppressWarnings(generate_models(fit, 3)))
 })
 
@@ -190,22 +190,18 @@ test_that("supernova table structure is well-formed", {
 })
 
 test_that("supernova works when lm() is piped in", {
-  skip_if(package_version(R.version) < "4.2")
-
-  lm(mpg ~ NULL, mtcars) |>
-    supernova() |>
+  lm(mpg ~ NULL, mtcars) %>%
+    supernova() %>%
     expect_s3_class("supernova")
 })
 
 test_that("supernova works when data is piped into lm() is piped in", {
-  skip_if(package_version(R.version) < "4.2")
-
   # Believe it or not, this might not work. Do not remove or re-factor test.
   # When stats::update() tries to get the call, the data object is just "."
   # supernova has to middle-man with supernova::update() to get this to work
-  mtcars |>
-    lm(mpg ~ NULL, data = _) |>
-    supernova() |>
+  mtcars %>%
+    lm(mpg ~ NULL, data = .) %>%
+    supernova() %>%
     expect_s3_class("supernova")
 })
 
@@ -222,15 +218,11 @@ test_that("supernova calcs. (quant. ~ NULL) ANOVA correctly", {
   model <- lm(mpg ~ NULL, data = mtcars)
   actual <- supernova(model)$tbl
   expected <- anova(model)
+  numbers_only <- function(x) unname(as.matrix(x))
 
-  numbers_only <- function(x) {
-    x |>
-      as.matrix() |>
-      unname()
-  }
   expect_identical(
-    actual[3, c("SS", "df", "MS", "F", "p")] |> numbers_only(),
-    expected[c("Sum Sq", "Df", "Mean Sq", "F value", "Pr(>F)")] |> numbers_only()
+    numbers_only(actual[3, c("SS", "df", "MS", "F", "p")]),
+    numbers_only(expected[c("Sum Sq", "Df", "Mean Sq", "F value", "Pr(>F)")])
   )
 })
 
@@ -359,7 +351,7 @@ test_that("non-verbose tables do not have a description column", {
 test_that("perfectly fit models print 1.000 for PRE and p", {
   model <- lm(c(1:10) ~ c(11:20))
   # f statistic can be unreliable to reproduce
-  supernova(model) |>
-    print() |>
+  supernova(model) %>%
+    print() %>%
     expect_output("1.0000 .0000\n")
 })

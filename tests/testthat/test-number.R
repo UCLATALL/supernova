@@ -46,21 +46,21 @@ test_that("coercing number to number updates the attributes to the new version",
 })
 
 test_that("it works like a regular number", {
-  expect_equal(-number(1), -1, ignore_attr = TRUE) |>
+  expect_equal(-number(1), -1, ignore_attr = TRUE) %>%
     expect_s3_class("supernova_number")
-  expect_equal(+number(1), +1, ignore_attr = TRUE) |>
+  expect_equal(+number(1), +1, ignore_attr = TRUE) %>%
     expect_s3_class("supernova_number")
-  expect_equal(number(1) + number(1), 1 + 1, ignore_attr = TRUE) |>
+  expect_equal(number(1) + number(1), 1 + 1, ignore_attr = TRUE) %>%
     expect_s3_class("supernova_number")
-  expect_equal(number(1) - number(1), 1 - 1, ignore_attr = TRUE) |>
+  expect_equal(number(1) - number(1), 1 - 1, ignore_attr = TRUE) %>%
     expect_s3_class("supernova_number")
-  expect_equal(number(1) * number(1), 1 * 1, ignore_attr = TRUE) |>
+  expect_equal(number(1) * number(1), 1 * 1, ignore_attr = TRUE) %>%
     expect_s3_class("supernova_number")
-  expect_equal(number(1) / number(1), 1 / 1, ignore_attr = TRUE) |>
+  expect_equal(number(1) / number(1), 1 / 1, ignore_attr = TRUE) %>%
     expect_s3_class("supernova_number")
-  expect_equal(number(1) %% number(1), 1 %% 1, ignore_attr = TRUE) |>
+  expect_equal(number(1) %% number(1), 1 %% 1, ignore_attr = TRUE) %>%
     expect_s3_class("supernova_number")
-  expect_equal(number(1)^number(1), 1^1, ignore_attr = TRUE) |>
+  expect_equal(number(1)^number(1), 1^1, ignore_attr = TRUE) %>%
     expect_s3_class("supernova_number")
 })
 

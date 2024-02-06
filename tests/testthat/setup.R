@@ -15,28 +15,28 @@ if (!rlang::is_installed("JMRData")) {
 # to a long format.
 
 # simple nested designs
-test_jmr_ex11.1 <- JMRData::ex11.1 |>
-  tidyr::gather(id, value, dplyr::starts_with("score")) |>
-  dplyr::mutate(dplyr::across(c(group, instructions, id), as.factor)) |>
+test_jmr_ex11.1 <- JMRData::ex11.1 %>%
+  tidyr::gather(id, value, dplyr::starts_with("score")) %>%
+  dplyr::mutate(dplyr::across(c(group, instructions, id), as.factor)) %>%
   data.frame()
 
 # crossed designs
-test_jmr_ex11.9 <- JMRData::ex11.9 |>
-  tidyr::gather(condition, puzzles_completed, -subject) |>
-  dplyr::mutate(dplyr::across(c(subject, condition), as.factor)) |>
+test_jmr_ex11.9 <- JMRData::ex11.9 %>%
+  tidyr::gather(condition, puzzles_completed, -subject) %>%
+  dplyr::mutate(dplyr::across(c(subject, condition), as.factor)) %>%
   data.frame()
 
-test_jmr_ex11.17 <- JMRData::ex11.17 |>
-  rlang::set_names(tolower(names(JMRData::ex11.17))) |>
-  tidyr::gather(condition, recall, -subject) |>
-  tidyr::separate(condition, c("type", "time"), -1) |>
-  dplyr::mutate(dplyr::across(c(subject, type, time), as.factor)) |>
+test_jmr_ex11.17 <- JMRData::ex11.17 %>%
+  rlang::set_names(tolower(names(JMRData::ex11.17))) %>%
+  tidyr::gather(condition, recall, -subject) %>%
+  tidyr::separate(condition, c("type", "time"), -1) %>%
+  dplyr::mutate(dplyr::across(c(subject, type, time), as.factor)) %>%
   data.frame()
 
 # mixed designs
-test_jmr_ex11.22 <- JMRData::ex11.22 |>
-  tidyr::gather(sex, rating, Male, Female) |>
-  dplyr::mutate(dplyr::across(c(couple, children, sex, yearsmarried), as.factor)) |>
+test_jmr_ex11.22 <- JMRData::ex11.22 %>%
+  tidyr::gather(sex, rating, Male, Female) %>%
+  dplyr::mutate(dplyr::across(c(couple, children, sex, yearsmarried), as.factor)) %>%
   data.frame()
 
 # Expected Results ----------------------------------------------------------
@@ -52,7 +52,7 @@ expected_jmr_ex11.1 <- tibble::tribble(
   "Total between subjects", 23.17, 5, 4.63, NA, NA, NA,
   "Total within subjects", 5.33, 12, 0.44, NA, NA, NA,
   "Total", 28.5, 17, 1.68, NA, NA, NA
-) |> data.frame()
+) %>% data.frame()
 
 expected_jmr_ex11.9 <- tibble::tribble(
   ~term, ~SS, ~df, ~MS, ~F, ~PRE, ~p,
@@ -61,7 +61,7 @@ expected_jmr_ex11.9 <- tibble::tribble(
   "Error within subjects", 2.75, 7, 0.3929, NA, NA, NA,
   "Total within subjects", 5, 8, 0.625, NA, NA, NA,
   "Total", 23, 15, 1.5333, NA, NA, NA
-) |> data.frame()
+) %>% data.frame()
 
 expected_jmr_ex11.17 <- tibble::tribble(
   ~term, ~SS, ~df, ~MS, ~F, ~PRE, ~p,
@@ -74,7 +74,7 @@ expected_jmr_ex11.17 <- tibble::tribble(
   "time:type error", 0.8, 8, 0.1, NA, NA, NA,
   "Total within subjects", 101.17, 25, 4.05, NA, NA, NA,
   "Total", 232.17, 29, 8.01, NA, NA, NA
-) |> data.frame()
+) %>% data.frame()
 
 expected_jmr_ex11.22 <- tibble::tribble(
   ~term, ~SS, ~df, ~MS, ~F, ~PRE, ~p,
@@ -90,4 +90,4 @@ expected_jmr_ex11.22 <- tibble::tribble(
   "Error within subjects", 4.255, 12, 0.3542, NA, NA, NA,
   "Total within subjects", 10, 16, 0.625, NA, NA, NA,
   "Total", 43.5, 31, 1.4, NA, NA, NA
-) |> data.frame()
+) %>% data.frame()

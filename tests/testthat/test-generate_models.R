@@ -27,14 +27,14 @@ test_that("null models return empty list", {
 })
 
 test_that("generated models are organized with the key as the term", {
-  generate_models(test_formula, 1) |>
-    expect_length(length(test_terms)) |>
+  generate_models(test_formula, 1) %>%
+    expect_length(length(test_terms)) %>%
     expect_named(test_terms)
 })
 
 test_that("each term has a key for each of its complex and simple models", {
-  generate_models(test_formula, 1) |>
-    purrr::flatten() |>
+  generate_models(test_formula, 1) %>%
+    purrr::flatten() %>%
     expect_named(rep(c("complex", "simple"), times = length(test_terms)))
 })
 
