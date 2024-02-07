@@ -3,7 +3,7 @@
 \name{autoplot.pairwise}
 \alias{autoplot.pairwise}
 \alias{plot.pairwise}
-\title{Autoplot method for pairwise objects.}
+\title{Plotting method for pairwise objects.}
 \usage{
 autoplot.pairwise(object, ...)
 
@@ -19,15 +19,16 @@ autoplot.pairwise(object, ...)
 \item{y}{Ignored, required for compatibility with the \code{plot()} generic.}
 }
 \description{
-Autoplot method for pairwise objects.
+Plotting method for pairwise objects.
 }
 \details{
-This function requires an optional dependency: \link[ggplot2:ggplot2-package]{ggplot2}. When
-this package is installed, calling \code{autoplot()} or \code{plot} on a \code{pairwise} object will generate a
-plot of the pairwise comparisons. The plot will show the differences between the groups, with
-error bars representing the confidence intervals. The x-axis will be labeled with the type of
-confidence interval used and the values of the differences, and the y-axis will be labeled with
-the groups being compared. A dashed line at 0 is included to help visualize the differences.
+This function requires an optional dependency: \code{\link[ggplot2:ggplot2-package]{ggplot2}}.
+When this package is installed, calling \code{autoplot()} or \code{plot} on a \code{pairwise} object will
+generate a plot of the pairwise comparisons. The plot will show the differences between the
+groups, with error bars representing the confidence intervals. The x-axis will be labeled with
+the type of confidence interval used and the values of the differences, and the y-axis will be
+labeled with the groups being compared. A dashed line at 0 is included to help visualize the
+differences.
 }
 \examples{
 if (require(ggplot2)) {

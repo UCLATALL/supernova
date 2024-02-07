@@ -391,16 +391,17 @@ tbl_sum.pairwise_tbl <- function(x) {
 
 scale_type.supernova_number <- function(x) "continuous"
 
-#' Autoplot method for pairwise objects.
+#' Plotting method for pairwise objects.
 #'
 #' @param object A [`pairwise`] object.
 #' @param ... Additional arguments passed to the plotting geom.
-#' @details This function requires an optional dependency: [ggplot2][ggplot2::ggplot2-package]. When
-#'  this package is installed, calling `autoplot()` or `plot` on a `pairwise` object will generate a
-#'  plot of the pairwise comparisons. The plot will show the differences between the groups, with
-#'  error bars representing the confidence intervals. The x-axis will be labeled with the type of
-#'  confidence interval used and the values of the differences, and the y-axis will be labeled with
-#'  the groups being compared. A dashed line at 0 is included to help visualize the differences.
+#' @details This function requires an optional dependency: [`ggplot2`][ggplot2::ggplot2-package].
+#'  When this package is installed, calling `autoplot()` or `plot` on a `pairwise` object will
+#'  generate a plot of the pairwise comparisons. The plot will show the differences between the
+#'  groups, with error bars representing the confidence intervals. The x-axis will be labeled with
+#'  the type of confidence interval used and the values of the differences, and the y-axis will be
+#'  labeled with the groups being compared. A dashed line at 0 is included to help visualize the
+#'  differences.
 #'
 #' @export
 #' @importFrom rlang .data
