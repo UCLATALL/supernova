@@ -24,7 +24,7 @@ jobs:
       # https://github.com/r-lib/actions/tree/v2/setup-r-dependencies
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::covr
+          extra-packages: any::covr, lme4?source, UCLATALL/JMRData
           needs: coverage
 
       - name: Test coverage

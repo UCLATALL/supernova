@@ -1,8 +1,8 @@
 Type: Package
 Package: supernova
 Title: Judd, McClelland, & Ryan Formatting for ANOVA Output
-Version: 2.5.9
-Date: 2023-11-03
+Version: 3.0.0
+Date: 2024-02-06
 Authors@R: c(
     person("Adam", "Blake", , "adam@coursekata.org", role = c("cre", "aut"),
            comment = c(ORCID = "0000-0001-7881-8652")),
