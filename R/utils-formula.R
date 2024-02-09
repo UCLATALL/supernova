@@ -164,9 +164,9 @@ frm_random_vars <- function(frm) {
   possible_bars <- stringr::str_detect(frm_terms(frm), stringr::fixed("|"))
   random_terms <- if (any(possible_bars)) lme4::findbars(frm) else list()
 
-  purrr::map(random_terms, all.vars) %>%
-    purrr::flatten_chr() %>%
-    unique()
+  terms <- purrr::map(random_terms, all.vars)
+  terms <- purrr::flatten_chr(terms)
+  unique(terms)
 }
 
 

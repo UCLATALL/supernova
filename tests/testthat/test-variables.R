@@ -1,21 +1,11 @@
-
 # Helper functions --------------------------------------------------------
-
-
-get_data <- function(name) {
-  prefix <- if (interactive()) "./tests/testthat/" else "./"
-  readRDS(file.path(prefix, "data", paste0(name, ".Rds")))
-}
-
 
 fit_lmer <- function(frm, data) {
   lme4::lmer(frm, data = data, na.action = na.omit, subset = NULL, weights = NULL, offset = NULL)
 }
 
 
-
 # General tests -----------------------------------------------------------
-
 
 test_that("variables are extracted from bare formulae", {
   expect_identical(variables(mpg ~ hp), list(
@@ -124,7 +114,11 @@ test_that("variables are extracted from complex between models with interactions
 
 
 test_that("variables are extracted from simple nested models", {
-  model <- fit_lmer(value ~ instructions + (1 | group), data = get_data("jmr_ex11.1"))
+  model <- fit_lmer(
+    value ~ instructions + (1 | group),
+    test_jmr_ex11.1
+  )
+
   expect_identical(
     variables(model),
     list(
@@ -139,7 +133,11 @@ test_that("variables are extracted from simple nested models", {
 
 
 test_that("variables are extracted from simple crossed models", {
-  model <- fit_lmer(puzzles_completed ~ condition + (1 | subject), data = get_data("jmr_ex11.9"))
+  model <- fit_lmer(
+    puzzles_completed ~ condition + (1 | subject),
+    test_jmr_ex11.9
+  )
+
   expect_identical(
     variables(model),
     list(
@@ -154,7 +152,11 @@ test_that("variables are extracted from simple crossed models", {
 
 
 test_that("variables are extracted from simple crossed models with interactions", {
-  model <- fit_lmer(recall ~ type * time + (1 | subject), data = get_data("jmr_ex11.17"))
+  model <- fit_lmer(
+    recall ~ type * time + (1 | subject),
+    test_jmr_ex11.17
+  )
+
   expect_identical(
     variables(model),
     list(
@@ -171,7 +173,7 @@ test_that("variables are extracted from simple crossed models with interactions"
 test_that("variables are extracted from models with multiple crossed variables", {
   model <- fit_lmer(
     recall ~ time * type + (1 | subject) + (1 | time:subject) + (1 | type:subject),
-    data = get_data("jmr_ex11.17")
+    data = test_jmr_ex11.17
   )
   expect_identical(
     variables(model),
@@ -189,7 +191,7 @@ test_that("variables are extracted from models with multiple crossed variables",
 test_that("variables are extracted from mixed models with interactions", {
   model <- fit_lmer(
     rating ~ sex * yearsmarried * children + (1 | couple),
-    data = get_data("jmr_ex11.22")
+    test_jmr_ex11.22
   )
   expect_identical(
     variables(model),

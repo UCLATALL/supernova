@@ -2,9 +2,10 @@
 
     Code
       supernova(lm(mpg ~ hp, df_missing))
-    Message <supernova_missing_values_message>
+    Message
       Refitting to remove 1 case with missing value(s)
-      i lm(formula = mpg ~ hp, data = listwise_delete(df_missing, c("mpg", "hp")))
+      i lm(formula = mpg ~ hp, data = listwise_delete(df_missing, c("mpg", 
+      "hp")))
     Output
        Analysis of Variance Table (Type III SS)
        Model: mpg ~ hp
@@ -20,9 +21,10 @@
 
     Code
       supernova(lm(mpg ~ disp, df_missing))
-    Message <supernova_missing_values_message>
+    Message
       Refitting to remove 2 cases with missing value(s)
-      i lm(formula = mpg ~ disp, data = listwise_delete(df_missing, c("mpg", "disp")))
+      i lm(formula = mpg ~ disp, data = listwise_delete(df_missing, c("mpg", 
+      "disp")))
     Output
        Analysis of Variance Table (Type III SS)
        Model: mpg ~ disp
@@ -38,9 +40,10 @@
 
     Code
       supernova(lm(mpg ~ hp * disp, df_missing))
-    Message <supernova_missing_values_message>
+    Message
       Refitting to remove 3 cases with missing value(s)
-      i lm(formula = mpg ~ hp * disp, data = listwise_delete(df_missing, c("mpg", "hp", "disp")))
+      i lm(formula = mpg ~ hp * disp, data = listwise_delete(df_missing, 
+          c("mpg", "hp", "disp")))
     Output
        Analysis of Variance Table (Type III SS)
        Model: mpg ~ hp * disp
@@ -116,19 +119,4 @@
        Error (from model)    |      --- ---    --- --- --- ---
        ----- --------------- | -------- --- ------ --- --- ---
        Total (empty model)   | 1126.047  31 36.324            
-
-# perfectly fit models print 1.000 for PRE and p
-
-    Code
-      supernova(model)
-    Output
-       Analysis of Variance Table (Type III SS)
-       Model: c(1:10) ~ c(11:20)
-      
-                                   SS df     MS            F    PRE     p
-       ----- --------------- | ------  - ------ ------------ ------ -----
-       Model (error reduced) | 82.500  1 82.500 1.202968e+32 1.0000 .0000
-       Error (from model)    |  0.000  8  0.000                          
-       ----- --------------- | ------  - ------ ------------ ------ -----
-       Total (empty model)   | 82.500  9  9.167                          
 

@@ -39,8 +39,8 @@ novas <- list(nova, rotate_180(nova))
 
 # Plot
 ggplot(mapping = aes(x, y)) +
-  geom_polygon(data = hex_coords(4) %>% translate(dy = -1.3), fill = color$primary) +
-  geom_polygon(data = hex_coords(3.6) %>% translate(dy = -1.3), fill = color$dark) +
+  geom_polygon(data = hex_coords(4) |> translate(dy = -1.3), fill = color$primary) +
+  geom_polygon(data = hex_coords(3.6) |> translate(dy = -1.3), fill = color$dark) +
   geom_text(
     data = data.frame(x = 0, y = -2.8), label = "supernova", size = 20,
     color = color$light, family = "Consolas"
@@ -60,6 +60,6 @@ ggsave(
   bg = "transparent"
 )
 
-load.image("man/figures/logo.png") %>%
-  autocrop() %>%
+load.image("man/figures/logo.png") |>
+  autocrop() |>
   save.image("man/figures/logo.png")

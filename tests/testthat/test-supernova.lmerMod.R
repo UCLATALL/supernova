@@ -7,18 +7,7 @@
 
 # Helper functions --------------------------------------------------------
 
-get_data <- function(name) {
-  prefix <- if (interactive()) "./tests/testthat/" else "./"
-  readRDS(file.path(prefix, "data", paste0(name, ".Rds")))
-}
-
-get_expected <- function(name) {
-  prefix <- if (interactive()) "./tests/testthat/" else "./"
-  read.csv(file.path(prefix, "expected", paste0(name, ".csv")), stringsAsFactors = FALSE)
-}
-
 fit_lmer <- function(formula, data) {
-  skip_if_not_installed("lme4")
   lme4::lmer(
     formula,
     data = data,
@@ -35,9 +24,8 @@ fit_lmer <- function(formula, data) {
 test_that("cannot compute SS types other than Type III for lmerMod", {
   model <- fit_lmer(
     puzzles_completed ~ condition + (1 | subject),
-    data = get_data("jmr_ex11.9")
+    test_jmr_ex11.9
   )
-
   expect_error(supernova(model, type = 1))
   expect_error(supernova(model, type = 2))
 })
@@ -45,9 +33,8 @@ test_that("cannot compute SS types other than Type III for lmerMod", {
 test_that("there is no verbose print for lmerMod (warn and switch off)", {
   model <- fit_lmer(
     puzzles_completed ~ condition + (1 | subject),
-    data = get_data("jmr_ex11.9")
+    test_jmr_ex11.9
   )
-
   expect_warning(supernova(model, verbose = TRUE))
 })
 
@@ -57,7 +44,7 @@ test_that("there is no verbose print for lmerMod (warn and switch off)", {
 test_that("supernova object has table, fit, and models", {
   model <- fit_lmer(
     puzzles_completed ~ condition + (1 | subject),
-    data = get_data("jmr_ex11.9")
+    test_jmr_ex11.9
   )
 
   obj <- supernova(model, type = 3)
@@ -80,25 +67,17 @@ test_that("supernova object has table, fit, and models", {
   ))
 })
 
-test_that("magrittr can pipe lmer() to supernova", {
-  fit_lmer(
-    puzzles_completed ~ condition + (1 | subject),
-    data = get_data("jmr_ex11.9")
-  ) %>%
+test_that("supernova works when lmer() is piped in", {
+  fit_lmer(puzzles_completed ~ condition + (1 | subject), test_jmr_ex11.9) %>%
     supernova() %>%
     expect_s3_class("supernova")
 })
 
-test_that("magrittr can pipe data to lm() to supernova", {
-  skip_if(
-    package_version(R.version) < "3.5",
-    "This is only skipped to make this package compatible with DataCamp Light."
-  )
-
+test_that("supernova works when data is piped into lmer() is piped in", {
   # Believe it or not, this might not work. Do not remove or refactor test.
-  # When stats::update() tries to get the call, the data object is just "."
-  # supernova has to middle-man with supernova::update() to get this to work
-  get_data("jmr_ex11.9") %>%
+  # When stats::update() tries to get the call, the data object is just the
+  # placeholder. supernova has to middle-man with supernova::update()
+  test_jmr_ex11.9 %>%
     fit_lmer(puzzles_completed ~ condition + (1 | subject), data = .) %>%
     supernova() %>%
     expect_s3_class("supernova")
@@ -110,12 +89,12 @@ test_that("magrittr can pipe data to lm() to supernova", {
 test_that("supernova can test simple nested designs", {
   model <- fit_lmer(
     value ~ instructions + (1 | group),
-    data = get_data("jmr_ex11.1")
+    test_jmr_ex11.1
   )
 
   expect_equal(
     supernova(model)$tbl,
-    get_expected("jmr_ex11.1"),
+    expected_jmr_ex11.1,
     tolerance = 0.01
   )
 })
@@ -123,12 +102,12 @@ test_that("supernova can test simple nested designs", {
 test_that("supernova can test simple crossed designs", {
   model <- fit_lmer(
     puzzles_completed ~ condition + (1 | subject),
-    data = get_data("jmr_ex11.9")
+    test_jmr_ex11.9
   )
 
   expect_equal(
     supernova(model)$tbl,
-    get_expected("jmr_ex11.9"),
+    expected_jmr_ex11.9,
     tolerance = 0.001
   )
 })
@@ -136,12 +115,12 @@ test_that("supernova can test simple crossed designs", {
 test_that("supernova can test multiple crossed designs", {
   model <- fit_lmer(
     recall ~ time * type + (1 | subject) + (1 | time:subject) + (1 | type:subject),
-    data = get_data("jmr_ex11.17")
+    test_jmr_ex11.17
   )
 
   expect_equal(
     supernova(model)$tbl,
-    get_expected("jmr_ex11.17"),
+    expected_jmr_ex11.17,
     tolerance = 0.01
   )
 })
@@ -149,12 +128,12 @@ test_that("supernova can test multiple crossed designs", {
 test_that("supernova can test mixed designs", {
   model <- fit_lmer(
     rating ~ sex * yearsmarried * children + (1 | couple),
-    data = get_data("jmr_ex11.22")
+    test_jmr_ex11.22
   )
 
   expect_equal(
     supernova(model)$tbl,
-    get_expected("jmr_ex11.22"),
+    expected_jmr_ex11.22,
     tolerance = 0.01
   )
 })
@@ -165,7 +144,7 @@ test_that("supernova can test mixed designs", {
 test_that("nested repeated measures tables are beautifully formatted", {
   model <- fit_lmer(
     value ~ instructions + (1 | group),
-    data = get_data("jmr_ex11.1")
+    test_jmr_ex11.1
   )
 
   expect_snapshot(supernova(model))
@@ -179,7 +158,7 @@ test_that("crossed repeated measures tables are beautifully formatted", {
 
   model <- fit_lmer(
     rating ~ sex * yearsmarried * children + (1 | couple),
-    data = get_data("jmr_ex11.22")
+    test_jmr_ex11.22
   )
 
   expect_snapshot(supernova(model))

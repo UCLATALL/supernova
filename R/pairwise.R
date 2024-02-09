@@ -101,9 +101,9 @@ pairwise_t <- function(fit, term = NULL, alpha = .05, correction = "none") {
   params <- means_and_counts(fit, term)
   tests <- purrr::pmap(params, function(means, counts, term) {
     if (term %in% frm_interaction_terms(fit)) {
-      simple_terms <- expand.grid(dimnames(means)) %>% purrr::pmap_chr(paste, sep = ":")
-      means <- as.vector(means) %>% magrittr::set_names(simple_terms)
-      counts <- as.vector(counts) %>% magrittr::set_names(simple_terms)
+      simple_terms <- purrr::pmap_chr(expand.grid(dimnames(means)), paste, sep = ":")
+      means <- rlang::set_names(as.vector(means), simple_terms)
+      counts <- rlang::set_names(as.vector(counts), simple_terms)
       pairs <- level_pairs(simple_terms)
     } else {
       pairs <- level_pairs(names(means))
@@ -139,8 +139,7 @@ pairwise_t <- function(fit, term = NULL, alpha = .05, correction = "none") {
     })
 
     fwer <- 1 - (1 - alpha / corr_val)^length(rows)
-    purrr::reduce(rows, vctrs::vec_c) %>%
-      new_pairwise_tbl(term, fit, fwer, alpha, correction)
+    new_pairwise_tbl(purrr::reduce(rows, vctrs::vec_c), term, fit, fwer, alpha, correction)
   })
 
   structure(tests, class = "pairwise", fit = fit, correction = correction)
@@ -163,9 +162,9 @@ pairwise_tukey <- function(fit, term = NULL, alpha = .05) {
   mse <- sum(fit$residuals^2) / fit$df.residual
   tests <- purrr::pmap(means_and_counts(fit, term), function(means, counts, term) {
     if (term %in% frm_interaction_terms(fit)) {
-      simple_terms <- expand.grid(dimnames(means)) %>% purrr::pmap_chr(paste, sep = ":")
-      means <- as.vector(means) %>% magrittr::set_names(simple_terms)
-      counts <- as.vector(counts) %>% magrittr::set_names(simple_terms)
+      simple_terms <- purrr::pmap_chr(expand.grid(dimnames(means)), paste, sep = ":")
+      means <- rlang::set_names(as.vector(means), simple_terms)
+      counts <- rlang::set_names(as.vector(counts), simple_terms)
       pairs <- level_pairs(simple_terms)
     } else {
       pairs <- level_pairs(names(means))
@@ -194,8 +193,7 @@ pairwise_tukey <- function(fit, term = NULL, alpha = .05) {
       )
     })
 
-    purrr::reduce(rows, vctrs::vec_c) %>%
-      new_pairwise_tbl(term, fit, alpha, alpha, correction)
+    new_pairwise_tbl(purrr::reduce(rows, vctrs::vec_c), term, fit, alpha, alpha, correction)
   })
 
   structure(tests, class = "pairwise", fit = fit, correction = correction)
@@ -303,14 +301,13 @@ means_and_counts <- function(fit, term) {
 
   model_tables <- stats::model.tables(stats::aov(categorical_fit), "means")
   means <- model_tables$tables[terms]
-  counts <- model_tables$n[terms] %>%
-    purrr::imap(function(term_counts, index) {
-      if (length(term_counts) == 1) {
-        term_counts <- rep_len(term_counts, length(means[[index]]))
-        names(term_counts) <- names(means[[index]])
-      }
-      term_counts
-    })
+  counts <- purrr::imap(model_tables$n[terms], function(term_counts, index) {
+    if (length(term_counts) == 1) {
+      term_counts <- rep_len(term_counts, length(means[[index]]))
+      names(term_counts) <- names(means[[index]])
+    }
+    term_counts
+  })
 
   list(means = means, counts = counts, term = terms)
 }
@@ -349,15 +346,14 @@ select_terms <- function(fit, term = NULL) {
 #' @keywords internal
 level_pairs <- function(levels) {
   create_row <- function(level) {
-    purrr::map(levels, ~ list(level, .x)) %>%
-      vctrs::vec_rbind() %>%
-      suppressMessages()
+    suppressMessages(
+      vctrs::vec_rbind(purrr::map(levels, ~ list(level, .x)))
+    )
   }
 
-  purrr::map(levels, create_row) %>%
-    purrr::reduce(vctrs::vec_c) %>%
-    as.matrix() %>%
-    lower_tri()
+  rows <- purrr::map(levels, create_row)
+  mat <- as.matrix(purrr::reduce(rows, vctrs::vec_c))
+  lower_tri(mat)
 }
 
 
@@ -393,11 +389,34 @@ tbl_sum.pairwise_tbl <- function(x) {
 
 # Plotting ------------------------------------------------------------------------------------
 
+scale_type.supernova_number <- function(x) "continuous"
+
+#' Plotting method for pairwise objects.
+#'
+#' @param object A [`pairwise`] object.
+#' @param ... Additional arguments passed to the plotting geom.
+#' @details This function requires an optional dependency: [`ggplot2`][ggplot2::ggplot2-package].
+#'  When this package is installed, calling `autoplot()` or `plot` on a `pairwise` object will
+#'  generate a plot of the pairwise comparisons. The plot will show the differences between the
+#'  groups, with error bars representing the confidence intervals. The x-axis will be labeled with
+#'  the type of confidence interval used and the values of the differences, and the y-axis will be
+#'  labeled with the groups being compared. A dashed line at 0 is included to help visualize the
+#'  differences.
+#'
 #' @export
-#' @importFrom ggplot2 autoplot
-#' @importFrom ggplot2 %+%
 #' @importFrom rlang .data
+#'
+#' @examples
+#' if (require(ggplot2)) {
+#'   # generate the plot immediately
+#'   pairwise(lm(mpg ~ factor(am) + disp, data = mtcars), plot = TRUE)
+#'
+#'   # or save the object and plot it later
+#'   p <- pairwise(lm(mpg ~ factor(am) + disp, data = mtcars))
+#'   plot(p)
+#' }
 autoplot.pairwise <- function(object, ...) {
+  `%+%` <- ggplot2::`%+%`
   x <- object[!(names(object) %in% c("p_adj", "p_val"))]
   p <- purrr::imap(x, function(tbl, term) {
     tbl$term <- term
@@ -405,10 +424,10 @@ autoplot.pairwise <- function(object, ...) {
 
     correction <- attr(tbl, "correction")
     x_axis_label <- if (correction == "none") {
-      conf <- format((1 - attr(tbl, "alpha")) * 100, digits = 3) %>% paste0("%")
+      conf <- paste0(format((1 - attr(tbl, "alpha")) * 100, digits = 3), "%")
       paste(conf, "CI (per test; uncorrected)")
     } else {
-      conf <- format((1 - attr(tbl, "fwer")) * 100, digits = 3) %>% paste0("%")
+      conf <- paste0(format((1 - attr(tbl, "fwer")) * 100, digits = 3), "%")
       paste(conf, "CI with", stringr::str_to_title(correction), "correction")
     }
 
@@ -429,13 +448,14 @@ autoplot.pairwise <- function(object, ...) {
 }
 
 
+#' @rdname autoplot.pairwise
+#' @param x A `pairwise` object.
+#' @param y Ignored, required for compatibility with the `plot()` generic.
 #' @export
-#' @importFrom ggplot2 scale_type
-scale_type.supernova_number <- function(x) "continuous"
+plot.pairwise <- function(x, y, ...) {
+  if (!requireNamespace("ggplot2", quietly = TRUE)) {
+    rlang::abort("The ggplot2 package is required to plot pairwise comparisons.")
+  }
 
-
-#' @export
-#' @importFrom ggplot2 autoplot
-plot.pairwise <- function(x, ...) {
-  purrr::walk(autoplot(x, ...), print)
+  purrr::walk(ggplot2::autoplot(x, ...), print)
 }

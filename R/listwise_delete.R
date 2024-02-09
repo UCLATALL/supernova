@@ -40,19 +40,18 @@ listwise_delete.lm <- function(obj, vars = all.vars(formula(obj))) {
     return(obj)
   }
 
-  call_string <- build_equivalent_call_string(obj, vars)
+  new_call <- build_equivalent_call(obj, vars)
 
   rlang::inform(
     message = c(
       cli::pluralize("Refitting to remove {n_missing} case{?s} with missing value(s)"),
-      i = paste0(call_string, "\n")
+      i = rlang::expr_text(new_call)
     ),
     class = "supernova_missing_values_message"
   )
 
-  str2lang <- utils::getFromNamespace("str2lang", "backports")
   rlang::try_fetch(
-    eval(str2lang(call_string), envir = environment(as.formula(obj))),
+    eval(new_call, envir = environment(as.formula(obj))),
     supernova_missing_values_message = function(cnd) {
       rlang::cnd_muffle(cnd)
     }
@@ -60,29 +59,11 @@ listwise_delete.lm <- function(obj, vars = all.vars(formula(obj))) {
 }
 
 
-build_equivalent_call_string <- function(linear_model, vars) {
-  call_string <- deparse(linear_model$call) %>%
-    stringr::str_flatten() %>%
-    stringr::str_squish()
-  var_string <- paste0(
-    "c(",
-    paste0('"', vars, '"', collapse = ", "),
-    ")"
-  )
-
-  if (stringr::str_detect(call_string, " data = .+?[ ,)]")) {
-    new_call_string <- stringr::str_replace(
-      call_string,
-      " data = (.+?)([ ,)])",
-      sprintf(" data = listwise_delete(\\1, %s)\\2", var_string)
-    )
+build_equivalent_call <- function(linear_model, vars) {
+  call_args <- rlang::call_args(linear_model$call)
+  if (!is.null(call_args$data)) {
+    rlang::call_modify(linear_model$call, data = call("listwise_delete", call_args$data, vars))
   } else {
-    model <- formula(linear_model)
-    variables <- c(frm_outcome(model), frm_vars(model))
-    variables_string <- paste(variables, collapse = ", ")
-    data_string <- paste0(" data = listwise_delete(data.frame(", variables_string, "))")
-    new_call_string <- stringr::str_replace(call_string, "\\)$", paste0(data_string, ")"))
+    rlang::call_modify(linear_model$call, data = listwise_delete(data.frame(vars)))
   }
-
-  new_call_string
 }

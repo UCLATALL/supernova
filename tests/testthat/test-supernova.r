@@ -189,13 +189,13 @@ test_that("supernova table structure is well-formed", {
   # TODO: what about verbose table structure?
 })
 
-test_that("magrittr can pipe lm() to supernova", {
+test_that("supernova works when lm() is piped in", {
   lm(mpg ~ NULL, mtcars) %>%
     supernova() %>%
     expect_s3_class("supernova")
 })
 
-test_that("magrittr can pipe data to lm() to supernova", {
+test_that("supernova works when data is piped into lm() is piped in", {
   # Believe it or not, this might not work. Do not remove or re-factor test.
   # When stats::update() tries to get the call, the data object is just "."
   # supernova has to middle-man with supernova::update() to get this to work
@@ -218,15 +218,11 @@ test_that("supernova calcs. (quant. ~ NULL) ANOVA correctly", {
   model <- lm(mpg ~ NULL, data = mtcars)
   actual <- supernova(model)$tbl
   expected <- anova(model)
+  numbers_only <- function(x) unname(as.matrix(x))
 
-  numbers_only <- function(x) {
-    x %>%
-      as.matrix() %>%
-      unname()
-  }
   expect_identical(
-    actual[3, c("SS", "df", "MS", "F", "p")] %>% numbers_only(),
-    expected[c("Sum Sq", "Df", "Mean Sq", "F value", "Pr(>F)")] %>% numbers_only()
+    numbers_only(actual[3, c("SS", "df", "MS", "F", "p")]),
+    numbers_only(expected[c("Sum Sq", "Df", "Mean Sq", "F value", "Pr(>F)")])
   )
 })
 
@@ -354,5 +350,8 @@ test_that("non-verbose tables do not have a description column", {
 
 test_that("perfectly fit models print 1.000 for PRE and p", {
   model <- lm(c(1:10) ~ c(11:20))
-  expect_snapshot(supernova(model))
+  # f statistic can be unreliable to reproduce
+  supernova(model) %>%
+    print() %>%
+    expect_output("1.0000 .0000\n")
 })

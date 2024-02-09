@@ -8,8 +8,6 @@
 #' values, and is intended to match the output used in Judd, McClelland, and
 #' Ryan (2017).
 #'
-#' `superanova()` is an alias of `supernova()`
-#'
 #' @param fit A model fit by [`lm()`] or [`lme4::lmer()`]
 #' @param type The type of sums of squares to calculate (see [`generate_models()`]). Defaults to the
 #'   widely used Type `III` SS.
@@ -24,7 +22,9 @@
 #'
 #' @examples
 #' supernova(lm(mpg ~ disp, data = mtcars))
-#' supernova(lm(mpg ~ disp, data = mtcars)) %>% print(pcut = 8)
+#'
+#' change_p_decimals <- supernova(lm(mpg ~ disp, data = mtcars))
+#' print(change_p_decimals, pcut = 8)
 #' @importFrom stats anova as.formula drop1 pf
 #'
 #' @references Judd, C. M., McClelland, G. H., & Ryan, C. S. (2017). \emph{Data
@@ -34,13 +34,6 @@
 #' @export
 supernova <- function(fit, type = 3, verbose = TRUE) {
   UseMethod("supernova", fit)
-}
-
-
-#' @export
-#' @rdname supernova
-superanova <- function(fit, type = 3, verbose = TRUE) {
-  lifecycle::deprecate_stop("2.5.2", "superanova()", "supernova()")
 }
 
 
@@ -76,7 +69,7 @@ supernova.lm <- function(fit, type = 3, verbose = TRUE) {
 
     vctrs::vec_c(
       row_term("Model", "(error reduced)", models, "Full Model"),
-      partial_rows %>% purrr::reduce(vctrs::vec_c),
+      purrr::reduce(partial_rows, vctrs::vec_c),
       row_error("Error", "(from model)", fit),
       row_error("Total", "(empty model)", fit_null)
     )
@@ -228,8 +221,8 @@ supernova.lmerMod <- function(fit, type = 3, verbose = FALSE) {
   df_total_within <- total_row[["df"]] - df_total_between
 
   # TREATMENT ROWS
-  anova_lm <- anova_tbl(fit_lm) %>% select("F", FALSE)
-  anova_lmer <- anova_tbl(model_full) %>% select(c("term", "F"))
+  anova_lm <- select(anova_tbl(fit_lm), "F", FALSE)
+  anova_lmer <- select(anova_tbl(model_full), c("term", "F"))
   partial_rows <- merge_keep_order(anova_lmer, anova_lm, by = "term", order_by = "term")
 
   # TREATMENT WITHIN
@@ -270,8 +263,9 @@ supernova.lmerMod <- function(fit, type = 3, verbose = FALSE) {
       part <- vctrs::vec_c(
         partial_within[which(partial_within$term == x), ],
         partial_within_error[which(partial_within_error$match == x), ]
-      ) %>% select("match", keep = FALSE)
+      )
 
+      part <- select(part, "match", keep = FALSE)
       part[, c("PRE", "p")] <- NA_real_
       part[["PRE"]][[1]] <- part[["SS"]][[1]] / sum(part[["SS"]])
       part[["p"]][[1]] <- pf(part[["F"]][[1]], part[["df"]][[1]], part[["df"]][[2]],
@@ -343,9 +337,9 @@ supernova.lmerMod <- function(fit, type = 3, verbose = FALSE) {
   )[c("term", "SS", "df", "MS", "F", "PRE", "p")]
   tbl[["df"]] <- as.integer(tbl[["df"]])
   tbl[["MS"]] <- tbl[["SS"]] / tbl[["df"]]
-  tbl <- tbl[tbl[["df"]] > 0, ] %>% as.data.frame()
+  tbl <- tbl[tbl[["df"]] > 0, ]
 
-  rl <- list(tbl = tbl, fit = fit, models = NULL)
+  rl <- list(tbl = as.data.frame(tbl), fit = fit, models = NULL)
   class(rl) <- "supernova"
   attr(rl, "type") <- strrep("I", type)
   attr(rl, "verbose") <- verbose
@@ -376,8 +370,8 @@ print.supernova <- function(x, pcut = 4, ...) {
 
   # NAs to blank spots
   if (!is.null(tbl$description)) tbl$description[is.na(tbl$description)] <- ""
-  tbl <- lapply(tbl, function(x) gsub("\\s*NA\\s*", "   ", x)) %>%
-    as.data.frame(stringsAsFactors = FALSE)
+  tbl <- lapply(tbl, function(x) gsub("\\s*NA\\s*", "   ", x))
+  tbl <- as.data.frame(tbl, stringsAsFactors = FALSE)
 
   # trim leading 0 from p and PRE
   tbl[, c("p", "PRE")] <- vapply(
@@ -412,8 +406,9 @@ print.supernova <- function(x, pcut = 4, ...) {
     tbl <- insert_rule(tbl, 1)
     tbl <- insert_rule(tbl, grep("Total between subjects", tbl$term) + 1)
     tbl <- insert_rule(tbl, grep("Total within subjects", tbl$term) + 1)
-    tbl[["term"]] <- tbl[["term"]] %>%
-      stringr::str_replace("(Total|Error) (?:between|within) subjects", "\\1")
+    tbl[["term"]] <- stringr::str_replace(
+      tbl[["term"]], "(Total|Error) (?:between|within) subjects", "\\1"
+    )
   }
 
   # add spaces and a vertical bar to separate the terms & desc from values

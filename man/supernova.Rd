@@ -2,14 +2,11 @@
 % Please edit documentation in R/supernova.R
 \name{supernova}
 \alias{supernova}
-\alias{superanova}
 \alias{supernova.lm}
 \alias{supernova.lmerMod}
 \title{supernova}
 \usage{
 supernova(fit, type = 3, verbose = TRUE)
-
-superanova(fit, type = 3, verbose = TRUE)
 
 \method{supernova}{lm}(fit, type = 3, verbose = TRUE)
 
@@ -40,12 +37,11 @@ error, an explicit summary of the whole model, separate formatting of p
 values, and is intended to match the output used in Judd, McClelland, and
 Ryan (2017).
 }
-\details{
-\code{superanova()} is an alias of \code{supernova()}
-}
 \examples{
 supernova(lm(mpg ~ disp, data = mtcars))
-supernova(lm(mpg ~ disp, data = mtcars)) \%>\% print(pcut = 8)
+
+change_p_decimals <- supernova(lm(mpg ~ disp, data = mtcars))
+print(change_p_decimals, pcut = 8)
 }
 \references{
 Judd, C. M., McClelland, G. H., & Ryan, C. S. (2017). \emph{Data

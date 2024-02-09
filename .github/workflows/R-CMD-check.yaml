@@ -36,7 +36,7 @@ jobs:
 
     steps:
       # https://github.com/actions/checkout
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # https://github.com/r-lib/actions/tree/v2/setup-pandoc
       - uses: r-lib/actions/setup-pandoc@v2
@@ -51,7 +51,7 @@ jobs:
       # https://github.com/r-lib/actions/tree/v2/setup-r-dependencies
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck
+          extra-packages: any::rcmdcheck, lme4?source, UCLATALL/JMRData
           needs: check
 
       # https://github.com/r-lib/actions/tree/v2/check-r-package

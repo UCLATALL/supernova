@@ -1,5 +1,12 @@
 # Changelog
 
+## supernova 3.0.0
+
+### Breaking changes
+
+- Remove deprecated `superanova()`
+- Remove `magrittr`, `ggplot2`, and `backports` dependencies
+
 ## supernova 2.5.8
 
 - Don't trim the leading digit from p-value or PRE when they are exactly 1

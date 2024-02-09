@@ -1,4 +1,3 @@
-
 get_data_with_missing <- function() {
   df_missing <- mtcars
   df_missing[1, ]$hp <- NA_real_
@@ -31,10 +30,11 @@ test_that("it refits an lm with missing data with a message about the new call",
 })
 
 test_that("it works in a pipe", {
-  get_data_with_missing() %>%
-    lm(mpg ~ hp * disp, data = .) %>%
-    listwise_delete() %>%
-    expect_snapshot()
+  expect_snapshot(
+    get_data_with_missing() %>%
+      lm(mpg ~ hp * disp, data = .) %>%
+      listwise_delete()
+  )
 })
 
 test_that("it works when the call is long and breaks multiple lines when using deparse", {
