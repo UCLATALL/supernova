@@ -5,7 +5,6 @@ Patch release to fix deprecation warnings and test failures:
 - Fix test failures caused by R reordering interaction term components
 - Replace deprecated `geom_errorbarh()` with `geom_errorbar(orientation="y")` for ggplot2 4.0.0+
 - Use `reformulas` package instead of deprecated `lme4::findbars()`/`lme4::nobars()`
-- Add `reformulas` to Suggests
 - Update minimum R version to 4.1
 
 ## Test environments
@@ -14,7 +13,8 @@ Patch release to fix deprecation warnings and test failures:
 - GitHub Actions
   - macOS: latest; R: release
   - Microsoft Windows Server: latest; R: release
-  - Ubuntu: latest; R: devel, release, oldrel
+  - Ubuntu: latest; R: devel, release
+- devtools::check_win_devel()
 
 ## R CMD check results
 
