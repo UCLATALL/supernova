@@ -202,7 +202,7 @@ pairwise_tukey <- function(fit, term = NULL, alpha = .05) {
 
 #' Constructor for pairwise comparison tables
 #'
-#' @param tbl A [`tibble`]-like object.
+#' @param tbl A [`tibble::tibble()`]-like object.
 #' @param term The term the table describes.
 #' @param fit The linear model the term comes from.
 #' @param fwer The family-wise error-rate for the group of tests in the table.
@@ -337,12 +337,13 @@ select_terms <- function(fit, term = NULL) {
 
 #' Get all pairs for a given vector
 #'
-#' The output of this function should match the pairs you get when you run [`TukeyHSD`].
+#' The output of this function should match the pairs you get when you run [stats::TukeyHSD()].
 #'
 #' @param levels The vector to get pairs for. It is called levels because it was written for the
 #'   purpose of comparing levels of a factor to one another with multiple comparisons.
 #'
-#' @return A [`tibble`] with two columns, group 1 and group 2, where each row is a unique pair.
+#' @return A [`tibble::tibble()`] with two columns, group 1 and group 2, where each row is a
+#'    unique pair.
 #' @keywords internal
 level_pairs <- function(levels) {
   create_row <- function(level) {
@@ -416,7 +417,6 @@ scale_type.supernova_number <- function(x) "continuous"
 #'   plot(p)
 #' }
 autoplot.pairwise <- function(object, ...) {
-  `%+%` <- ggplot2::`%+%`
   x <- object[!(names(object) %in% c("p_adj", "p_val"))]
   p <- purrr::imap(x, function(tbl, term) {
     tbl$term <- term
@@ -431,17 +431,16 @@ autoplot.pairwise <- function(object, ...) {
       paste(conf, "CI with", stringr::str_to_title(correction), "correction")
     }
 
-    ggplot2::ggplot() %+%
-      ggplot2::geom_point(ggplot2::aes(tbl$diff, tbl$pair)) %+%
-      ggplot2::geom_errorbarh(ggplot2::aes(
-        y = tbl$pair,
-        xmin = tbl$lower,
-        xmax = tbl$upper
-      )) %+%
-      ggplot2::geom_vline(ggplot2::aes(xintercept = 0), linetype = "dashed") %+%
+    ggplot2::ggplot() +
+      ggplot2::geom_point(ggplot2::aes(tbl$diff, tbl$pair)) +
+      ggplot2::geom_errorbar(
+        ggplot2::aes(y = tbl$pair, xmin = tbl$lower, xmax = tbl$upper),
+        orientation = "y"
+      ) +
+      ggplot2::geom_vline(ggplot2::aes(xintercept = 0), linetype = "dashed") +
       # reverse so that plot order matches table
-      ggplot2::scale_y_discrete(limits = rev(tbl$pair)) %+%
-      ggplot2::xlab(x_axis_label) %+%
+      ggplot2::scale_y_discrete(limits = rev(tbl$pair)) +
+      ggplot2::xlab(x_axis_label) +
       ggplot2::ylab(NULL)
   })
   invisible(p)
@@ -454,7 +453,10 @@ autoplot.pairwise <- function(object, ...) {
 #' @export
 plot.pairwise <- function(x, y, ...) {
   if (!requireNamespace("ggplot2", quietly = TRUE)) {
-    rlang::abort("The ggplot2 package is required to plot pairwise comparisons.")
+    rlang::abort(
+      "ggplot2 >= 4.0.0 is required to plot pairwise comparisons.",
+      "i" = "Install with: install.packages('ggplot2')"
+    )
   }
 
   purrr::walk(ggplot2::autoplot(x, ...), print)

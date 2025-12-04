@@ -138,9 +138,9 @@ frm_random_terms <- function(frm) {
   frm <- as.formula(frm)
 
   # there MIGHT be a random term, or it could just be a weird variable name like `a|b`
-  # only require lme4 if there is a possibility of a random term
+  # only require lme4/reformulas if there is a possibility of a random term
   possible_bars <- stringr::str_detect(frm_terms(frm), stringr::fixed("|"))
-  random_terms <- if (any(possible_bars)) lme4::findbars(frm) else list()
+  random_terms <- if (any(possible_bars)) find_bars(frm) else list()
 
   purrr::map_chr(random_terms, rlang::expr_deparse)
 }
@@ -160,9 +160,9 @@ frm_random_vars <- function(frm) {
   frm <- as.formula(frm)
 
   # there MIGHT be a random term, or it could just be a weird variable name like `a|b`
-  # only require lme4 if there is a possibility of a random term
+  # only require lme4/reformulas if there is a possibility of a random term
   possible_bars <- stringr::str_detect(frm_terms(frm), stringr::fixed("|"))
-  random_terms <- if (any(possible_bars)) lme4::findbars(frm) else list()
+  random_terms <- if (any(possible_bars)) find_bars(frm) else list()
 
   terms <- purrr::map(random_terms, all.vars)
   terms <- purrr::flatten_chr(terms)
@@ -176,9 +176,58 @@ frm_fixed_vars <- function(frm) {
   frm <- as.formula(frm)
 
   # there MIGHT be a random term, or it could just be a weird variable name like `a|b`
-  # only require lme4 if there is a possibility of a random term
+  # only require lme4/reformulas if there is a possibility of a random term
   possible_bars <- stringr::str_detect(frm_terms(frm), stringr::fixed("|"))
-  frm <- if (any(possible_bars)) lme4::nobars(frm) else frm
+  frm <- if (any(possible_bars)) no_bars(frm) else frm
 
   frm_vars(frm)
+}
+
+
+# Helpers for lme4/reformulas compatibility ------------------------------------------------
+#
+# We prefer 'reformulas' over 'lme4' because lme4::findbars() and lme4::nobars()
+# are deprecated as of lme4 1.1-36. The reformulas package provides the same
+# functionality without deprecation warnings.
+
+#' Find random effect terms (bars) in a formula.
+#'
+#' Uses reformulas if available (preferred), otherwise falls back to lme4.
+#' This avoids deprecation warnings in newer versions of lme4.
+#'
+#' @param frm A formula that may contain random effect terms.
+#' @return A list of random effect terms.
+#' @keywords internal
+find_bars <- function(frm) {
+  if (requireNamespace("reformulas", quietly = TRUE)) {
+    reformulas::findbars(frm)
+  } else if (requireNamespace("lme4", quietly = TRUE)) {
+    lme4::findbars(frm)
+  } else {
+    rlang::abort(
+      "Random effects require either the 'reformulas' or 'lme4' package.",
+      "i" = "Install with: install.packages('reformulas')"
+    )
+  }
+}
+
+#' Remove random effect terms (bars) from a formula.
+#'
+#' Uses reformulas if available (preferred), otherwise falls back to lme4.
+#' This avoids deprecation warnings in newer versions of lme4.
+#'
+#' @param frm A formula that may contain random effect terms.
+#' @return The formula with random effect terms removed.
+#' @keywords internal
+no_bars <- function(frm) {
+  if (requireNamespace("reformulas", quietly = TRUE)) {
+    reformulas::nobars(frm)
+  } else if (requireNamespace("lme4", quietly = TRUE)) {
+    lme4::nobars(frm)
+  } else {
+    rlang::abort(
+      "Random effects require either the 'reformulas' or 'lme4' package.",
+      "i" = "Install with: install.packages('reformulas')"
+    )
+  }
 }

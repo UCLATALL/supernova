@@ -14,9 +14,9 @@ row_term(name, description, models, term)
 \item{term}{The term to compute the row for.}
 }
 \value{
-A \code{\link{tibble_row}} with the properties initialized. The code has been written to be as
-simple and understanding as possible. Please take a look at the source and offer any
-suggestions for improvement!
+A \code{\link[tibble:tibble]{tibble::tibble_row()}} with the properties initialized. The code has been written to
+be as understandable as possible. Please take a look at the source and offer any suggestions
+for improvement!
 }
 \description{
 "Term" is loosely defined here and is probably better understood as "everything in the table that

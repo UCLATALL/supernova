@@ -14,9 +14,9 @@ row_error(term, description, fit)
 \item{fit}{The model we are describing error from.}
 }
 \value{
-A \code{\link{tibble_row}} with the properties initialized. The code has been written to be as
-simple and understandable as possible. Please take a look at the source and offer any
-suggestions for improvement!
+A \code{\link[tibble:tibble]{tibble::tibble_row()}} with the properties initialized. The code has been written to
+be as understandable as possible. Please take a look at the source and offer any suggestions
+for improvement!
 }
 \description{
 Compute and construct an ANOVA table row for an error term

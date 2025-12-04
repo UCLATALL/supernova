@@ -8,7 +8,7 @@
 #' values, and is intended to match the output used in Judd, McClelland, and
 #' Ryan (2017).
 #'
-#' @param fit A model fit by [`lm()`] or [`lme4::lmer()`]
+#' @param fit A model fit by [`lm()`] or `lme4::lmer()`
 #' @param type The type of sums of squares to calculate (see [`generate_models()`]). Defaults to the
 #'   widely used Type `III` SS.
 #' @param verbose If `FALSE`, the `description` column is suppressed.
@@ -16,7 +16,7 @@
 #' @return An object of the class `supernova`, which has a clean print method for displaying the
 #'   ANOVA table in the console as well as a named list:
 #'   \item{tbl}{The ANOVA table as a \code{\link{data.frame}}}
-#'   \item{fit}{The original \code{\link[stats]{lm}} or \code{\link[lme4]{lmer}}
+#'   \item{fit}{The original \code{\link[stats]{lm}} or \code{lmer}
 #'     object being tested}
 #'   \item{models}{Models created by \code{\link{generate_models}}}
 #'
@@ -93,7 +93,7 @@ supernova.lm <- function(fit, type = 3, verbose = TRUE) {
 #' @param pre The proportional reduction of error the term provides (defaults to blank).
 #' @param p The p-value of the F (and PRE) for the term in the model (defaults to blank).
 #'
-#' @returns A [`tibble_row`] of length 1 with all of the variables initialized.
+#' @returns A [`tibble::tibble_row()`] of length 1 with all of the variables initialized.
 #'
 #' @keywords internal
 row_blank <- function(term = NA_character_, description = NA_character_,
@@ -125,9 +125,9 @@ row_blank <- function(term = NA_character_, description = NA_character_,
 #' @param models The models created by [`generate_models()`] for comparison.
 #' @param term The term to compute the row for.
 #'
-#' @return A [`tibble_row`] with the properties initialized. The code has been written to be as
-#'   simple and understanding as possible. Please take a look at the source and offer any
-#'   suggestions for improvement!
+#' @return A [`tibble::tibble_row()`] with the properties initialized. The code has been written to
+#'   be as understandable as possible. Please take a look at the source and offer any suggestions
+#'   for improvement!
 #'
 #' @keywords internal
 row_term <- function(name, description, models, term) {
@@ -170,9 +170,9 @@ row_term <- function(name, description, models, term) {
 #' @param description An optional, short description of the term (pedagogical).
 #' @param fit The model we are describing error from.
 #'
-#' @return A [`tibble_row`] with the properties initialized. The code has been written to be as
-#'   simple and understandable as possible. Please take a look at the source and offer any
-#'   suggestions for improvement!
+#' @return A [`tibble::tibble_row()`] with the properties initialized. The code has been written to
+#'   be as understandable as possible. Please take a look at the source and offer any suggestions
+#'   for improvement!
 #'
 #' @keywords internal
 row_error <- function(term, description, fit) {
