@@ -13,7 +13,7 @@ supernova(fit, type = 3, verbose = TRUE)
 \method{supernova}{lmerMod}(fit, type = 3, verbose = FALSE)
 }
 \arguments{
-\item{fit}{A model fit by \code{\link[=lm]{lm()}} or \code{\link[lme4:lmer]{lme4::lmer()}}}
+\item{fit}{A model fit by \code{\link[=lm]{lm()}} or \code{lme4::lmer()}}
 
 \item{type}{The type of sums of squares to calculate (see \code{\link[=generate_models]{generate_models()}}). Defaults to the
 widely used Type \code{III} SS.}
@@ -24,7 +24,7 @@ widely used Type \code{III} SS.}
 An object of the class \code{supernova}, which has a clean print method for displaying the
 ANOVA table in the console as well as a named list:
 \item{tbl}{The ANOVA table as a \code{\link{data.frame}}}
-\item{fit}{The original \code{\link[stats]{lm}} or \code{\link[lme4]{lmer}}
+\item{fit}{The original \code{\link[stats]{lm}} or \code{lmer}
 object being tested}
 \item{models}{Models created by \code{\link{generate_models}}}
 }

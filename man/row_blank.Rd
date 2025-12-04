@@ -33,7 +33,7 @@ row_blank(
 \item{p}{The p-value of the F (and PRE) for the term in the model (defaults to blank).}
 }
 \value{
-A \code{\link{tibble_row}} of length 1 with all of the variables initialized.
+A \code{\link[tibble:tibble]{tibble::tibble_row()}} of length 1 with all of the variables initialized.
 }
 \description{
 A template for a row in an ANOVA table.

@@ -1,11 +1,10 @@
-
 # Notes ---------------------------------------------------------------------------------------
 # The functions in this file should be arranged alphabetically.
 
 
 #' ANOVA table with nicer column names.
 #'
-#' @param model A model fitted by \code{\link{lm}} or \code{\link[lme4]{lmer}}.
+#' @param model A model fit by [`lm()`] or `lme4::lmer()`
 #'
 #' @return An ANOVA table with standard column names.
 #' @keywords internal
@@ -37,7 +36,7 @@ anova_tbl <- function(model) {
 #'
 #' @param ... Character vectors to paste together.
 #'
-#' @return None (invisible \code{NULL}).
+#' @return None (invisible `NULL`).
 #' @keywords internal
 cat_line <- function(...) {
   cat(paste0(...), "\n", sep = "")
