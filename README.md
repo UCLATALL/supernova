@@ -255,6 +255,10 @@ simple_crossed |>
 simple_crossed |>
   lmer(puzzles_completed ~ condition + (1 | subject), data = _) |>
   supernova()
+#> Warning: the 'findbars' function has moved to the reformulas package. Please update your imports, or ask an upstream package maintainter to do so.
+#> This warning is displayed once per session.
+#> Warning: the 'nobars' function has moved to the reformulas package. Please update your imports, or ask an upstream package maintainter to do so.
+#> This warning is displayed once per session.
 #>  Analysis of Variance Table (Type III SS)
 #>  Model: puzzles_completed ~ condition + (1 | subject)
 #> 
@@ -392,8 +396,8 @@ complex_nested |>
 #>  yearsmarried              |  1.125  1 1.125  1.588 .0621  .2197
 #>  children                  |  2.000  1 2.000  2.824 .1053  .1059
 #>  sex:yearsmarried          |  2.250  1 2.250  3.176 .1169  .0874
-#>  sex:children              |  0.063  1 0.063  0.088 .0037  .7690
-#>  yearsmarried:children     |  7.562  1 7.562 10.676 .3079  .0033
+#>  sex:children              |  0.062  1 0.062  0.088 .0037  .7690
+#>  yearsmarried:children     |  7.563  1 7.563 10.676 .3079  .0033
 #>  sex:yearsmarried:children |  0.500  1 0.500  0.706 .0286  .4091
 #>  Error                     | 17.000 24 0.708                    
 #>  ------------------------- | ------ -- ----- ------ ----- ------

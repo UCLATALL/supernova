@@ -1,5 +1,22 @@
 # Changelog
 
+## supernova 3.0.1
+
+### Bug fixes
+
+- Fix `generate_models()` snapshot test failures caused by R's `terms()` function reordering interaction term components (e.g., `hp:disp` vs `disp:hp`)
+
+### Deprecation fixes
+
+- Replace deprecated `ggplot2::geom_errorbarh()` with `ggplot2::geom_errorbar(orientation = "y")` for ggplot2 4.0.0+ compatibility
+- Use `reformulas` package for `findbars()`/`nobars()` instead of deprecated `lme4` exports
+
+### Other changes
+
+- Add `reformulas` to Suggests
+- Update minimum R version to 4.1
+- Improve error messages with version requirements and installation hints
+
 ## supernova 3.0.0
 
 ### Breaking changes
