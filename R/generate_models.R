@@ -270,6 +270,17 @@ print.comparison_models <- function(x, ...) {
   }
 }
 
+#' Normalize an interaction term by sorting its components alphabetically.
+#' This ensures `hp:disp` and `disp:hp` are treated as the same term.
+#'
+#' This works because R interaction terms are commutative (a:b == b:a),
+#' but R's `terms()` function may reorder components alphabetically.
+#' @keywords internal
+normalize_term <- function(term) {
+  parts <- sort(strsplit(term, ":")[[1]])
+  paste(parts, collapse = ":")
+}
+
 #' We have to insert spaces where terms were removed from the part model.
 #' @keywords internal
 formula_string <- function(obj, part, term) {
@@ -278,8 +289,14 @@ formula_string <- function(obj, part, term) {
   model_part <- frm_expand(as.formula(part))
 
   # For Types II and III the spaces need to be inserted within the formula string.
-  # So, determine which variables were removed
-  rem_terms <- setdiff(frm_terms(model_full), frm_terms(model_part))
+  # So, determine which variables were removed. We need to normalize interaction
+  # terms before comparison because R's terms() can reorder components
+  # (e.g., `hp:disp` may become `disp:hp`).
+  full_terms <- frm_terms(model_full)
+  part_terms <- frm_terms(model_part)
+  full_normalized <- vapply(full_terms, normalize_term, character(1))
+  part_normalized <- vapply(part_terms, normalize_term, character(1))
+  rem_terms <- full_terms[!full_normalized %in% part_normalized]
 
   # For Type I, the removed terms are all at the end, so no changes.
   # For all types the full model formulae have no deletions.

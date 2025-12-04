@@ -1,15 +1,33 @@
+# Editors and IDEs
 ^.*\.Rproj$
 ^\.Rproj\.user$
-^scripts$
+^\.vscode$
+^\.lintr$
+
+# CI/CD
+^\.github$
+^\.travis\.yml$
+^codecov\.yml$
+
+# Build / CRAN related
 ^README\.Rmd$
 ^cran-comments\.md$
 ^CRAN-RELEASE$
-^\.travis\.yml$
-^codecov\.yml$
-^\.github$
-^\.lintr$
-^data-raw$
 ^CRAN-SUBMISSION$
 ^LICENSE\.md$
-^\.vscode$
 ^revdep$
+
+# Data and generated files
+^data-raw$
+
+# Scripts and tooling
+^scripts$
+
+# AI Tools
+^CLAUDE\.md$
+^\.aider.*$
+^\.claude$
+^\.cursorrules$
+^\.cursor$
+^\.windsurf.*$
+^\.github/copilot-instructions\.md$

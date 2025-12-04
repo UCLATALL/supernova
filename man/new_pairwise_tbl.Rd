@@ -7,7 +7,7 @@
 new_pairwise_tbl(tbl, term, fit, fwer, alpha, correction)
 }
 \arguments{
-\item{tbl}{A \code{\link{tibble}}-like object.}
+\item{tbl}{A \code{\link[tibble:tibble]{tibble::tibble()}}-like object.}
 
 \item{term}{The term the table describes.}
 

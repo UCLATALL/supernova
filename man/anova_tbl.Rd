@@ -7,7 +7,7 @@
 anova_tbl(model)
 }
 \arguments{
-\item{model}{A model fitted by \code{\link{lm}} or \code{\link[lme4]{lmer}}.}
+\item{model}{A model fit by \code{\link[=lm]{lm()}} or \code{lme4::lmer()}}
 }
 \value{
 An ANOVA table with standard column names.
