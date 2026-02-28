@@ -259,7 +259,7 @@ drop_term <- function(fit, term) {
 #' Internal helper that avoids redundant model.matrix() and model.frame()
 #' calls when dropping multiple terms from the same model.
 #'
-#' @keywords internal
+#' @noRd
 drop_term_fast <- function(term, x, y, offset, term_labels, col_assignments,
                            original_call) {
   term_index_to_drop <- match(term, term_labels)
@@ -276,7 +276,7 @@ drop_term_fast <- function(term, x, y, offset, term_labels, col_assignments,
 #' Avoids the overhead of update_in_env(model, . ~ NULL) which runs the
 #' full lm() pipeline.
 #'
-#' @keywords internal
+#' @noRd
 fit_null_model <- function(y, offset) {
   x <- matrix(1, nrow = length(y), ncol = 1)
   colnames(x) <- "(Intercept)"
@@ -296,7 +296,7 @@ fit_null_model <- function(y, offset) {
 #' the terms structure and model frame, avoiding the expensive model.matrix() call.
 #' Falls back to model.matrix() if the reconstruction doesn't match.
 #'
-#' @keywords internal
+#' @noRd
 get_assign <- function(fit) {
   tt <- fit$terms
   term_labels <- attr(tt, "term.labels")
