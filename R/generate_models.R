@@ -106,31 +106,39 @@ generate_models.formula <- function(model, type = 3) {
 #' @rdname generate_models
 #' @export
 generate_models.lm <- function(model, type = 3) {
-  if (vctrs::vec_size(model$na.action)) {
+  if (length(model$na.action) > 0) {
     model <- listwise_delete(model)
   }
 
   if (type == 1 || type == 2) {
     models <- generate_models.formula(formula(model), type = type)
-    fits <- purrr::map(models, function(frm_pair) {
-      purrr::map(frm_pair, function(frm) update_in_env(model, frm))
+    fits <- lapply(models, function(frm_pair) {
+      lapply(frm_pair, function(frm) update_in_env(model, frm))
     })
   }
 
   if (type == 3) {
-    terms <- frm_terms(model)
+    term_labels <- attr(model$terms, "term.labels")
 
-    if (length(terms) == 0) {
+    if (length(term_labels) == 0) {
       return(add_class_information(list(), model, type))
     }
 
-    fits <- purrr::map(terms, function(term) {
-      list(complex = model, simple = drop_term(model, term))
+    # Create lightweight model stubs without expensive lm.fit() calls.
+    # The actual SS computation is done via QR decomposition in supernova.lm().
+    fits <- lapply(term_labels, function(term) {
+      stub <- list(call = base::call("drop_term", model$call, term))
+      oldClass(stub) <- "lm"
+      list(complex = model, simple = stub)
     })
+    names(fits) <- term_labels
 
-    fits <- rlang::set_names(fits, terms)
-    full_model_pair <- list(complex = model, simple = update_in_env(model, . ~ NULL))
-    fits <- append(fits, list("Full Model" = full_model_pair), after = 0L)
+    # Lightweight null model stub. Table computation uses QR decomposition
+    # directly, so we don't need residuals/fitted.values vectors here.
+    null_stub <- list(call = base::call("lm"))
+    oldClass(null_stub) <- "lm"
+    full_model_pair <- list(complex = model, simple = null_stub)
+    fits <- c(list("Full Model" = full_model_pair), fits)
   }
 
   add_class_information(fits, model, type)
@@ -244,6 +252,95 @@ drop_term <- function(fit, term) {
 
   oldClass(reduced_fit) <- "lm"
   reduced_fit
+}
+
+#' Fast term-dropping using pre-computed model components
+#'
+#' Internal helper that avoids redundant model.matrix() and model.frame()
+#' calls when dropping multiple terms from the same model.
+#'
+#' @keywords internal
+drop_term_fast <- function(term, x, y, offset, term_labels, col_assignments,
+                           original_call) {
+  term_index_to_drop <- match(term, term_labels)
+  x_reduced <- x[, which(col_assignments != term_index_to_drop), drop = FALSE]
+
+  reduced_fit <- stats::lm.fit(x_reduced, y, offset = offset)
+  reduced_fit$call <- base::call("drop_term", original_call, term)
+  oldClass(reduced_fit) <- "lm"
+  reduced_fit
+}
+
+#' Fit a null (intercept-only) model directly via lm.fit
+#'
+#' Avoids the overhead of update_in_env(model, . ~ NULL) which runs the
+#' full lm() pipeline.
+#'
+#' @keywords internal
+fit_null_model <- function(y, offset) {
+  x <- matrix(1, nrow = length(y), ncol = 1)
+  colnames(x) <- "(Intercept)"
+
+  null_fit <- stats::lm.fit(x, y, offset = offset)
+  null_fit$call <- base::call("lm")
+  oldClass(null_fit) <- "lm"
+  null_fit
+}
+
+
+# Column assignment helper -------------------------------------------------------------------
+
+#' Compute the assign vector mapping model matrix columns to terms
+#'
+#' Reconstructs the assign attribute (normally from model.matrix()) using
+#' the terms structure and model frame, avoiding the expensive model.matrix() call.
+#' Falls back to model.matrix() if the reconstruction doesn't match.
+#'
+#' @keywords internal
+get_assign <- function(fit) {
+  tt <- fit$terms
+  term_labels <- attr(tt, "term.labels")
+  if (length(term_labels) == 0) return(0L)
+
+  has_intercept <- attr(tt, "intercept") == 1L
+  n_terms <- length(term_labels)
+
+  # Fast path: if n_coefficients == n_terms + intercept, each term has exactly
+
+  # 1 column (all numeric predictors, no factor expansions)
+  n_coef <- length(fit$coefficients)
+  if (n_coef == n_terms + has_intercept) {
+    return(if (has_intercept) 0L:n_terms else seq_len(n_terms))
+  }
+
+  # General path: compute from terms structure and model frame
+  factors_mat <- attr(tt, "factors")
+  mf <- fit$model
+
+  assign <- if (has_intercept) 0L else integer(0)
+
+  for (i in seq_along(term_labels)) {
+    vars_in_term <- rownames(factors_mat)[factors_mat[, i] > 0]
+    n_cols <- 1L
+    for (v in vars_in_term) {
+      col_data <- mf[[v]]
+      if (is.factor(col_data)) {
+        n_cols <- n_cols * (nlevels(col_data) - 1L)
+      } else if (is.matrix(col_data)) {
+        n_cols <- n_cols * ncol(col_data)
+      } else {
+        n_cols <- n_cols * 1L
+      }
+    }
+    assign <- c(assign, rep(i, n_cols))
+  }
+
+  # Verify against model; fall back to model.matrix() if mismatch
+  if (length(assign) != n_coef) {
+    assign <- attr(stats::model.matrix(fit), "assign")
+  }
+
+  assign
 }
 
 

@@ -23,6 +23,11 @@
 # Scripts and tooling
 ^scripts$
 
+# Benchmarks and specs
+^benchmarks$
+^specs$
+^\.specify$
+
 # AI Tools
 ^CLAUDE\.md$
 ^\.aider.*$
