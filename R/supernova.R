@@ -44,38 +44,18 @@ supernova.lm <- function(fit, type = 3, verbose = TRUE) {
   models <- generate_models(fit, type)
   is_null_model <- length(models) == 0
 
-  # don't use update() or you will end up losing the `data = ` argument
-  # it's some kind of environment bug
-  fit_null <- if (is_null_model) fit else models[[1]]$simple
-
-  tbl <- if (is_null_model) {
-    vctrs::vec_c(
-      row_blank("Model", "(error reduced)"),
-      row_blank("Error", "(from model)"),
-      row_error("Total", "(empty model)", fit_null)
-    )
-  } else if (length(models) == 2) {
-    vctrs::vec_c(
-      row_term("Model", "(error reduced)", models, "Full Model"),
-      row_error("Error", "(from model)", fit),
-      row_error("Total", "(empty model)", fit_null)
-    )
+  if (is_null_model) {
+    tbl <- build_null_table(fit)
+  } else if (type == 3 && fit$rank == length(fit$coefficients)) {
+    # Fast Type III path: compute SS from QR decomposition
+    tbl <- build_type3_table_qr(fit)
   } else {
-    # create a row for each individual term
-    partial_models <- models[-1]
-    partial_rows <- purrr::map(names(partial_models), function(term_name) {
-      row_term(term_name, NA_character_, models, term_name)
-    })
-
-    vctrs::vec_c(
-      row_term("Model", "(error reduced)", models, "Full Model"),
-      purrr::reduce(partial_rows, vctrs::vec_c),
-      row_error("Error", "(from model)", fit),
-      row_error("Total", "(empty model)", fit_null)
-    )
+    # Type I/II or rank-deficient Type III: use model comparison
+    fit_null <- models[[1]]$simple
+    tbl <- build_anova_table(models, fit, fit_null)
   }
 
-  rl <- list(tbl = as.data.frame(tbl), fit = fit, models = models)
+  rl <- list(tbl = tbl, fit = fit, models = models)
   class(rl) <- "supernova"
   attr(rl, "type") <- strrep("I", type)
   attr(rl, "verbose") <- verbose
@@ -181,6 +161,214 @@ row_error <- function(term, description, fit) {
   ms <- ss / df
 
   row_blank(term, description, ss, df, ms)
+}
+
+
+# Fast table builders (lm path) ----------------------------------------------------------------
+
+#' Build the ANOVA table for a null (intercept-only) model
+#' @noRd
+build_null_table <- function(fit_null) {
+  ss_total <- sum(fit_null$residuals^2)
+  df_total <- as.integer(length(fit_null$residuals) - length(fit_null$coefficients))
+  ms_total <- ss_total / df_total
+
+  make_anova_df(
+    term = c("Model", "Error", "Total"),
+    description = c("(error reduced)", "(from model)", "(empty model)"),
+    ss = c(NA_real_, NA_real_, ss_total),
+    df = c(NA_integer_, NA_integer_, df_total),
+    ms = c(NA_real_, NA_real_, ms_total),
+    f = c(NA_real_, NA_real_, NA_real_),
+    pre = c(NA_real_, NA_real_, NA_real_),
+    p = c(NA_real_, NA_real_, NA_real_)
+  )
+}
+
+#' Build Type III ANOVA table directly from QR decomposition
+#'
+#' Computes all SS values from the fitted model's QR decomposition using the
+#' Wald statistic, avoiding expensive model refitting. Only valid for full-rank
+#' Type III models.
+#' @noRd
+build_type3_table_qr <- function(fit) {
+  rank <- fit$rank
+  n <- length(fit$residuals)
+  beta <- fit$coefficients
+  term_labels <- attr(fit$terms, "term.labels")
+  n_terms <- length(term_labels)
+
+  # SS from stored residuals and QR effects
+  ss_error <- sum(fit$residuals^2)
+  ss_model <- sum(fit$effects[2:rank]^2)
+  ss_total <- ss_model + ss_error
+
+  # Degrees of freedom
+  df_model <- rank - 1L
+  df_error <- as.integer(n - rank)
+  df_total <- as.integer(n - 1L)
+  ms_error <- ss_error / df_error
+
+  # Type III SS per term via Wald statistic: SS_j = beta_j' (C_jj)^{-1} beta_j
+  col_assign <- get_assign(fit)
+  qr_r <- fit$qr$qr[seq_len(rank), , drop = FALSE]
+  qr_r[row(qr_r) > col(qr_r)] <- 0
+  Rinv <- backsolve(qr_r, diag(rank))
+  XtXinv <- tcrossprod(Rinv)
+
+  p_ss <- numeric(n_terms)
+  p_df <- integer(n_terms)
+  for (i in seq_len(n_terms)) {
+    idx <- which(col_assign == i)
+    p_df[i] <- length(idx)
+    if (length(idx) == 1L) {
+      p_ss[i] <- beta[idx]^2 / XtXinv[idx, idx]
+    } else {
+      C_jj <- XtXinv[idx, idx, drop = FALSE]
+      p_ss[i] <- as.numeric(crossprod(beta[idx], solve(C_jj, beta[idx])))
+    }
+  }
+
+  # Full model stats
+  full_ms <- ss_model / df_model
+  full_f <- full_ms / ms_error
+  full_pre <- ss_model / (ss_model + ss_error)
+  full_p <- pf(full_f, df_model, df_error, lower.tail = FALSE)
+
+  # Per-term stats
+  p_ms <- p_ss / p_df
+  p_f <- p_ms / ms_error
+  p_pre <- p_ss / (p_ss + ss_error)
+  p_p <- pf(p_f, p_df, df_error, lower.tail = FALSE)
+
+  if (n_terms == 1L) {
+    make_anova_df(
+      term = c("Model", "Error", "Total"),
+      description = c("(error reduced)", "(from model)", "(empty model)"),
+      ss = c(ss_model, ss_error, ss_total),
+      df = c(df_model, df_error, df_total),
+      ms = c(full_ms, ms_error, ss_total / df_total),
+      f = c(full_f, NA_real_, NA_real_),
+      pre = c(full_pre, NA_real_, NA_real_),
+      p = c(full_p, NA_real_, NA_real_)
+    )
+  } else {
+    make_anova_df(
+      term = c("Model", term_labels, "Error", "Total"),
+      description = c("(error reduced)", rep(NA_character_, n_terms),
+        "(from model)", "(empty model)"),
+      ss = c(ss_model, p_ss, ss_error, ss_total),
+      df = c(df_model, p_df, df_error, df_total),
+      ms = c(full_ms, p_ms, ms_error, ss_total / df_total),
+      f = c(full_f, p_f, NA_real_, NA_real_),
+      pre = c(full_pre, p_pre, NA_real_, NA_real_),
+      p = c(full_p, p_p, NA_real_, NA_real_)
+    )
+  }
+}
+
+#' Build the complete ANOVA table for a non-null model
+#' @noRd
+build_anova_table <- function(models, fit, fit_null) {
+  full_model <- models[[1]]$complex
+  has_partials <- length(models) > 2
+
+  # pre-compute shared values once
+  full_fitted <- full_model$fitted.values
+  ss_error <- sum(full_model$residuals^2)
+  df_error <- as.integer(nrow(full_model$model) - length(full_model$coefficients))
+  ms_error <- ss_error / df_error
+
+  # total row values
+  ss_total <- sum(fit_null$residuals^2)
+  df_total <- as.integer(length(fit_null$residuals) - length(fit_null$coefficients))
+
+  # full model row: SS = sum((full_fitted - null_fitted)^2)
+  null_fitted <- models[["Full Model"]]$simple$fitted.values
+  full_ss <- sum((full_fitted - null_fitted)^2)
+  full_df <- full_model$rank - 1L
+  full_ms <- full_ss / full_df
+  full_f <- full_ms / ms_error
+  full_pre <- full_ss / (full_ss + ss_error)
+  full_p <- pf(full_f, full_df, df_error, lower.tail = FALSE)
+
+  if (!has_partials) {
+    make_anova_df(
+      term = c("Model", "Error", "Total"),
+      description = c("(error reduced)", "(from model)", "(empty model)"),
+      ss = c(full_ss, ss_error, ss_total),
+      df = c(full_df, df_error, df_total),
+      ms = c(full_ms, ms_error, ss_total / df_total),
+      f = c(full_f, NA_real_, NA_real_),
+      pre = c(full_pre, NA_real_, NA_real_),
+      p = c(full_p, NA_real_, NA_real_)
+    )
+  } else {
+    partial_names <- names(models)[-1]
+    n_partials <- length(partial_names)
+
+    p_ss <- vapply(partial_names, function(t) {
+      sum((models[[t]]$complex$fitted.values - models[[t]]$simple$fitted.values)^2)
+    }, numeric(1), USE.NAMES = FALSE)
+    p_df <- vapply(partial_names, function(t) {
+      compute_term_df(models[[t]]$complex, t)
+    }, integer(1), USE.NAMES = FALSE)
+    p_ms <- p_ss / p_df
+    p_f <- p_ms / ms_error
+    p_pre <- p_ss / (p_ss + ss_error)
+    p_p <- pf(p_f, p_df, df_error, lower.tail = FALSE)
+
+    make_anova_df(
+      term = c("Model", partial_names, "Error", "Total"),
+      description = c("(error reduced)", rep(NA_character_, n_partials),
+        "(from model)", "(empty model)"),
+      ss = c(full_ss, p_ss, ss_error, ss_total),
+      df = c(full_df, p_df, df_error, df_total),
+      ms = c(full_ms, p_ms, ms_error, ss_total / df_total),
+      f = c(full_f, p_f, NA_real_, NA_real_),
+      pre = c(full_pre, p_pre, NA_real_, NA_real_),
+      p = c(full_p, p_p, NA_real_, NA_real_)
+    )
+  }
+}
+
+#' Construct an ANOVA data.frame directly from vectors, avoiding data.frame() overhead
+#' @noRd
+make_anova_df <- function(term, description, ss, df, ms, f, pre, p) {
+  n <- length(term)
+  tbl <- list(
+    term = term,
+    description = description,
+    SS = as.double(ss),
+    df = as.integer(df),
+    MS = as.double(ms),
+    `F` = as.double(f),
+    PRE = as.double(pre),
+    p = as.double(p)
+  )
+  attr(tbl, "row.names") <- .set_row_names(n)
+  class(tbl) <- "data.frame"
+  tbl
+}
+
+#' Compute sum of squares from model comparison
+#' @noRd
+compute_ss <- function(models, term) {
+  sum((models[[term]]$complex$fitted.values - models[[term]]$simple$fitted.values)^2)
+}
+
+#' Compute degrees of freedom for a term
+#' @noRd
+compute_term_df <- function(complex, term) {
+  factor_mat <- attr(complex$terms, "factors")
+  matched <- rownames(factor_mat)[factor_mat[, term] == 1]
+  df_each <- vapply(matched, function(var_name) {
+    data <- complex$model[[var_name]]
+    if (is.factor(data)) nlevels(data) - 1L
+    else if (is.numeric(data)) 1L
+    else length(unique(data)) - 1L
+  }, integer(1), USE.NAMES = FALSE)
+  as.integer(prod(df_each))
 }
 
 

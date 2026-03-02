@@ -1,5 +1,11 @@
 # Changelog
 
+## supernova 3.0.2
+
+### Performance
+
+- Compute Type III SS from QR decomposition instead of refitting reduced models, reducing computation time to ~1x that of `summary(lm())`
+
 ## supernova 3.0.1
 
 ### Bug fixes

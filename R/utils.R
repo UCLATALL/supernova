@@ -154,6 +154,9 @@ rename <- function(data, col_name, replacement) {
 #' @return The numeric value corresponding to the input.
 #' @keywords internal
 resolve_type <- function(type) {
+  if (is.numeric(type) && length(type) == 1L && type >= 1 && type <= 3) {
+    return(round(type))
+  }
   clean_type <- trimws(tolower(type))
   if (clean_type %in% c("1", "i", "sequential")) {
     return(1)

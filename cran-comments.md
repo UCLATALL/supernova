@@ -1,11 +1,8 @@
 ## Release summary
 
-Patch release to fix deprecation warnings and test failures:
+Patch release for a performance improvement:
 
-- Fix test failures caused by R reordering interaction term components
-- Replace deprecated `geom_errorbarh()` with `geom_errorbar(orientation="y")` for ggplot2 4.0.0+
-- Use `reformulas` package instead of deprecated `lme4::findbars()`/`lme4::nobars()`
-- Update minimum R version to 4.1
+- Compute Type III SS from QR decomposition instead of refitting reduced models
 
 ## Test environments
 
