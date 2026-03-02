@@ -8,5 +8,8 @@
 # CRAN
 CRAN-SUBMISSION
 
+# Package tarball
+*.tar.gz
+
 # Mac file
 .DS_Store

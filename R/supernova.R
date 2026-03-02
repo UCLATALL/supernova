@@ -167,7 +167,7 @@ row_error <- function(term, description, fit) {
 # Fast table builders (lm path) ----------------------------------------------------------------
 
 #' Build the ANOVA table for a null (intercept-only) model
-#' @keywords internal
+#' @noRd
 build_null_table <- function(fit_null) {
   ss_total <- sum(fit_null$residuals^2)
   df_total <- as.integer(length(fit_null$residuals) - length(fit_null$coefficients))
@@ -190,7 +190,7 @@ build_null_table <- function(fit_null) {
 #' Computes all SS values from the fitted model's QR decomposition using the
 #' Wald statistic, avoiding expensive model refitting. Only valid for full-rank
 #' Type III models.
-#' @keywords internal
+#' @noRd
 build_type3_table_qr <- function(fit) {
   rank <- fit$rank
   n <- length(fit$residuals)
@@ -268,7 +268,7 @@ build_type3_table_qr <- function(fit) {
 }
 
 #' Build the complete ANOVA table for a non-null model
-#' @keywords internal
+#' @noRd
 build_anova_table <- function(models, fit, fit_null) {
   full_model <- models[[1]]$complex
   has_partials <- length(models) > 2
@@ -333,7 +333,7 @@ build_anova_table <- function(models, fit, fit_null) {
 }
 
 #' Construct an ANOVA data.frame directly from vectors, avoiding data.frame() overhead
-#' @keywords internal
+#' @noRd
 make_anova_df <- function(term, description, ss, df, ms, f, pre, p) {
   n <- length(term)
   tbl <- list(
@@ -352,13 +352,13 @@ make_anova_df <- function(term, description, ss, df, ms, f, pre, p) {
 }
 
 #' Compute sum of squares from model comparison
-#' @keywords internal
+#' @noRd
 compute_ss <- function(models, term) {
   sum((models[[term]]$complex$fitted.values - models[[term]]$simple$fitted.values)^2)
 }
 
 #' Compute degrees of freedom for a term
-#' @keywords internal
+#' @noRd
 compute_term_df <- function(complex, term) {
   factor_mat <- attr(complex$terms, "factors")
   matched <- rownames(factor_mat)[factor_mat[, term] == 1]
